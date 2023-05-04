@@ -46,13 +46,23 @@ void create_index(){
     //Verificar consistência dos dados do arquivo
     confere_arq_dados(arq_dados);
 
-    alocar_vet_index(arq_dados, arq_index);
-    //===========
-        //alocar um vetor do tamanho do número de registros a serem indexados - OK
-        //ler cada registro e indexá-lo em sua devida posição
-        //ordenar vetor de index
-        //salvar vetor no arquivo de index
-    //===========
+    unsigned int nroRegValidos = get_nroRegValidos(arq_dados);
+    alocar_vet_index(arq_index, nroRegValidos);
+
+    //Criar um dado de conexão entre os arquivos
+    ConexaoReg_t *cnx_reg = alocar_cnx(arq_index);
+
+    int conseguiu_ler; //Flag
+    //Obter o primeiro dado
+    conseguiu_ler = getDado(cnx_reg, arq_dados, 0);
+    int cont = 0;
+    while(conseguiu_ler){//Se conseguiu ler o dado
+        printf("cont:%d\n", cont);
+        escreverVetIndex(cnx_reg, arq_index, cont);//Escrever no vetor em RAM
+        cont++;
+        conseguiu_ler = getDado(cnx_reg, arq_dados, 0);//Ler próximo dado
+    }
+
 
     //Desalocar tipos utilizados
     desalocar_ArqDados(arq_dados);

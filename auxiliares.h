@@ -2,6 +2,7 @@
 #define _AUXILIARES
 
 	void binarioNaTela(char *nomeArquivoBinario);
+	int tamanhoStr(char *string);
 	char *alocar_nome(int tamanho_nome);
 	void erro(void *ponteiro);
 	void pular_campos_fixos(FILE *arq_bin);

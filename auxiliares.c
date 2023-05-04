@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "registros.h"
+#include "arq_dados.h"
 #include "auxiliares.h"
 
 #define TAM_MAX_CABECALHO_CSV 100
@@ -40,6 +40,17 @@ void binarioNaTela(char *nomeArquivoBinario){
     printf("%lf\n", (cs / (double)100));
     free(mb);
     fclose(fs);
+}
+
+int tamanhoStr(char *string){
+    int tamanho = 0;
+    char cursor;
+    do{
+        cursor = string[tamanho];
+        printf("cursor:%c|tam:%d\n", cursor, tamanho);
+        tamanho++;
+    }while(cursor != '|');
+    return tamanho;
 }
 
 char *alocar_nome(int tamanho_nome){

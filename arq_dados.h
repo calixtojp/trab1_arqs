@@ -3,8 +3,8 @@
 	os arquivos de Dados.
 */
 
-#ifndef _REGISTROS
-#define _REGISTROS
+#ifndef _ARQDADOS
+#define _ARQDADOS
 	
 	typedef struct Cabecalho cabecalho_t;
 	typedef struct Dados dados_t;	
@@ -16,6 +16,10 @@
 	void arquivo_status(cabecalho_t *cabecalho,char status);
 	int get_nroRegArq(cabecalho_t *cabecalho);
 	int get_nroRegRem(cabecalho_t *cabecalho);
+	int getIdCrime(dados_t *dado);
+	void getDataCrime(dados_t *dado, char *dataDestino);
+	int getNumeroArtigo(dados_t *dado);
+	void getMarcaCelular(dados_t *dado, char *marcaDestino);
 	void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd);
 	void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq);
 	void ler_csv_registro(FILE *arq, dados_t *dados, char *c, int *registro_nulo);
@@ -29,7 +33,11 @@
 	void desalocar_registro(dados_t *registro);
 	char status_disponivel(cabecalho_t *cabecalho);
 	int existem_registros(cabecalho_t *cabecalho);
+	void copia_registro(dados_t *destino, dados_t *origem);
 	void mostrar_registros(FILE *arq_bin);
+	int get_registro_removido(dados_t *registro);
+	int ler_bin_status(FILE *arq_bin, dados_t *registro);
+	int ler_bin_registro(dados_t *registro, FILE *arq_bin);
 	void ler_bin_campos_fixos(FILE *arq_bin, dados_t *registro, int *flag_chegou_fim);
 	void ler_bin_campos_variaveis(FILE *arq_bin, dados_t *registro, int *flag_chegou_fim);
 	char *ler_bin_char_variavel(FILE *arq_bin);

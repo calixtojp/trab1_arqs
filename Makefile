@@ -1,17 +1,17 @@
-all: manipulacao.o arqIndice.o auxiliares.o main.o registros.o 
-	gcc manipulacao.o arqIndice.o auxiliares.o main.o registros.o -o arq -Wall -std=c99;
+all: manipulacao.o arq_indice.o auxiliares.o main.o arq_dados.o 
+	gcc manipulacao.o arq_indice.o auxiliares.o main.o arq_dados.o -o arq -Wall -std=c99;
 
 manipulacao.o:
 	gcc -c manipulacao.c -o manipulacao.o
 
-arqIndice.o:
-	gcc -c arqIndice.c -o arqIndice.o
+arq_indice.o:
+	gcc -c arq_indice.c -o arq_indice.o
 
 auxiliares.o:
 	gcc -c auxiliares.c -o auxiliares.o
 
-registros.o:
-	gcc -c registros.c -o registros.o
+arq_dados.o:
+	gcc -c arq_dados.c -o arq_dados.o
 
 main.o:
 	gcc -c main.c -o main.o

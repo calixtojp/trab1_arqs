@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "registros.h"
+#include <string.h>
+#include "arq_dados.h"
 #include "auxiliares.h"
 
 #define TAM_MAX_BUFFER_INT 10
@@ -67,6 +68,22 @@ int get_nroRegArq(cabecalho_t *cabecalho){
 
 int get_nroRegRem(cabecalho_t *cabecalho){
 	return cabecalho->nroRegRem;
+}
+
+int getIdCrime(dados_t *dado){
+	return dado->idCrime;
+}
+
+void getDataCrime(dados_t *dado, char *dataDestino){
+	strcpy(dataDestino, dado->dataCrime);
+}
+
+int getNumeroArtigo(dados_t *dado){
+	return dado->numeroArtigo;
+}
+
+void getMarcaCelular(dados_t *dado, char *marcaDestino){
+	strcpy(marcaDestino, dado->marcaCelular);
 }
 
 void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd){
@@ -279,6 +296,72 @@ int existem_registros(cabecalho_t *cabecalho){
 	return 1;
 }
 
+void copia_registro(dados_t *destino, dados_t *origem){
+
+	printf("vou mostrar a origem\n");
+	mostrar_campos(origem);
+
+	destino->removido = origem->removido;
+	destino->numeroArtigo = origem->numeroArtigo;
+	destino->idCrime = origem->idCrime;
+	destino->hashtag = '#';
+	strcpy(destino->marcaCelular, origem->marcaCelular);
+	strcpy(destino->dataCrime, origem->dataCrime);
+
+	int n;
+	//variável que será usada para armazenar o tamanho
+	//das strings de tamanho variável
+	n = strlen(origem->lugarCrime);
+	destino->lugarCrime = alocar_nome(n+1);
+	strcpy(destino->lugarCrime, origem->lugarCrime);
+
+
+	n = strlen(origem->descricaoCrime);
+	destino->descricaoCrime = alocar_nome(n+1);
+	strcpy(destino->descricaoCrime, origem->descricaoCrime);
+
+
+	printf("vou mostrar o destino\n");
+	mostrar_campos(destino);
+}
+
+int ler_bin_registro(dados_t *registro, FILE *arq_bin){
+	int chegou_fim = feof(arq_bin);
+
+	if(fread(&(registro->removido), sizeof(char), 1, arq_bin)!=1){
+		//Não consegui ler o campo 'removido'
+		registro = NULL;
+		return 0;
+	}
+
+	chegou_fim = 0;
+	ler_bin_campos_fixos(arq_bin, registro, &chegou_fim);
+	if(chegou_fim != 0){
+		//Não conseguiu ler algum dos campos fixos
+		printf("não consegui ler algum dos campos fixos\n");
+		registro = NULL;
+		return 0;
+	}
+
+	ler_bin_campos_variaveis(arq_bin, registro, &chegou_fim);
+	if(chegou_fim != 0){
+		printf("não consegui ler algum dos campos variáveis\n");
+		//Não conseguiu ler algum dos campos variáveis
+		registro = NULL;
+		return 0;
+	}
+
+	//ler # no final
+	if(fread(&(registro->hashtag), sizeof(char), 1, arq_bin)!=1){
+		printf("não consegui ler a hashtag\n");
+		registro = NULL;
+		return 0;
+	}
+
+	//Se leu tudo certo, retorno 1
+	return 1;
+}
+
 void mostrar_registros(FILE *arq_bin){
 	int chegou_fim;//flag que tem 1 se chegou no fim do arquivo ou 0 se não
 	chegou_fim = feof(arq_bin);
@@ -324,6 +407,22 @@ void mostrar_registros(FILE *arq_bin){
 
 		//atualizo a flag
 		chegou_fim = feof(arq_bin);
+	}
+}
+
+int get_registro_removido(dados_t *registro){
+	if(registro->removido == '1'){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+int ler_bin_status(FILE *arq_bin, dados_t *registro){
+	if(fread(&(registro->removido), sizeof(char), 1, arq_bin)==1){
+		return 1;
+	}else{
+		return 0;
 	}
 }
 
