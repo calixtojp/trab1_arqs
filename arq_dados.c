@@ -86,6 +86,55 @@ void getMarcaCelular(dados_t *dado, char *marcaDestino){
 	strcpy(marcaDestino, dado->marcaCelular);
 }
 
+int getCampoInt(dados_t *dado, char *campo){
+	if(strcmp(campo, "idCrime")==0){
+		return dado->idCrime;
+	}else if(strcmp(campo, "numeroArtigo")==0){
+		return dado->numeroArtigo;
+	}else{
+		printf("ERRO: campo int não encontrado\n");
+	}
+}
+
+char *getCampoStr(dados_t *dado, char *campo){
+	if(strcmp(campo, "dataCrime")==0){
+		return dado->dataCrime;
+	}else if(strcmp(campo, "marcaCelular")==0){
+		return dado->marcaCelular;
+	}else{
+		printf("ERRO: campo str não encontrado\n");
+	}
+}
+
+int bytesAteCampoIndexado(dados_t *reg, char *campo){
+	long int retorno = 0;
+	retorno += 1;//Acrescento o byte do campo "removido"
+
+	if(strcmp(campo, "idCrime")==0){
+		return retorno;
+	}else{
+		retorno += 4;
+	}
+
+	if(strcmp(campo, "dataCrime")==0){
+		return retorno;
+	}else{
+		retorno += 10;
+	}
+
+	if(strcmp(campo, "numeroArtigo")==0){
+		return retorno;
+	}else{
+		retorno += 4;
+	}
+
+	if(strcmp(campo, "marcaCelular")==0){
+		return retorno;
+	}else{
+		printf("Erro na leitura do byteAteCampIndex\n");
+	}
+}
+
 void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd){
 	//incrementa o número de registros escritos no arquivo binário na quantidade informada
 	cabecalho->nroRegArq = cabecalho->nroRegArq + qtd;

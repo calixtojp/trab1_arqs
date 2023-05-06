@@ -10,30 +10,27 @@
 #ifndef _MANIPULACAO
 #define _MANIPULACAO
 
-    typedef struct ArqDados ArqDados_t;
-    typedef struct ArqIndex ArqIndex_t;
-    typedef struct ConexaoReg ConexaoReg_t;
+typedef struct ArqDados ArqDados_t;
+typedef struct ArqIndex ArqIndex_t;
 
-    ArqDados_t *alocar_arq_dados(void);
-    ArqIndex_t *alocar_arq_index(void);
-    ConexaoReg_t *alocar_cnx(ArqIndex_t *arq_index);
-    void ler_nome_arq_dados(ArqDados_t *arq_dados);
-    void ler_nome_arq_index(ArqIndex_t *arq_index);
-    void ler_campoIndexado(ArqIndex_t *arq_index);
-    void ler_tipoDado(ArqIndex_t *arq_index);
-    void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura);
-    void abrir_arq_index(ArqIndex_t *arq_index, const char *tipo_leitura);
-    void desalocar_ArqDados(ArqDados_t *arq_dados);
-    void desalocar_ArqIndex(ArqIndex_t *arq_index);
-    void fechar_arq_dados(ArqDados_t *arq_dados);
-    void fechar_arq_index(ArqIndex_t *arq_index);
-    void ler_cabecalho_dados(ArqDados_t *arq_dados);
-    void mostrar_cabecalhoDados(ArqDados_t *arq_dados);
-    void confere_arq_dados(ArqDados_t *arq_dados);
-    char *getCampoIndexado(ArqIndex_t *arq_index);
-    int get_nroRegValidos(ArqDados_t *arq_dados);
-    void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos);
-    int getDado(ConexaoReg_t *cnx_reg, ArqDados_t *arq_dados, int pular);
-    void escreverVetIndex(ConexaoReg_t *cnx_reg, ArqIndex_t *arq_index, int pos);
+ArqDados_t *alocar_arq_dados(void);
+ArqIndex_t *alocar_arq_index(void);
+void ler_nome_arq_dados(ArqDados_t *arq_dados);
+void ler_nome_arq_index(ArqIndex_t *arq_index);
+void ler_campoIndexado(ArqIndex_t *arq_index);
+void ler_tipoDado(ArqIndex_t *arq_index);
+void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura);
+void abrir_arq_index(ArqIndex_t *arq_index, const char *tipo_leitura);
+void desalocar_ArqDados(ArqDados_t *arq_dados);
+void desalocar_ArqIndex(ArqIndex_t *arq_index);
+void fechar_arq_dados(ArqDados_t *arq_dados);
+void fechar_arq_index(ArqIndex_t *arq_index);
+void ler_cabecalho_dados(ArqDados_t *arq_dados);
+void mostrar_cabecalhoDados(ArqDados_t *arq_dados);
+void confere_arq_dados(ArqDados_t *arq_dados);
+int get_nroRegValidos(ArqDados_t *arq_dados);
+void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos);
+int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg);
+void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg);
 
 #endif

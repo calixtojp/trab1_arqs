@@ -20,6 +20,9 @@
 	void getDataCrime(dados_t *dado, char *dataDestino);
 	int getNumeroArtigo(dados_t *dado);
 	void getMarcaCelular(dados_t *dado, char *marcaDestino);
+	int getCampoInt(dados_t *dado, char *campo);
+	char *getCampoStr(dados_t *dado, char *campo);
+	int bytesAteCampoIndexado(dados_t *reg, char *campo);
 	void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd);
 	void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq);
 	void ler_csv_registro(FILE *arq, dados_t *dados, char *c, int *registro_nulo);

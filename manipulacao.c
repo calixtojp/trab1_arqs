@@ -24,16 +24,6 @@ struct ArqIndex{
     dados_indx_int_t **vet_indx_int;
 };
 
-struct ConexaoReg{
-    char campoIndexado[MAX_NAME_ARQ];
-    char tipoDado[MAX_NAME_ARQ];
-    long int cursorDados;
-    long int cursorIndex;
-    dados_t *dado;
-    dados_indx_int_t *index_int;
-    dados_indx_str_t *index_str;
-};
-
 ArqDados_t *alocar_arq_dados(void){
     //Aloca o cabeçalho e o tipo ArqDados_t
 
@@ -52,15 +42,9 @@ ArqIndex_t *alocar_arq_index(void){
     arq_index_main = malloc(sizeof(ArqIndex_t));
 
     arq_index_main->cabecalhoIndex = alocar_cbl_indx();
+    arq_index_main->vet_indx_int = NULL;
+    arq_index_main->vet_indx_str = NULL;
     return arq_index_main;
-}
-
-ConexaoReg_t *alocar_cnx(ArqIndex_t *arq_index){
-    ConexaoReg_t *cnx = malloc(sizeof(ConexaoReg_t));
-    cnx->dado = alocar_dados();
-    strcpy(cnx->campoIndexado, arq_index->campoIndexado);
-    strcpy(cnx->tipoDado, arq_index->tipoDado);
-    return cnx;
 }
 
 void ler_nome_arq_dados(ArqDados_t *arq_dados){
@@ -153,10 +137,6 @@ void confere_arq_dados(ArqDados_t *arq_dados){
     }
 }
 
-char *getCampoIndexado(ArqIndex_t *arq_index){
-    return arq_index->campoIndexado;
-}
-
 int get_nroRegValidos(ArqDados_t *arq_dados){
     //Retorna o número de registros válidos:
     //     nroRegArq - nroRegRem
@@ -184,120 +164,128 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     }
 }
 
-void escreve_dadoIndex(ConexaoReg_t *cnx_reg, long int bos_reg_ant){
-    /*
-        Escreve o byteOffSet do campo indexado do registro contido
-    na conexão (cnx_reg) levando em conta o ByteOffSet do final do registro 
-    anterior (ou inicio no próprio registro contigo em cnx_reg).
-        Além disso, escreve em cnx_reg->dado_indx_x o valor contido
-    no campo indexado
-    */
-    printf("campoIndexado:%s\n", cnx_reg->campoIndexado);
-
-    if(strcmp(cnx_reg->tipoDado, "inteiro")==0){
-        cnx_reg->index_int = malloc(sizeof(dados_indx_int_t*));
-    }else if(strcmp(cnx_reg->tipoDado, "string")==0){
-        cnx_reg->index_str = malloc(sizeof(dados_indx_str_t*));
-    }
-
-
-    bos_reg_ant += 1;//acrescento o byte do campo "removido"
-    if(strcmp(cnx_reg->campoIndexado, "idCrime")==0){
-        int idCrime = getIdCrime(cnx_reg->dado);
-        set_CnxInt(cnx_reg->index_int, bos_reg_ant, idCrime);
-        return;
-    }else{
-        bos_reg_ant += 4;//passo os bytes do campo "idCrime"
-    }
-
-    if(strcmp(cnx_reg->campoIndexado, "dataCrime")==0){
-        char dataCrime[10];
-        getDataCrime(cnx_reg->dado, dataCrime);
-        set_CnxStr(cnx_reg->index_str, bos_reg_ant, dataCrime);
-        return;
-    }else{
-        bos_reg_ant += 10;//passo os bytes do campo "dataCrime"
-    }
-
-    if(strcmp(cnx_reg->campoIndexado, "numeroArtigo")==0){
-        int numeroArtigo = getNumeroArtigo(cnx_reg->dado);
-        set_CnxInt(cnx_reg->index_int, bos_reg_ant, numeroArtigo);
-        return;
-    }else{
-        bos_reg_ant += 4;//passo os bytes do campo "numeroArtigo"
-    }
-
-    if(strcmp(cnx_reg->campoIndexado, "marcaCelular")==0){
-        char marcaCeular[12];
-        getMarcaCelular(cnx_reg->dado, marcaCeular);
-        set_CnxStr(cnx_reg->index_str, bos_reg_ant, marcaCeular);
-        return;
-    }else{
-        printf("Erro na escrita do dado_index\n");
-    }
-}
-
-int getDado(ConexaoReg_t *cnx_reg, ArqDados_t *arq_dados, int pular){
-    /*
-        -Pula 'pular' registros e lê o próximo registro de dados, 
-    armazenando-o em 'cnx_reg'.
-        -Retorna 1 se conseguiu realizar a leitura e 0 caso contrário.
-    */
-
-    //Primeiro vou pular os registros desejados.
-    dados_t *registro_atual = alocar_dados();
-    int cont_pulados = 0;//Conta quantos registros eu pulei.
-    while(cont_pulados < pular){
-        if(ler_bin_registro(registro_atual, arq_dados->arqDados)){
-            //Se consegui ler o registro
-            if(get_registro_removido(registro_atual)!=1){
-                //Se o registro não foi removido, ou seja
-                //é um registro válido.
-                ++cont_pulados;
-            }
-        }else{
-            //Se não consegui ler o registro, retorno 0
-            return 0;
-        }
-    }
-
-    //Agora faço a leitura do próximo registro válido
-    //e armazeno-o em cnx_reg.
+int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg){
     int conseguiu_ler;
-    long int byteOffSetAnt = 0;//byteOffSet do inicio do registro anterior
-    byteOffSetAnt += 17; //incremento o cabeçalho do arq_dados
-    conseguiu_ler = ler_bin_registro(registro_atual, arq_dados->arqDados);
+    //Flag que contém 1 se conseguiu ler e 0 no caso contrário
+
+    long int byteOffSetAnt = ftell(arq_dados->arqDados);
+    //Guarda o byteOffSet do começo do registro atual (atual_reg)
+    
+    dados_t *atual_reg = alocar_dados();
+    //Guarda o registro atual
+
+    dados_indx_int_t *indexInt = NULL;
+    //Armazena o campo indexado (int) e o byteOffSet do mesmo
+    dados_indx_str_t *indexStr = NULL;
+    //Armazena o campo indexado (str) e o byteOffSet do mesmo
+
+    //Aloco o tipo que será usado
+    if(strcmp(arq_index->tipoDado, "inteiro")==0){
+        indexInt = alocDadoIndxInt();
+    }else if(strcmp(arq_index->tipoDado, "string")==0){
+        indexStr = alocDadoIndxStr();
+    }else{
+        printf("tipo de dado não encontrado\n");
+    }
+
+    conseguiu_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
+    int liRegValido = 0;//1 se leu algum registro válido, 0 caso contrário
     while(conseguiu_ler == 1){
         //Enquanto consegue ler
-        if(get_registro_removido(registro_atual) != 1){
-            //Se esse é um registro válido
 
-            //faço a cópia do dado
-            copia_registro(cnx_reg->dado, registro_atual);
-            printf("consegui fazer a copia\n");
-            //anoto o byteOffSet do campoIndexado e o valor do
-            //campoIndexado
-            escreve_dadoIndex(cnx_reg, byteOffSetAnt);
+        if(get_registro_removido(atual_reg) != 1){
+            //Se esse é um registro válido,
+            liRegValido = 1;
 
-            return 1;
+            long int bytOffSetCampIndex = byteOffSetAnt;
+            //variável guardará o byteOffSet do campo indexado
+            bytOffSetCampIndex += bytesAteCampoIndexado(atual_reg, arq_index->campoIndexado);
+            //Calculo o byteOffSet do campo indexado
+
+            if(indexInt != NULL){
+                //Se não é nulo, é porque foi alocado e
+                //se foi alocado, é porque esse será o dado usado
+                int campoIndexado;
+                campoIndexado = getCampoInt(atual_reg, arq_index->campoIndexado);
+                setDadoIndxInt(indexInt, bytOffSetCampIndex, campoIndexado);
+            }else if(indexStr != NULL){
+                char *campoIndexado = alocarCampoIndexado();
+                campoIndexado = getCampoStr(atual_reg, arq_index->campoIndexado);
+                setDadoIndxStr(indexStr, bytOffSetCampIndex, campoIndexado);
+            }else{
+                printf("não alocou o indexX\n");
+            }
+
+            break;
+            //Como já encontrei o campo indexado e o byteOffSet,
+            //Posso sair do laço
         }
         byteOffSetAnt = ftell(arq_dados->arqDados);
-        conseguiu_ler = ler_bin_registro(registro_atual, arq_dados->arqDados);
+        printf("byteOffSetAnt:%ld\n", byteOffSetAnt);
+        conseguiu_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
     }
 
+    //Se não conseguiu ler nenhum registro de dados válido,
+    //é porque chegou no final do arquivo
+    if(liRegValido == 0)
+        return 0;
 
-    //Se cheguei no fim (ou seja, saí do laço) e não achei
-    //um registro válido, retorno 0
-    return 0;
+    //Já que a leitura foi concluída com sucesso,
+    //tenho que escrever o registro lido no vetor de index
+    printf("fiz a leitura do registro:\n");
+    mostrar_campos(atual_reg);
+
+    if(indexInt != NULL){
+        //Se o tipo de dado é inteiro...
+        copiaDadoIndex_int(arq_index->vet_indx_int[pos_reg], indexInt);
+        printf("campos do reg que li:\n");
+        mostraRegIndx_int(indexInt);
+        printf("campos do reg que colei:\n");
+        mostraRegIndx_int(arq_index->vet_indx_int[pos_reg]);
+    }else if(indexStr != NULL){
+        //Se o tipo de dado é string...
+        copiaDadoIndex_str(arq_index->vet_indx_str[pos_reg], indexStr);
+        printf("campos do reg que li:\n");
+        mostraRegIndx_str(indexStr);
+        printf("campos do reg que colei:\n");
+        mostraRegIndx_str(arq_index->vet_indx_str[pos_reg]);
+    }else{
+        printf("não alocou o indexX\n");
+    }
+
+    return 1;
 }
 
-void escreverVetIndex(ConexaoReg_t *cnx_reg, ArqIndex_t *arq_index, int pos){
-    if(strcmp(arq_index->tipoDado, "inteiro")==0){
-        copiaDadoIndex_int(arq_index->vet_indx_int[pos], cnx_reg->index_int);
-        
-    }else if(strcmp(arq_index->tipoDado, "string")==0){
-        copiaDadoIndex_str(arq_index->vet_indx_str[pos], cnx_reg->index_str);
+void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
+    //Ordena o vetor de index carregado em RAM
+    printf("vetor antes:\n");
+    if(arq_index->vet_indx_int != NULL){
+        //Se o tipoIndexado é inteiro,
+        mostraVetInt(arq_index->vet_indx_int, qntd_reg);
+        ordenaVetIndex_int(arq_index->vet_indx_int, qntd_reg);
+        printf("vetor depois:\n");
+        mostraVetInt(arq_index->vet_indx_int, qntd_reg);
+    }else if(arq_index->vet_indx_str != NULL){
+        //Se o tipoIndexado é string,
+        mostraVetStr(arq_index->vet_indx_str, qntd_reg);
+        ordenaVetIndex_str(arq_index->vet_indx_str, qntd_reg);
+        printf("vetor depois:\n");
+        mostraVetStr(arq_index->vet_indx_str, qntd_reg);
     }else{
-        printf("campo indexado não encontrado\n");
+        printf("Ainda não foi alocado um vetor de registros\n");
+        exit(0);
+    }
+}
+
+void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
+    int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário
+
+    //Primeiro, escrevo que o status do arquivo de index é 
+    //positivo (ou "1")
+    setCabealhoIndex(arq_index->cabecalhoIndex, '1');
+    escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
+
+    for(int cont = inicio; inicio <= fim; ++cont){
+        
     }
 }
