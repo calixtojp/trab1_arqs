@@ -1,2 +1,9 @@
 *.o
 arq
+/arquivos
+/casos_de_teste
+*.bin
+*.in
+*.out
+/.vscode
+funcoesFornecidas.c

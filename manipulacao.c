@@ -6,18 +6,18 @@
 #include "arq_dados.h"
 #include "arq_indice.h"
 
-#define MAX_NAME_ARQ 50
+#define MAX_NOME_ARQ 50
 
 struct ArqDados{
-    char nomeArqDados[MAX_NAME_ARQ];
+    char nomeArqDados[MAX_NOME_ARQ];
     FILE *arqDados;
     cabecalho_t *cabecalhoDados;
 };
 
 struct ArqIndex{
-    char campoIndexado[MAX_NAME_ARQ];
-    char tipoDado[MAX_NAME_ARQ];
-    char nomeArqIndex[MAX_NAME_ARQ];
+    char nomeArqIndex[MAX_NOME_ARQ];
+    char campoIndexado[MAX_NOME_ARQ];
+    char tipoDado[MAX_NOME_ARQ];
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
@@ -50,7 +50,7 @@ ArqIndex_t *alocar_arq_index(void){
 void ler_nome_arq_dados(ArqDados_t *arq_dados){
     int retorno_scanf = scanf(" %s", arq_dados->nomeArqDados); 
     if(retorno_scanf != 1){
-        printf("ERRO: leitura do nome do arq_dados\n");
+        //erro de leitura
         exit(0);
     }
 }
@@ -58,25 +58,23 @@ void ler_nome_arq_dados(ArqDados_t *arq_dados){
 void ler_nome_arq_index(ArqIndex_t *arq_index){
     int retorno_scanf = scanf(" %s", arq_index->nomeArqIndex); 
     if(retorno_scanf != 1){
-        printf("ERRO: leitura do nome do arq_index\n");
+        //erro de leitura
         exit(0);
     }
 }
 
 void ler_campoIndexado(ArqIndex_t *arq_index){
-    int retorno_scanf;
-    retorno_scanf = scanf(" %s", arq_index->campoIndexado);
+    int retorno_scanf = scanf(" %s", arq_index->campoIndexado);
     if(retorno_scanf != 1){
-        printf("ERRO: leitura do campoIndexado\n");
+        //erro de leitura
         exit(0);
     }
 }
 
 void ler_tipoDado(ArqIndex_t *arq_index){
-    int retorno_scanf;
-    retorno_scanf = scanf(" %s", arq_index->tipoDado);
+    int retorno_scanf = scanf(" %s", arq_index->tipoDado);
     if(retorno_scanf != 1){
-        printf("ERRO: leitura do tipoDado\n");
+        //erro de leitura
         exit(0);
     }
 }
@@ -84,7 +82,6 @@ void ler_tipoDado(ArqIndex_t *arq_index){
 void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura){
     arq_dados->arqDados = fopen(arq_dados->nomeArqDados, tipo_leitura);
     if(arq_dados->arqDados == NULL){
-        printf("erro na abertura do arqDados\n");
         exit(0);
     }
 }
@@ -92,7 +89,6 @@ void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura){
 void abrir_arq_index(ArqIndex_t *arq_index, const char *tipo_leitura){
     arq_index->arqIndex = fopen(arq_index->nomeArqIndex, tipo_leitura);
     if(arq_index->arqIndex == NULL){
-        printf("erro na abertura do arqIndex\n");
         exit(0);
     }
 } 
@@ -282,7 +278,7 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
 
     //Primeiro, escrevo que o status do arquivo de index é 
     //positivo (ou "1")
-    setCabealhoIndex(arq_index->cabecalhoIndex, '1');
+    setCabecalhoIndex(arq_index->cabecalhoIndex, '1');
     escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
 
     for(int cont = inicio; inicio <= fim; ++cont){

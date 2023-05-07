@@ -1,5 +1,5 @@
 /*
-	Biblioteca que fornece ferramentas para utilizar
+	Biblioteca que fornece ferramentas para manipular
 	os arquivos de Dados.
 */
 

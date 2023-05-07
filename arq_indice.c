@@ -8,6 +8,11 @@
 //Cabeçalho do arquivo de index
 struct Cabecalho_indx{
     char status;
+    /*
+    -----------------------------------
+    TA FALTANDO A QTD DE REGISTROS
+    ------------------------------------
+    */
 };
 
 //Registro de dados do aquivo index se o campo

@@ -32,5 +32,6 @@ int get_nroRegValidos(ArqDados_t *arq_dados);
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos);
 int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg);
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg);
+void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim);
 
 #endif
