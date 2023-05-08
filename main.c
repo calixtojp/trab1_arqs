@@ -1,4 +1,4 @@
-//Lucas de Souza Brandão, 13695021 (bbril)
+//Lucas de Souza Brandão, 13695021
 //João Pedro Soares de Azevedo Calixto 13732011
 
 #include <stdio.h>
@@ -19,6 +19,7 @@ int main(){
     switch(funcionalidade){
         case 3:
             create_index();
+            
             break;
         case 4:
             where();
