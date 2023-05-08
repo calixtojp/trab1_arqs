@@ -19,7 +19,6 @@ int main(){
     switch(funcionalidade){
         case 3:
             create_index();
-            
             break;
         case 4:
             where();

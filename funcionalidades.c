@@ -21,15 +21,19 @@ void create_index(){
     ler_campoIndexado(arq_index);
     ler_tipoDado(arq_index);
     ler_nome_arq_index(arq_index);
-    printf("leitura dos dados concluída\n");
+    // printf("leitura dos dados concluída\n");
 
-    //Com os inputs armazenados, faço a abertura dos arquivos.
+    //Com os inputs armazenados, faço 
+    //a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "rb");
     abrir_arq_index(arq_index, "wb");
-    printf("abertura dos arquivos concluída\n");
+    // printf("abertura dos arquivos concluída\n");
 
     //Ler o cabeçalho do arquivo de dados
     ler_cabecalho_dados(arq_dados);
+
+    long int byteOffSetAtual;
+    byteOffSetAtual = getTamCabecalhoDados(arq_dados);
 
     //Verificar consistência dos dados do arquivo
     confere_arq_dados(arq_dados);
@@ -42,10 +46,10 @@ void create_index(){
     //tem 1 se conseguiu indexar o registro, 0 caso contrário
 
     int pos_reg = 0;
-    //Guarda a posição que será escrito o registro
+    //Guarda a posição que será escrito o registro  
 
     do{
-        foi_escrito = indexaRegistro(arq_dados, arq_index, pos_reg);
+        foi_escrito = indexaRegistro(arq_dados, arq_index, pos_reg, &byteOffSetAtual);
         pos_reg++;
     }while(foi_escrito==1);
 
@@ -54,22 +58,20 @@ void create_index(){
     ordenaVetIndex(arq_index, qntd_registros);
 
     //Com os dados ordenados, escrevo-os no arquivo de index
-        //escreveVetIndex(arq_index, 0, qntd_registros-1);
+    // escreveVetIndex(arq_index, 0, qntd_registros-1);
+    escreveVetIndex(arq_index, 0, qntd_registros-1);
 
-    /*
-    -----------------------------------
-    TA FALTANDO O BINARIO NA TELA
-    ------------------------------------
-    */
+    binarioNaTela(getNomeArqIndex(arq_index));
+
+    //Fechar arquivos
+    fechar_arq_index(arq_index);
+    fechar_arq_dados(arq_dados);
 
     //Desalocar tipos utilizados
     desalocar_ArqDados(arq_dados);
     desalocar_ArqIndex(arq_index);
 
-    //Fechar arquivos
-    fechar_arq_index(arq_index);
-    fechar_arq_dados(arq_dados);
-    printf("fechamento dos arquivos concluído\n");
+    // printf("fechamento dos arquivos concluído\n");
 }
 
 //Funcionalidade [4]

@@ -6,20 +6,20 @@
 #include "arq_dados.h"
 #include "arq_indice.h"
 
-#define MAX_NOME_ARQ 50
+#define MAX_NAME_ARQ 50
+
+int globalTipoDado;
 
 struct ArqDados{
-    char nomeArqDados[MAX_NOME_ARQ];
+    char nomeArqDados[MAX_NAME_ARQ];
     FILE *arqDados;
     cabecalho_t *cabecalhoDados;
 };
 
 struct ArqIndex{
-    char campoIndexado[MAX_NOME_ARQ];
-    char tipoDado[MAX_NOME_ARQ];
-    char nomeArqIndex[MAX_NOME_ARQ];
-    int qntReg;
-    int globalTipoDado;
+    char campoIndexado[MAX_NAME_ARQ];
+    char tipoDado[MAX_NAME_ARQ];
+    char nomeArqIndex[MAX_NAME_ARQ];
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
@@ -50,7 +50,7 @@ ArqIndex_t *alocar_arq_index(void){
 }
 
 void *escolhe_vet_indx(ArqIndex_t *arq_index){
-    switch(arq_index->globalTipoDado){
+    switch(globalTipoDado){
         case 0:
             return arq_index->vet_indx_int;
             break;
@@ -63,10 +63,24 @@ void *escolhe_vet_indx(ArqIndex_t *arq_index){
     }
 }
 
+void *escolhe_indx_dado(ArqIndex_t *arq_index){
+    switch(globalTipoDado){
+        case 0:
+            return alocDadoIndxInt();
+            break;
+        case 1:
+            return alocDadoIndxStr();
+            break;
+        default:
+            printf("globalTipoDado não foi configurado\n");
+            break;
+    }
+}
+
 void ler_nome_arq_dados(ArqDados_t *arq_dados){
     int retorno_scanf = scanf(" %s", arq_dados->nomeArqDados); 
     if(retorno_scanf != 1){
-        //erro de leitura
+        printf("ERRO: leitura do nome do arq_dados\n");
         exit(0);
     }
 }
@@ -74,23 +88,25 @@ void ler_nome_arq_dados(ArqDados_t *arq_dados){
 void ler_nome_arq_index(ArqIndex_t *arq_index){
     int retorno_scanf = scanf(" %s", arq_index->nomeArqIndex); 
     if(retorno_scanf != 1){
-        //erro de leitura
+        printf("ERRO: leitura do nome do arq_index\n");
         exit(0);
     }
 }
 
 void ler_campoIndexado(ArqIndex_t *arq_index){
-    int retorno_scanf = scanf(" %s", arq_index->campoIndexado);
+    int retorno_scanf;
+    retorno_scanf = scanf(" %s", arq_index->campoIndexado);
     if(retorno_scanf != 1){
-        //erro de leitura
+        printf("ERRO: leitura do campoIndexado\n");
         exit(0);
     }
 }
 
 void ler_tipoDado(ArqIndex_t *arq_index){
-    int retorno_scanf = scanf(" %s", arq_index->tipoDado);
+    int retorno_scanf;
+    retorno_scanf = scanf(" %s", arq_index->tipoDado);
     if(retorno_scanf != 1){
-        //erro de leitura
+        printf("ERRO: leitura do tipoDado\n");
         exit(0);
     }
 }
@@ -98,6 +114,7 @@ void ler_tipoDado(ArqIndex_t *arq_index){
 void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura){
     arq_dados->arqDados = fopen(arq_dados->nomeArqDados, tipo_leitura);
     if(arq_dados->arqDados == NULL){
+        printf("erro na abertura do arqDados\n");
         exit(0);
     }
 }
@@ -105,7 +122,16 @@ void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura){
 void abrir_arq_index(ArqIndex_t *arq_index, const char *tipo_leitura){
     arq_index->arqIndex = fopen(arq_index->nomeArqIndex, tipo_leitura);
     if(arq_index->arqIndex == NULL){
+        printf("erro na abertura do arqIndex\n");
         exit(0);
+    }
+
+    if(strcmp(tipo_leitura, "wb")==0){
+        //Se o tipo de leitura for "wb", então escrevo o
+        //cabeçalho inicial
+        cabecalho_indx_t *cabecalho = alocar_cbl_indx();
+        setCabecalhoIndex(cabecalho, '0', 0);
+        escreveCabecalhoIndex(arq_index->arqIndex, cabecalho);
     }
 } 
 
@@ -129,6 +155,20 @@ void fechar_arq_index(ArqIndex_t *arq_index){
 
 void ler_cabecalho_dados(ArqDados_t *arq_dados){
     arq_dados->cabecalhoDados = ler_bin_cabecalho(arq_dados->arqDados);
+}
+
+int ler_cabecalho_index(ArqIndex_t *arq_index){
+    arq_index->cabecalhoIndex = get_cabecalho_indx(arq_index->arqIndex);
+    if(arq_index->cabecalhoIndex == NULL){
+        //Se não consegui ler o cabeçalho, retorno 0
+        return 0;
+    }else{
+        return 1;
+    }
+}
+
+int getTamCabecalhoDados(ArqDados_t *arq_dados){
+    return len_cabecalho_dados();
 }
 
 void mostrar_cabecalhoDados(ArqDados_t *arq_dados){
@@ -158,8 +198,8 @@ int get_nroRegValidos(ArqDados_t *arq_dados){
     return resultado;
 }
 
-void set_qtdReg(ArqIndex_t *arq_index, int qtdReg){
-    arq_index->qntReg = qtdReg;
+char *getNomeArqIndex(ArqIndex_t *arq_index){
+    return arq_index->nomeArqIndex;
 }
 
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
@@ -175,106 +215,86 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     int tam;
     if(strcmp(arq_index->tipoDado, "inteiro") == 0){
         arq_index->vet_indx_int = aloc_vet_indx_DadoInt(nroRegValidos);
-        arq_index->globalTipoDado = 0;
+        globalTipoDado = 0;
     }else if(strcmp(arq_index->tipoDado, "string") == 0){
         arq_index->vet_indx_str = aloc_vet_indx_DadoStr(nroRegValidos);
-        arq_index->globalTipoDado = 1;
+        globalTipoDado = 1;
     }else{
         printf("Não tem esse tipo\n");
     }
 }
 
-int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg){
-    int conseguiu_ler;
-    //Flag que contém 1 se conseguiu ler e 0 no caso contrário
-
-    long int byteOffSetAnt = ftell(arq_dados->arqDados);
-    //Guarda o byteOffSet do começo do registro atual (atual_reg)
-    
+int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, long int *byteOffSetAnt){
     dados_t *atual_reg = alocar_dados();
-    //Guarda o registro atual
+    int liRegValido=0;//0 até que se prove o contrário
+    int consegui_ler;
+    long int byteOffSetCampIndx;//byteOffSet do campo indexado
+    
+    //Faço loop enquanto conseguir ler (não cheguei no fim do arquivo)
+    //e enquanto não li um registro válido (pois devo pular registros removidos)
 
-    dados_indx_int_t *indexInt = NULL;
-    //Armazena o campo indexado (int) e o byteOffSet do mesmo
-    dados_indx_str_t *indexStr = NULL;
-    //Armazena o campo indexado (str) e o byteOffSet do mesmo
+    consegui_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
 
-    //Aloco o tipo que será usado
-    if(arq_index->vet_indx_int != NULL){
-        indexInt = alocDadoIndxInt();
-    }else if(arq_index->vet_indx_str != NULL){
-        indexStr = alocDadoIndxStr();
-    }else{
-        printf("tipo de dado não encontrado\n");
-    }
+    while(consegui_ler==1 && liRegValido==0){
+        // printf("li o registro:\n");
+        mostrar_campos(atual_reg);
 
-    conseguiu_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
-    int liRegValido = 0;//1 se leu algum registro válido, 0 caso contrário
-    while(conseguiu_ler == 1){
-        //Enquanto consegue ler
+        liRegValido = get_registro_removido(atual_reg);
+        // printf("liRegValido:%d\n",liRegValido);
+        if(liRegValido == 0){
+            printf("esse era um registro válido\n");
 
-        if(get_registro_removido(atual_reg) == 0){
-            //Se esse é um registro válido,
-            liRegValido = 1;
+            //byteOffSet do campo indexado = 
+            //byteOffSet do inicio do registro + bytes até o campo indexado
+            byteOffSetCampIndx = *byteOffSetAnt;
+            byteOffSetCampIndx += bytesAteCampoIndexado(atual_reg, arq_index->campoIndexado);
 
-            long int bytOffSetCampIndex = byteOffSetAnt;
-            //variável guardará o byteOffSet do campo indexado
-            bytOffSetCampIndex += bytesAteCampoIndexado(atual_reg, arq_index->campoIndexado);
-            //Calculo o byteOffSet do campo indexado
+            typedef void (*FncSetDado) (void*, long int, void*);
+            FncSetDado fncsSetDado[] = {
+                setDadoIndxInt,
+                setDadoIndxStr
+            };
 
-            if(indexInt != NULL){
-                //Se não é nulo, é porque foi alocado e
-                //se foi alocado, é porque esse será o dado usado
-                int campoIndexado;
-                campoIndexado = getCampoInt(atual_reg, arq_index->campoIndexado);
-                setDadoIndxInt(indexInt, bytOffSetCampIndex, campoIndexado);
-            }else if(indexStr != NULL){
-                char *campoIndexado = alocarCampoIndexado();
-                campoIndexado = getCampoStr(atual_reg, arq_index->campoIndexado);
-                setDadoIndxStr(indexStr, bytOffSetCampIndex, campoIndexado);
-            }else{
-                printf("não alocou o indexX\n");
-            }
+            typedef void* (*FncGetCampo) (dados_t*, char*);
+            FncGetCampo fncsGetCampo[] = {
+                getCampoInt,
+                getCampoStr
+            };
 
-            break;
-            //Como já encontrei o campo indexado e o byteOffSet,
-            //Posso sair do laço
+            typedef void (*FncSetVetIndx) (void*, int, void*);
+            FncSetVetIndx fncsSetVetIndx[] = {
+                setVetIndx_int,
+                setVetIndx_str
+            };
+
+            void *dadoIndx = malloc(sizeof(void));
+            void *vet_indx = malloc(sizeof(void));
+            void *campoIndexado = malloc(sizeof(void));
+            vet_indx = escolhe_vet_indx(arq_index);
+            dadoIndx = escolhe_indx_dado(arq_index);
+
+            campoIndexado = fncsGetCampo[globalTipoDado](atual_reg, arq_index->campoIndexado);
+            fncsSetDado[globalTipoDado](dadoIndx, byteOffSetCampIndx, campoIndexado);
+            fncsSetVetIndx[globalTipoDado](vet_indx, posReg, dadoIndx);
+
+            //Depois de tudso dou return
+            *byteOffSetAnt = *(byteOffSetAnt) + len_reg_dados(atual_reg);//IMPLEMENTAR
+            return 1;
         }
-        byteOffSetAnt = ftell(arq_dados->arqDados);
-        printf("byteOffSetAnt:%ld\n", byteOffSetAnt);
-        conseguiu_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
+
+        //DEIXAR POR ÚLTIMO
+        *byteOffSetAnt = *(byteOffSetAnt) + len_reg_dados(atual_reg);//IMPLEMENTAR
+        consegui_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
     }
 
-    //Se não conseguiu ler nenhum registro de dados válido,
-    //é porque chegou no final do arquivo
-    if(liRegValido == 0)
+    if(liRegValido == 0){
+        //Significa que passei pelo arquivo de dados até o fim e
+        //não consegui ler 
         return 0;
-
-    //Já que a leitura foi concluída com sucesso,
-    //tenho que escrever o registro lido no vetor de index
-    printf("fiz a leitura do registro:\n");
-    mostrar_campos(atual_reg);
-
-    if(arq_index->vet_indx_int != NULL){
-        //Se o tipo de dado é inteiro...
-        copiaDadoIndex_int(arq_index->vet_indx_int[pos_reg], indexInt);
-        printf("campos do reg que li:\n");
-        mostraRegIndx_int(indexInt);
-        printf("campos do reg que colei:\n");
-        mostraRegIndx_int(arq_index->vet_indx_int[pos_reg]);
-    }else if(arq_index->vet_indx_str != NULL){
-        //Se o tipo de dado é string...
-        copiaDadoIndex_str(arq_index->vet_indx_str[pos_reg], indexStr);
-        printf("campos do reg que li:\n");
-        mostraRegIndx_str(indexStr);
-        printf("campos do reg que colei:\n");
-        mostraRegIndx_str(arq_index->vet_indx_str[pos_reg]);
-    }else{
-        printf("não alocou o indexX\n");
     }
-
-    return 1;
 }
+
+
 
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     //Ordena o vetor de index carregado em RAM
@@ -294,66 +314,40 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     vet_indx = escolhe_vet_indx(arq_index);
 
     printf("antes de ordenar:\n");
-    fncs_MostraVet[arq_index->globalTipoDado](vet_indx, qntd_reg);
+    fncs_MostraVet[globalTipoDado](vet_indx, qntd_reg);
 
-    fncs_ordena_vet_indx[arq_index->globalTipoDado](vet_indx, qntd_reg);
+    fncs_ordena_vet_indx[globalTipoDado](vet_indx, qntd_reg);
 
     printf("depois de ordenar:\n");
-    fncs_MostraVet[arq_index->globalTipoDado](vet_indx, qntd_reg);
+    fncs_MostraVet[globalTipoDado](vet_indx, qntd_reg);
 }
 
-/*
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
-    int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário contrário
+    //Posiciono no local de escrita correto
+    typedef int (*FncGetTamDadoIndx) (void);
+    FncGetTamDadoIndx fncsGetTamDadoIndx[] = {
+        getTamDadoIndx_int,
+        getTamDadoIndx_str
+    };
 
-    //Primeiro, escrevo que o status do arquivo de index é 
-    //positivo (ou "1")
-    setCabecalhoIndex(arq_index->cabecalhoIndex, '1');
-    escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
+    int tamCabecalho = getTamCabecalhoIndx();
+    int tamDado = fncsGetTamDadoIndx[globalTipoDado]();
 
+    fseek(
+        arq_index->arqIndex,
+        tamCabecalho + inicio*tamDado,
+        SEEK_SET
+    );
 
-    if(arq_index->vet_indx_int != NULL){
-        for(int cont = inicio; cont <= fim; ++cont){
-            escrevePija_int(arq_index->vet_indx_int, arq_index->arqIndex);
-        }
-    }else if(arq_index->vet_indx_str != NULL){
-        for(int cont = inicio; cont <= fim; ++cont){
-            escrevePija_str(arq_index->vet_indx_str, arq_index->arqIndex);
-        }
+    void *vet_indx = malloc(sizeof(void));
+    vet_indx = escolhe_vet_indx(arq_index);
+    typedef void (*FncEscreveIndx) (FILE*, void*, int);
+    FncEscreveIndx fncsEscreveIndx[] = {
+        escreveVetIndx_int,
+        escreveVetIndx_str
+    };
+
+    for(int cont = inicio; cont <= fim; ++cont){
+        fncsEscreveIndx[globalTipoDado](arq_index->arqIndex, vet_indx, cont);    
     }
-}
-*/
-
-int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
-    /*Função que, se o vetor de nomes (lido da entrada da funcionalidade [4]) 
-    contiver o nome do campo indexado no arquivo de index, retorna o índice dessa string no vetor. 
-    Caso contrário, retorna -1.*/
-
-    /*Essa função determina se deve ser realizada 
-    busca binária no arquivo de index ou sequencial no de dados.*/
-
-    for(int i=0; i<m; i++){
-        if(strcmp(arq_index->campoIndexado,vet_nomes[i])==0){
-            return i;
-        }
-    }
-    return -1;
-}
-
-
-
-void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *vet_vals_int){
-    printf("Existe arquivo index\n");
-    if(strcmp(arq_index->tipoDado,"inteiro")==0){
-        printf("O campo indexado eh int\n");
-        printf("Quero buscar o valor %d\n",vet_vals_int[pos]);
-        // busca_bin_int(arq_index->cabecalhoIndex);
-    }else{
-        printf("O campo indexado eh string\n");
-        printf("Quero buscar o valor %s\n",vet_vals_str[pos]);
-    }
-}
-
-void busca_seq_dados(ArqDados_t *arq_dados, int m, char **vet_vals_str, int *vet_vals_int){
-    printf("Nao existe arquivo index\n");
 }

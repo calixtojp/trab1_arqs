@@ -1,5 +1,5 @@
 /*
-	Biblioteca que fornece ferramentas para manipular
+	Biblioteca que fornece ferramentas para utilizar
 	os arquivos de Dados.
 */
 
@@ -20,9 +20,11 @@
 	void getDataCrime(dados_t *dado, char *dataDestino);
 	int getNumeroArtigo(dados_t *dado);
 	void getMarcaCelular(dados_t *dado, char *marcaDestino);
-	int getCampoInt(dados_t *dado, char *campo);
-	char *getCampoStr(dados_t *dado, char *campo);
+	void *getCampoInt(dados_t *dado, char *campo);
+	void *getCampoStr(dados_t *dado, char *campo);
 	int bytesAteCampoIndexado(dados_t *reg, char *campo);
+	int len_reg_dados(dados_t *dado);
+	int len_cabecalho_dados(void);
 	void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd);
 	void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq);
 	void ler_csv_registro(FILE *arq, dados_t *dados, char *c, int *registro_nulo);
