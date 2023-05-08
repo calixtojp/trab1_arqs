@@ -61,7 +61,7 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
     return vet_retorno;
 }
 
-cabecalho_indx_t *ler_index_cabecalho(FILE *arq){
+cabecalho_indx_t *ler_index_cabecalho(FILE *arq){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
 
