@@ -1,4 +1,4 @@
-//Lucas de Souza Brandão, 13695021
+//Lucas de Souza Brandão, 13695021 (bbril)
 //João Pedro Soares de Azevedo Calixto 13732011
 
 #include <stdio.h>
