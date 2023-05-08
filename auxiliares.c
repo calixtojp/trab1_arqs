@@ -62,7 +62,7 @@ void readline(char *string) {
     string[i] = '\0';
 }
 
-void scan_quote_string(char *str) {
+void ler_aspas_string(char *str) {
     /*
      * Use essa função para ler um campo string delimitado entre aspas (").
      * Chame ela na hora que for ler tal campo. Por exemplo:
@@ -110,6 +110,22 @@ void erro(void *ponteiro){
         printf("Falha no processamento do arquivo.\n");
         exit(0);
     }
+}
+
+char **alocar_vetor_string(int n_elem, int n_chars){
+    char **vetor = malloc(sizeof(char *)*n_elem);
+    for(int i=0; i<n_elem; i++){
+        vetor[i] = malloc(sizeof(char)*n_chars);
+    }
+
+    return vetor;
+}
+
+void desalocar_vetor_string(char **vetor, int n_elem){
+    for(int i=0; i<n_elem; i++){
+        free(vetor[i]);
+    }
+    free(vetor);
 }
 
 

@@ -3,8 +3,10 @@
 
 	void binarioNaTela(char *nomeArquivoBinario);
 	void readline(char *string);
-	void scan_quote_string(char *str);
+	void ler_aspas_string(char *str);
 	void erro(void *ponteiro);
+	char **alocar_vetor_string(int n_elem, int n_chars);
+	void desalocar_vetor_string(char **vetor, int n_elem);
 
 	/* --- T0, ARRUMAR -------------------*/
 	int tamanhoStr(char *string);

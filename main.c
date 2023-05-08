@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include "funcionalidades.h"
 
+/*coisas que tem q mudar:
+-ver quais funções vai ficar no auxiliares e quais ficam em arq_dados ou arq_indice
+-trocar cabecalho do arq_index
+-ler_bin_campos_variaveis -> fazer retornar int ao inves de passar por parametro
+*/
+
 int main(){
     int funcionalidade;
     scanf("%d", &funcionalidade);

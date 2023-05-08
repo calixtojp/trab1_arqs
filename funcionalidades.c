@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "auxiliares.h"
 #include "manipulacao.h"
+
+#define TAM_MAX_NOME 50
+#define TAM_MAX_VALOR 50
 
 //Funcionalidade [3]
 void create_index(){
@@ -70,7 +74,7 @@ void create_index(){
 
 //Funcionalidade [4]
 void where(void){
-
+	printf("entrei\n");
     //Aloca os tipos que serão usados
     ArqDados_t *arq_dados = alocar_arq_dados();
     erro(arq_dados);
@@ -88,13 +92,80 @@ void where(void){
     //Com os inputs armazenados, faço a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "rb");
     abrir_arq_index(arq_index, "rb");
-    
+
+    for(int i=1; i<=n; i++){
+
+    	int m;
+    	scanf("%d",&m);
+
+    	char **vet_nomes = alocar_vetor_string(m,TAM_MAX_NOME);
+    	char **vet_vals_str = alocar_vetor_string(m, TAM_MAX_VALOR);
+    	int *vet_vals_int = malloc(sizeof(int)*m);
+
+    	for(int j=0; j<m; j++){
+    		scanf("%s",vet_nomes[j]);
+    		if((strcmp(vet_nomes[j],"idCrime") == 0) || (strcmp(vet_nomes[j],"numeroArtigo") == 0)){
+    			//se o campo for um int
+				scanf("%d",&vet_vals_int[j]); //leio o valor
+
+    			//indico no vetor de valores string que o valor deve ser procurado no vetor de int
+    			strcpy(vet_vals_str[j],"int");
+    		}else{
+    			//se nao for int, é string
+    			ler_aspas_string(vet_vals_str[j]); //leio o valor
+
+    			//indico no vetor de valores int que o valor deve ser procurado no vetor de strings
+    			vet_vals_int[j] = -1;
+    		}
+    	}
+
+    	for(int j=0; j<m; j++){
+    		printf("%d %s %s %d\n",m,vet_nomes[j],vet_vals_str[j],vet_vals_int[j]);
+    	}
+
+		//Desalocar tipos utilizados    	
+	    desalocar_vetor_string(vet_vals_str,m);
+    	desalocar_vetor_string(vet_nomes,m);
+    	free(vet_vals_int);
+
+	    
+
+    	//existe_index(m,vet_nomes, vet_vals);
+
+    	printf("Resposta para a busca %d\n",i);
+
+    }
+
+    //Desalocar tipos utilizados
+    desalocar_ArqDados(arq_dados);
+    desalocar_ArqIndex(arq_index);
+
+    //Fechar arquivos
+    fechar_arq_index(arq_index);
+    fechar_arq_dados(arq_dados);
+
+    //DENTRO DO LOOP DE N BUSCAS:
+    //checo se existe um arq de indice para pelo menos 1 dos campos chave de busca
+    /*se sim, 
+    -faz busca binaria do arquivo de indice (com a funcao de comparacao)
+	-acha o primeiro (todos que satisfazem a condição do arq de indice vao estar ordenados)
+	-segue sequencialmente essa lista, testa pros outros criterios (com a função de comp) e printa ou nao
+	*/
+
+    /*se nao,
+    -faz busca sequencial no arquivo de dados (com a funcao de comparacao) 
+    -le tudo até o fim e printa todos q achar no caminho
+    */
+
+    /*
+    Criar função de comparação, que está preparada pra comparar 
+    todos os campos da struct dados, mas os q nao for usar, vai marcar como true
+    pra poder passar no and com qualquer coisa (1 and A == A).
+    Faço variaveis booleanas de verificacao de cada campo, e inicializo todas com 1.
+    se um dos campos for uma das m chaves de busca da entrada, eu troco o 1 pela comparação*/
 
 
 
-    //checo se existe um arq de indice para aquele campo
-    //se sim, faz busca binaria do arquivo de indice
-    //se nao, faz busca sequencial no arquivo de dados
 }
 
 //Funcionalidade [5]
