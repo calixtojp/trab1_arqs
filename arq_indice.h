@@ -1,6 +1,6 @@
 /*
 	Biblioteca que fornece ferramentas para utilizar
-	os arquivos de Índice.
+	os arquivos de Índice. teste
 */
 
 #ifndef _ARQINDICE
