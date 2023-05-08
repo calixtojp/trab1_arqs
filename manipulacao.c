@@ -18,8 +18,7 @@ struct ArqIndex{
     char campoIndexado[MAX_NOME_ARQ];
     char tipoDado[MAX_NOME_ARQ];
     char nomeArqIndex[MAX_NOME_ARQ];
-    int qntReg;
-    int globalTipoDado;
+    int globalTipoDado;/*tu ja tem o campo tipo de dado mano*/
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
@@ -96,6 +95,23 @@ void ler_tipoDado(ArqIndex_t *arq_index){
     }
 }
 
+void ler_cabecalho_arq_index(ArqIndex_t *arq_index){
+    //funcao que carrega na memoria primaria o registro de cabecalho de um arquivo de indice
+    arq_index->cabecalhoIndex = ler_index_cabecalho(arq_index->arqIndex);
+}
+
+void ler_dados_arq_index(ArqIndex_t *arq_index){
+    //funcao que carrega na memoria primaria os registros de dados de um arquivo de indice
+    if(ehInteiro(arq_index->campoIndexado)){
+        //se o campo for inteiro, preencho o vetor de dados inteiros
+        arq_index->vet_indx_int = ler_index_dado_int(arq_index->arqIndex,arq_index->cabecalhoIndex);
+    }else{
+        //se o campo nao for inteiro, entao ele eh string. Entao preencho o vetor de dados string
+        arq_index->vet_indx_str = ler_index_dado_str(arq_index->arqIndex,arq_index->cabecalhoIndex);
+    }
+}
+
+
 void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura){
     arq_dados->arqDados = fopen(arq_dados->nomeArqDados, tipo_leitura);
     if(arq_dados->arqDados == NULL){
@@ -129,7 +145,7 @@ void fechar_arq_index(ArqIndex_t *arq_index){
 }
 
 void ler_cabecalho_dados(ArqDados_t *arq_dados){
-    arq_dados->cabecalhoDados = ler_bin_cabecalho(arq_dados->arqDados);
+    arq_dados->cabecalhoDados = ler_dados_cabecalho(arq_dados->arqDados);
 }
 
 void mostrar_cabecalhoDados(ArqDados_t *arq_dados){
@@ -157,10 +173,6 @@ int get_nroRegValidos(ArqDados_t *arq_dados){
     resultado += get_nroRegArq(arq_dados->cabecalhoDados);
     resultado -= get_nroRegRem(arq_dados->cabecalhoDados);
     return resultado;
-}
-
-void set_qtdReg(ArqIndex_t *arq_index, int qtdReg){
-    arq_index->qntReg = qtdReg;
 }
 
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
@@ -347,11 +359,15 @@ void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *v
     if(strcmp(arq_index->tipoDado,"inteiro")==0){
         printf("O campo indexado eh int\n");
         printf("Quero buscar o valor %d\n",vet_vals_int[pos]);
+
         int pos = busca_bin_int(arq_index->vet_indx_int,arq_index->cabecalhoIndex,vet_vals_int[pos]);
         printf("manipulacao recebeu a pos %d\n",pos);
     }else{
         printf("O campo indexado eh string\n");
         printf("Quero buscar o valor %s\n",vet_vals_str[pos]);
+        printf("vou mandar buscar\n");
+        int pos = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,vet_vals_str[pos]);
+        printf("manipulacao recebeu a pos %d\n",pos);
     }
 }
 

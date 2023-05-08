@@ -21,6 +21,8 @@ void ler_campoIndexado(ArqIndex_t *arq_index);
 void ler_tipoDado(ArqIndex_t *arq_index);
 void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura);
 void abrir_arq_index(ArqIndex_t *arq_index, const char *tipo_leitura);
+void ler_cabecalho_arq_index(ArqIndex_t *arq_index);
+void ler_dados_arq_index(ArqIndex_t *arq_index);
 void desalocar_ArqDados(ArqDados_t *arq_dados);
 void desalocar_ArqIndex(ArqIndex_t *arq_index);
 void fechar_arq_dados(ArqDados_t *arq_dados);

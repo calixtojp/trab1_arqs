@@ -581,7 +581,7 @@ void mostrar_campo_variavel(char *palavra){
 	}
 }
 
-cabecalho_t *ler_bin_cabecalho(FILE *arq_bin){
+cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	//binário que fora passado como argumento
 	erro(arq_bin);

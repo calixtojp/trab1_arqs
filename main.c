@@ -10,6 +10,7 @@
 -trocar cabecalho do arq_index
 -ler_bin_campos_variaveis -> fazer retornar int ao inves de passar por parametro
 -Colocar apenas as mensagens de erro que a Cristina manda
+-tem dois campos 'tipo de dado' na struct arq_index
 */
 
 int main(){

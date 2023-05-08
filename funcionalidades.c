@@ -92,6 +92,10 @@ void where(void){
     abrir_arq_dados(arq_dados, "rb");
     abrir_arq_index(arq_index, "rb");
 
+
+    ler_cabecalho_arq_index(arq_index);
+    ler_dados_arq_index(arq_index);
+
     for(int i=1; i<=n; i++){
 
         printf("Resposta para a busca %d\n",i);
@@ -105,7 +109,7 @@ void where(void){
 
     	for(int j=0; j<m; j++){
     		scanf("%s",vet_nomes[j]);
-    		if((strcmp(vet_nomes[j],"idCrime") == 0) || (strcmp(vet_nomes[j],"numeroArtigo") == 0)){
+    		if(ehInteiro(vet_nomes[j])){
     			//se o campo for um int
 				scanf("%d",&vet_vals_int[j]); //leio o valor
 
