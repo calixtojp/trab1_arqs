@@ -135,6 +135,23 @@ int ehInteiro(char *campo){
         return 0;//nao eh inteiro
     }
 }
+char *truncar(char *original){
+    char *truncado = malloc(sizeof(char)*12);
+    strcpy(truncado,original);
+    int tam = strlen(truncado);
+    if(tam > 12){
+        //se a string tem mais que 12 chars, entao armazeno só até o char 12
+        
+    }else if(tam < 12){
+        //se a string nao ocupa 12 chars, preenche-se com '$' até ter 12 chars
+        for(int i=tam;i<12;i++){
+            truncado[i] = '$';
+        }
+    }
+    //caso contrario, a string ja tem tamanho 12 e nao preciso fazer nada
+
+    return truncado;
+}
 
 /* --- T0, ARRUMAR -------------------*/
 int tamanhoStr(char *string){

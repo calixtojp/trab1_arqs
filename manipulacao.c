@@ -386,17 +386,24 @@ int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
 void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *vet_vals_int){
     printf("Existe arquivo index\n");
     if(strcmp(arq_index->tipoDado,"inteiro")==0){
-        printf("O campo indexado eh int\n");
-        printf("Quero buscar o valor %d\n",vet_vals_int[pos]);
+        int res = busca_bin_int(arq_index->vet_indx_int,arq_index->cabecalhoIndex,vet_vals_int[pos]);
+        if(res == -1){
+            printf("Registro inexistente.\n");
+        }else{
+            printf("tenho que testar os outros criterios e printar as coisa\n");
+        }
+    }else{    
+        //como, no arquivo de index, os valores sao todos truncados, deve-se tratar a chave de busca
+        char *chave = truncar(vet_vals_str[pos]);
 
-        int pos = busca_bin_int(arq_index->vet_indx_int,arq_index->cabecalhoIndex,vet_vals_int[pos]);
-        printf("manipulacao recebeu a pos %d\n",pos);
-    }else{
-        printf("O campo indexado eh string\n");
-        printf("Quero buscar o valor %s\n",vet_vals_str[pos]);
-        printf("vou mandar buscar\n");
-        int pos = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,vet_vals_str[pos]);
-        printf("manipulacao recebeu a pos %d\n",pos);
+        int res = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,chave);
+        if(res == -1){
+            printf("Registro inexistente.\n");
+        }else{
+            printf("tenho que testar os outros criterios e printar as coisa\n");
+        }
+        
+        free(chave);
     }
 }
 
