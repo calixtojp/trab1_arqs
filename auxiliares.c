@@ -107,7 +107,6 @@ void ler_aspas_string(char *str) {
 void erro(void *ponteiro){
     //verifica a existência de algum erro ao longo das funcionalidades
     if(ponteiro == NULL){
-        printf("Falha no processamento do arquivo.\n");
         exit(0);
     }
 }
@@ -128,6 +127,14 @@ void desalocar_vetor_string(char **vetor, int n_elem){
     free(vetor);
 }
 
+int ehInteiro(char *campo){
+    //funcao que identifica se um campo eh do tipo inteiro ou nao
+    if((strcmp(campo,"idCrime") == 0) || (strcmp(campo,"numeroArtigo") == 0)){
+        return 1;//eh inteiro
+    }else{
+        return 0;//nao eh inteiro
+    }
+}
 
 /* --- T0, ARRUMAR -------------------*/
 int tamanhoStr(char *string){
@@ -180,34 +187,4 @@ void pular_cabecalho_csv(FILE *arq){
 
 void mensagem_NULO(void){
     printf("NULO, ");
-}
-
-int busca_bin_rec_int(int *vetor, int ini, int fim, int chave){
-    if(ini > fim) return -1; //não foi encontrado
-
-    int meio = (ini+fim)/2;
-
-    if(vetor[meio]==chave){
-        return meio;
-    }
-    else if(vetor[meio]>chave){
-        ini = meio;
-        return (vetor, ini, fim, chave);
-    }else{ //(vetor[meio]<chave)
-        fim = meio;
-        return (vetor, ini, fim, chave);
-    }
-}
-
-int busca_bin_str_rec_str(int *vetor, int ini, int fim, int chave){
-    if(ini > fim) return -1;
-
-    int meio = (ini+fim)/2;
-
-    if(vetor[meio]>chave){
-        ini = meio;
-        return (vetor, ini, fim, chave);
-    }else if(vetor[meio]<chave){
-        
-    }
 }

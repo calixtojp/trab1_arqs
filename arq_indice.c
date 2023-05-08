@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arq_indice.h"
+#include "auxiliares.h"
 
 #define TAM_CBCL_INDX 5
 #define TAM_CAMP_STR 12
@@ -62,6 +63,42 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
     }
     return vet_retorno;
 }
+
+cabecalho_indx_t *ler_index_cabecalho(FILE *arq){
+	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
+	erro(arq);
+
+	cabecalho_indx_t *cabecalho_retorno = alocar_cbl_indx();
+
+    fread(&(cabecalho_retorno->status),sizeof(char),1,arq);
+    fread(&(cabecalho_retorno->qtdReg),sizeof(int),1,arq);
+	
+	return cabecalho_retorno;
+}
+
+dados_indx_int_t **ler_index_dado_int(FILE *arq, cabecalho_indx_t *cabecalho){
+    dados_indx_int_t **vetor_dados = aloc_vet_indx_DadoInt(cabecalho->qtdReg);
+
+    for(int i=0; i<cabecalho->qtdReg; i++){
+        fread(&(vetor_dados[i]->chaveBusca),sizeof(int),1,arq);
+        fread(&(vetor_dados[i]->byteOffset),sizeof(long int),1,arq);
+    }
+
+    return vetor_dados;
+}
+
+
+dados_indx_str_t **ler_index_dado_str(FILE *arq, cabecalho_indx_t *cabecalho){
+    dados_indx_str_t **vetor_dados = aloc_vet_indx_DadoStr(cabecalho->qtdReg);
+
+    for(int i=0; i<cabecalho->qtdReg; i++){
+        fread((vetor_dados[i]->chaveBusca),sizeof(char),TAM_CAMP_STR,arq);
+        fread(&(vetor_dados[i]->byteOffset),sizeof(long int),1,arq);
+    }
+
+    return vetor_dados;
+}
+
 
 char *alocarCampoIndexado(void){
     char *vet_retorno = malloc(sizeof(char)*TAM_CAMP_STR);
@@ -243,4 +280,97 @@ void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos){
     dados_indx_str_t **vet_real;
     vet_real = (dados_indx_str_t**)vet_indx_str;
     escreveDadoIndx_str(arqIndex, vet_real[pos]);
+
+}
+
+int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave){
+    printf("ini=%d,fim=%d\n",ini,fim);
+
+    if(ini > fim){
+        printf("vo retornar -1\n");
+        return -1; //não foi encontrado    
+    } 
+    
+
+    int meio = (ini+fim)/2;
+    printf("meio = %d\n",meio);
+
+    printf("chave=%d\n",chave);
+
+    printf("vetor[%d]=%d\n",meio,vetor[meio]->chaveBusca);
+
+    if((vetor[meio]->chaveBusca)==chave){
+        printf("achei %d na posicao %d\n",chave,meio);
+        return meio;
+    }
+    else if((vetor[meio]->chaveBusca)>chave){
+        fim = meio-1;
+        printf("fim agr eh o meio\n");
+        return busca_bin_rec_int(vetor, ini, fim, chave);
+    }else{ //((vetor[meio]->chaveBusca)<chave)
+        ini = meio+1;
+        printf("ini agr eh o meio\n");
+        return busca_bin_rec_int(vetor, ini, fim, chave);
+    }
+}
+
+int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave){
+    printf("busca bin int vai chamar o recursivo\n");
+    int pos = busca_bin_rec_int(vetor,0,cabecalho->qtdReg,chave);
+    printf("fiz a recursao, deu pos = %d\n",pos);
+    
+    if(pos != -1){
+        /*Como há campos que podem ter valores iguais, a busca binaria retorna a posição de um dos valores que satisfaz a busca.
+        No arquivo de index, esses valores estão ordenados, então quero o primeiro deles*/
+        while(((pos-1)>=0) && ((vetor[pos-1]->chaveBusca) == (vetor[pos]->chaveBusca))){
+            //o teste ((pos-1) >=0) deve ser feito para evitar segmentation fault caso 'pos' seja igual a zero
+            pos--; //posição do primeiro registro que satisfaz a busca no vetor
+        }
+    }
+    return pos; 
+}
+
+
+int busca_bin_rec_str(dados_indx_str_t **vetor, int ini, int fim, char *chave){
+    printf("ini=%d,fim=%d\n",ini,fim);
+    if(ini > fim){
+        printf("vo retornar -1\n");
+        return -1;
+    } 
+
+    int meio = (ini+fim)/2;
+    printf("meio = %d\n",meio);
+
+    printf("chave=%s\n",chave);
+
+    printf("vetor[%d]=%s\n",meio,vetor[meio]->chaveBusca);
+
+    if(strcmp(vetor[meio]->chaveBusca,chave)==0){
+        printf("achei %s na posicao %d\n",chave,meio);
+        return meio;
+    }else if(strcmp(vetor[meio]->chaveBusca,chave)>0){//(vetor[meio]->chaveBusca) > chave
+        fim = meio;
+        printf("fim agr eh o meio\n");
+        return busca_bin_rec_str(vetor, ini, fim, chave);
+    }else{//(vetor[meio]->chaveBusca) < chave
+        ini = meio;
+        printf("ini agr eh o meio\n");
+        return busca_bin_rec_str(vetor, ini, fim, chave);
+    }
+}
+
+int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave){
+    printf("busca bin int vai chamar o recursivo\n");
+    int pos = busca_bin_rec_str(vetor,0,cabecalho->qtdReg,chave);
+    printf("fiz a recursao, deu pos = %d\n",pos);
+    if(pos != -1){
+        /*Como há campos que podem ter valores iguais, a busca binaria retorna a posição de um dos valores que satisfaz a busca.
+        No arquivo de index, esses valores estão ordenados, então quero o primeiro deles*/
+        while(((pos-1)>=0) && strcmp(vetor[pos-1]->chaveBusca, vetor[pos]->chaveBusca)==0){
+            //o teste ((pos-1) >=0) deve ser feito para evitar segmentation fault caso 'pos' seja igual a zero
+            pos--; 
+        }    
+    }
+
+    return pos; //posição do primeiro registro que satisfaz a busca no vetor ou -1 caso nenhum satisfaça
 }

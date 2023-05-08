@@ -6,25 +6,27 @@
 #include "arq_dados.h"
 #include "arq_indice.h"
 
-#define MAX_NAME_ARQ 50
+#define MAX_NOME_ARQ 50
 
 int globalTipoDado;
 
 struct ArqDados{
-    char nomeArqDados[MAX_NAME_ARQ];
+    char nomeArqDados[MAX_NOME_ARQ];
     FILE *arqDados;
     cabecalho_t *cabecalhoDados;
 };
 
 struct ArqIndex{
-    char campoIndexado[MAX_NAME_ARQ];
-    char tipoDado[MAX_NAME_ARQ];
-    char nomeArqIndex[MAX_NAME_ARQ];
+    char campoIndexado[MAX_NOME_ARQ];
+    char tipoDado[MAX_NOME_ARQ];
+    char nomeArqIndex[MAX_NOME_ARQ];
+    int globalTipoDado;/*tu ja tem o campo tipo de dado mano*/
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
     dados_indx_int_t **vet_indx_int;
 };
+
 
 ArqDados_t *alocar_arq_dados(void){
     //Aloca o cabeçalho e o tipo ArqDados_t
@@ -111,6 +113,23 @@ void ler_tipoDado(ArqIndex_t *arq_index){
     }
 }
 
+void ler_cabecalho_arq_index(ArqIndex_t *arq_index){
+    //funcao que carrega na memoria primaria o registro de cabecalho de um arquivo de indice
+    arq_index->cabecalhoIndex = ler_index_cabecalho(arq_index->arqIndex);
+}
+
+void ler_dados_arq_index(ArqIndex_t *arq_index){
+    //funcao que carrega na memoria primaria os registros de dados de um arquivo de indice
+    if(ehInteiro(arq_index->campoIndexado)){
+        //se o campo for inteiro, preencho o vetor de dados inteiros
+        arq_index->vet_indx_int = ler_index_dado_int(arq_index->arqIndex,arq_index->cabecalhoIndex);
+    }else{
+        //se o campo nao for inteiro, entao ele eh string. Entao preencho o vetor de dados string
+        arq_index->vet_indx_str = ler_index_dado_str(arq_index->arqIndex,arq_index->cabecalhoIndex);
+    }
+}
+
+
 void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura){
     arq_dados->arqDados = fopen(arq_dados->nomeArqDados, tipo_leitura);
     if(arq_dados->arqDados == NULL){
@@ -154,7 +173,7 @@ void fechar_arq_index(ArqIndex_t *arq_index){
 }
 
 void ler_cabecalho_dados(ArqDados_t *arq_dados){
-    arq_dados->cabecalhoDados = ler_bin_cabecalho(arq_dados->arqDados);
+    arq_dados->cabecalhoDados = ler_dados_cabecalho(arq_dados->arqDados);
 }
 
 int ler_cabecalho_index(ArqIndex_t *arq_index){
@@ -196,10 +215,6 @@ int get_nroRegValidos(ArqDados_t *arq_dados){
     resultado += get_nroRegArq(arq_dados->cabecalhoDados);
     resultado -= get_nroRegRem(arq_dados->cabecalhoDados);
     return resultado;
-}
-
-char *getNomeArqIndex(ArqIndex_t *arq_index){
-    return arq_index->nomeArqIndex;
 }
 
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
@@ -350,4 +365,41 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     for(int cont = inicio; cont <= fim; ++cont){
         fncsEscreveIndx[globalTipoDado](arq_index->arqIndex, vet_indx, cont);    
     }
+}
+
+int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
+    /*Função que, se o vetor de nomes (lido da entrada da funcionalidade [4]) 
+    contiver o nome do campo indexado no arquivo de index, retorna o índice dessa string no vetor. 
+    Caso contrário, retorna -1.*/
+
+    /*Essa função determina se deve ser realizada 
+    busca binária no arquivo de index ou sequencial no de dados.*/
+
+    for(int i=0; i<m; i++){
+        if(strcmp(arq_index->campoIndexado,vet_nomes[i])==0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *vet_vals_int){
+    printf("Existe arquivo index\n");
+    if(strcmp(arq_index->tipoDado,"inteiro")==0){
+        printf("O campo indexado eh int\n");
+        printf("Quero buscar o valor %d\n",vet_vals_int[pos]);
+
+        int pos = busca_bin_int(arq_index->vet_indx_int,arq_index->cabecalhoIndex,vet_vals_int[pos]);
+        printf("manipulacao recebeu a pos %d\n",pos);
+    }else{
+        printf("O campo indexado eh string\n");
+        printf("Quero buscar o valor %s\n",vet_vals_str[pos]);
+        printf("vou mandar buscar\n");
+        int pos = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,vet_vals_str[pos]);
+        printf("manipulacao recebeu a pos %d\n",pos);
+    }
+}
+
+void busca_seq_dados(ArqDados_t *arq_dados, int m, char **vet_vals_str, int *vet_vals_int){
+    printf("Nao existe arquivo index\n");
 }

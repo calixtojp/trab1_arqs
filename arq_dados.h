@@ -49,6 +49,6 @@
 	void mostrar_campos(dados_t *registro);
 	void mostrar_campo_fixo(char cursor[], int tam_palavra);
 	void mostrar_campo_variavel(char *palavra);
-	cabecalho_t* ler_bin_cabecalho(FILE *arq_bin);
+	cabecalho_t* ler_dados_cabecalho(FILE *arq_bin);
 
 #endif
