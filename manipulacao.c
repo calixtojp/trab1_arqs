@@ -19,6 +19,7 @@ struct ArqIndex{
     char tipoDado[MAX_NOME_ARQ];
     char nomeArqIndex[MAX_NOME_ARQ];
     int qntReg;
+    int globalTipoDado;
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
@@ -47,6 +48,20 @@ ArqIndex_t *alocar_arq_index(void){
     arq_index_main->vet_indx_int = NULL;
     arq_index_main->vet_indx_str = NULL;
     return arq_index_main;
+}
+
+void *escolhe_vet_indx(ArqIndex_t *arq_index){
+    switch(arq_index->globalTipoDado){
+        case 0:
+            return arq_index->vet_indx_int;
+            break;
+        case 1:
+            return arq_index->vet_indx_str;
+            break;
+        default:
+            printf("globalTipoDado não foi configurado\n");
+            break;
+    }
 }
 
 void ler_nome_arq_dados(ArqDados_t *arq_dados){
@@ -161,8 +176,10 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     int tam;
     if(strcmp(arq_index->tipoDado, "inteiro") == 0){
         arq_index->vet_indx_int = aloc_vet_indx_DadoInt(nroRegValidos);
+        arq_index->globalTipoDado = 0;
     }else if(strcmp(arq_index->tipoDado, "string") == 0){
         arq_index->vet_indx_str = aloc_vet_indx_DadoStr(nroRegValidos);
+        arq_index->globalTipoDado = 1;
     }else{
         printf("Não tem esse tipo\n");
     }
@@ -262,27 +279,30 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg){
 
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     //Ordena o vetor de index carregado em RAM
-    printf("vetor antes:\n");
-    if(arq_index->vet_indx_int != NULL){
-        //Se o tipoIndexado é inteiro,
-        mostraVetInt(arq_index->vet_indx_int, qntd_reg);
-        ordenaVetIndex_int(arq_index->vet_indx_int, qntd_reg);
-        printf("vetor depois:\n");
-        mostraVetInt(arq_index->vet_indx_int, qntd_reg);
-    }else if(arq_index->vet_indx_str != NULL){
-        //Se o tipoIndexado é string,
-        mostraVetStr(arq_index->vet_indx_str, qntd_reg);
-        ordenaVetIndex_str(arq_index->vet_indx_str, qntd_reg);
-        printf("vetor depois:\n");
-        mostraVetStr(arq_index->vet_indx_str, qntd_reg);
-    }else{
-        printf("Ainda não foi alocado um vetor de registros\n");
-        exit(0);
-    }
+    typedef void (*FncOrdemTipo) (void*, int);
+    FncOrdemTipo fncs_ordena_vet_indx[] = {
+        ordenaVetIndex_int,
+        ordenaVetIndex_str
+    };
+
+    typedef void (*FncMostraTipo) (void*, int);
+    FncMostraTipo fncs_MostraVet[] = {
+        mostraVetInt,
+        mostraVetStr
+    }; 
+
+    void *vet_indx = malloc(sizeof(void));
+    vet_indx = escolhe_vet_indx(arq_index);
+
+    printf("antes de ordenar:\n");
+    fncs_MostraVet[arq_index->globalTipoDado](vet_indx, qntd_reg);
+
+    fncs_ordena_vet_indx[arq_index->globalTipoDado](vet_indx, qntd_reg);
+
+    printf("depois de ordenar:\n");
+    fncs_MostraVet[arq_index->globalTipoDado](vet_indx, qntd_reg);
 }
-
 /*
-
 typedef int (*FncTipoIndexado)(ArqIndex_t *arq_index);
 
 int tipoIndexado_int (ArqIndex_t *arq_index){
@@ -303,7 +323,7 @@ FncEscreve escreve;
 escreve = selecionaEscreve(arq_index);
 
 for(int cont = inicio; inicio <= fim; ++cont){
-    escreve(arq_index)
+    escreve(arq_index);
 }
 
 if(arq_index->vet_indx_int != NULL){
@@ -315,7 +335,9 @@ if(arq_index->vet_indx_int != NULL){
 }
 */
 
-/*void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
+
+/*
+void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário
 
     //Primeiro, escrevo que o status do arquivo de index é 
@@ -333,7 +355,8 @@ if(arq_index->vet_indx_int != NULL){
             escrevePija_str(arq_index->vet_indx_str, arq_index->arqIndex);
         }
     }
-}*/
+}
+*/
 
 int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
     /*Função que, se o vetor de nomes (lido da entrada da funcionalidade [4]) 

@@ -98,13 +98,15 @@ void mostraRegIndx_str(dados_indx_str_t *dado){
     printf("campoIndexado:%s|byte:%ld\n", dado->chaveBusca, dado->byteOffset);
 }
 
-void mostraVetInt(dados_indx_int_t **vet, int qntd_reg){
+void mostraVetInt(void *vet_generico, int qntd_reg){
+    dados_indx_int_t **vet = (dados_indx_int_t**)vet_generico;
     for(int i = 0; i < qntd_reg; ++i){
         mostraRegIndx_int(vet[i]);
     }
 }
 
-void mostraVetStr(dados_indx_str_t **vet, int qntd_reg){
+void mostraVetStr(void *vet_generico, int qntd_reg){
+    dados_indx_str_t **vet = (dados_indx_str_t**)vet_generico;
     for(int i = 0; i < qntd_reg; ++i){
         mostraRegIndx_str(vet[i]);
     }
@@ -124,12 +126,14 @@ int compara_str(const void *a, const void *b){
     return strcmp(str_a, str_b);
 }
 
-void ordenaVetIndex_int(dados_indx_int_t **vet, int qntd_reg){
-    qsort(vet, qntd_reg, sizeof(dados_indx_int_t*), compara_int);
+void ordenaVetIndex_int(void *vetor_generico, int qntd_reg){
+    dados_indx_int_t **vetor_real = (dados_indx_int_t**)vetor_generico;
+    qsort(vetor_real, qntd_reg, sizeof(dados_indx_int_t*), compara_int);
 }
 
-void ordenaVetIndex_str(dados_indx_str_t **vet, int qntd_reg){
-    qsort(vet, qntd_reg, sizeof(dados_indx_str_t*), compara_str);
+void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
+    dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor_generico;
+    qsort(vetor_real, qntd_reg, sizeof(dados_indx_str_t*), compara_str);
 }
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){

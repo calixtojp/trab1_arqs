@@ -23,10 +23,10 @@
     void copiaDadoIndex_str(dados_indx_str_t *destino, dados_indx_str_t *origem);
     void mostraRegIndx_int(dados_indx_int_t *dado);
     void mostraRegIndx_str(dados_indx_str_t *dado);
-    void mostraVetInt(dados_indx_int_t **vet, int qntd_reg);
-    void mostraVetStr(dados_indx_str_t **vet, int qntd_reg);
-    void ordenaVetIndex_int(dados_indx_int_t **vet, int qntd_reg);
-    void ordenaVetIndex_str(dados_indx_str_t **vet, int qntd_reg);
+    void mostraVetInt(void *vet_generico, int qntd_reg);
+    void mostraVetStr(void *vet_generico, int qntd_reg);
+    void ordenaVetIndex_int(void *vetor_generico, int qntd_reg);
+    void ordenaVetIndex_str(void *vetor_generico, int qntd_reg);
     void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho);
     int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave);
     int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave);
