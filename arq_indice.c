@@ -9,7 +9,7 @@
 #define TAM_DADO_INDX_STR 20
 #define TAM_DADO_INDX_INT 12
 
-//Cabeçalho do arquivo de index
+//Cabeçalho do arquivo de indice
 struct Cabecalho_indx{
     char status;
     int qtdReg;
