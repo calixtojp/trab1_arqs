@@ -74,7 +74,6 @@ void create_index(){
 
 //Funcionalidade [4]
 void where(void){
-	printf("entrei\n");
     //Aloca os tipos que serão usados
     ArqDados_t *arq_dados = alocar_arq_dados();
     erro(arq_dados);
@@ -94,6 +93,8 @@ void where(void){
     abrir_arq_index(arq_index, "rb");
 
     for(int i=1; i<=n; i++){
+
+        printf("Resposta para a busca %d\n",i);
 
     	int m;
     	scanf("%d",&m);
@@ -119,21 +120,26 @@ void where(void){
     		}
     	}
 
-    	for(int j=0; j<m; j++){
-    		printf("%d %s %s %d\n",m,vet_nomes[j],vet_vals_str[j],vet_vals_int[j]);
-    	}
+        int existe = existe_index(m,vet_nomes,arq_index);
+        /*Se existe arquivo de index para um dos campos a serem buscados,
+        a variável 'existe' recebe o indice do nome desse campo no vet_nomes.
+        Se não existe, a variável recebe -1.*/
+
+        if(existe >= 0 ){
+            /*se existe arquivo de index para um dos campos que se deseja 
+            buscar, faz-se busca binária no arquivo de index*/
+
+            busca_bin_index(arq_index,existe,vet_vals_str,vet_vals_int);
+
+        }else{
+            //se não, faz-se busca sequencial no arquivo de dados
+            busca_seq_dados(arq_dados,m,vet_vals_str,vet_vals_int);
+        }
 
 		//Desalocar tipos utilizados    	
 	    desalocar_vetor_string(vet_vals_str,m);
     	desalocar_vetor_string(vet_nomes,m);
     	free(vet_vals_int);
-
-	    
-
-    	//existe_index(m,vet_nomes, vet_vals);
-
-    	printf("Resposta para a busca %d\n",i);
-
     }
 
     //Desalocar tipos utilizados

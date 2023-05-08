@@ -285,3 +285,37 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
         
     }
 }
+
+int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
+    /*Função que, se o vetor de nomes (lido da entrada da funcionalidade [4]) 
+    contiver o nome do campo indexado no arquivo de index, retorna o índice dessa string no vetor. 
+    Caso contrário, retorna -1.*/
+
+    /*Essa função determina se deve ser realizada 
+    busca binária no arquivo de index ou sequencial no de dados.*/
+
+    for(int i=0; i<m; i++){
+        if(strcmp(arq_index->campoIndexado,vet_nomes[i])==0){
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+
+void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *vet_vals_int){
+    printf("Existe arquivo index\n");
+    if(strcmp(arq_index->tipoDado,"inteiro")==0){
+        printf("O campo indexado eh int\n");
+        printf("Quero buscar o valor %d\n",vet_vals_int[pos]);
+        busca_bin_int(arq_index->cabecalhoIndex);
+    }else{
+        printf("O campo indexado eh string\n");
+        printf("Quero buscar o valor %s\n",vet_vals_str[pos]);
+    }
+}
+
+void busca_seq_dados(ArqDados_t *arq_dados, int m, char **vet_vals_str, int *vet_vals_int){
+    printf("Nao existe arquivo index\n");
+}
