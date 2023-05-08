@@ -92,7 +92,7 @@ dados_indx_str_t **ler_index_dado_str(FILE *arq, cabecalho_indx_t *cabecalho){
         fread((vetor_dados[i]->chaveBusca),sizeof(char),TAM_CAMP_STR,arq);
         fread(&(vetor_dados[i]->byteOffset),sizeof(long int),1,arq);
     }
-
+    
     return vetor_dados;
 }
 
@@ -244,11 +244,11 @@ int busca_bin_rec_str(dados_indx_str_t **vetor, int ini, int fim, char *chave){
         printf("achei %s na posicao %d\n",chave,meio);
         return meio;
     }else if(strcmp(vetor[meio]->chaveBusca,chave)>0){//(vetor[meio]->chaveBusca) > chave
-        fim = meio;
+        fim = meio-1;
         printf("fim agr eh o meio\n");
         return busca_bin_rec_str(vetor, ini, fim, chave);
     }else{//(vetor[meio]->chaveBusca) < chave
-        ini = meio;
+        ini = meio+1;
         printf("ini agr eh o meio\n");
         return busca_bin_rec_str(vetor, ini, fim, chave);
     }
