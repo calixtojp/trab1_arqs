@@ -304,7 +304,7 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
 
 /*
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
-    int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário
+    int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário contrário
 
     //Primeiro, escrevo que o status do arquivo de index é 
     //positivo (ou "1")
