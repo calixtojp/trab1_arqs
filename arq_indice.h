@@ -12,8 +12,8 @@
     cabecalho_indx_t *alocar_cbl_indx(void);
     dados_indx_int_t *alocDadoIndxInt(void);
     dados_indx_str_t *alocDadoIndxStr(void);
-    dados_indx_int_t **aloc_vet_DadoInt(int nroRegValidos);
-    dados_indx_str_t **aloc_vet_DadoStr(int nroRegValidos);   
+    dados_indx_int_t **aloc_vet_indx_DadoInt(int nroRegValidos);
+    dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos);   
     char *alocarCampoIndexado(void);
     void setCabecalhoIndex(cabecalho_indx_t *cabecalho, const char status);
     void setDadoIndxInt(dados_indx_int_t *dado, long int byteOffSet, int valor);

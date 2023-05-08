@@ -18,6 +18,7 @@ struct ArqIndex{
     char campoIndexado[MAX_NAME_ARQ];
     char tipoDado[MAX_NAME_ARQ];
     char nomeArqIndex[MAX_NAME_ARQ];
+    int qntReg;
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
@@ -146,6 +147,10 @@ int get_nroRegValidos(ArqDados_t *arq_dados){
     return resultado;
 }
 
+void set_qtdReg(ArqIndex_t *arq_index, int qtdReg){
+    arq_index->qntReg = qtdReg;
+}
+
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     /*
             Aloca, na memória primária, um vetor que guardará os registros
@@ -155,10 +160,12 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
             Essa função leva em consideração o número de registros válidos 
         (que serão utilizados para indexação).
     */
+
+    int tam;
     if(strcmp(arq_index->tipoDado, "inteiro") == 0){
-        arq_index->vet_indx_int = aloc_vet_DadoInt(nroRegValidos);
+        arq_index->vet_indx_int = aloc_vet_indx_DadoInt(nroRegValidos);
     }else if(strcmp(arq_index->tipoDado, "string") == 0){
-        arq_index->vet_indx_str = aloc_vet_DadoStr(nroRegValidos);
+        arq_index->vet_indx_str = aloc_vet_indx_DadoStr(nroRegValidos);
     }else{
         printf("Não tem esse tipo\n");
     }
@@ -180,9 +187,9 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg){
     //Armazena o campo indexado (str) e o byteOffSet do mesmo
 
     //Aloco o tipo que será usado
-    if(strcmp(arq_index->tipoDado, "inteiro")==0){
+    if(arq_index->vet_indx_int != NULL){
         indexInt = alocDadoIndxInt();
-    }else if(strcmp(arq_index->tipoDado, "string")==0){
+    }else if(arq_index->vet_indx_str != NULL){
         indexStr = alocDadoIndxStr();
     }else{
         printf("tipo de dado não encontrado\n");
@@ -193,7 +200,7 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg){
     while(conseguiu_ler == 1){
         //Enquanto consegue ler
 
-        if(get_registro_removido(atual_reg) != 1){
+        if(get_registro_removido(atual_reg) == 0){
             //Se esse é um registro válido,
             liRegValido = 1;
 
@@ -235,14 +242,14 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg){
     printf("fiz a leitura do registro:\n");
     mostrar_campos(atual_reg);
 
-    if(indexInt != NULL){
+    if(arq_index->vet_indx_int != NULL){
         //Se o tipo de dado é inteiro...
         copiaDadoIndex_int(arq_index->vet_indx_int[pos_reg], indexInt);
         printf("campos do reg que li:\n");
         mostraRegIndx_int(indexInt);
         printf("campos do reg que colei:\n");
         mostraRegIndx_int(arq_index->vet_indx_int[pos_reg]);
-    }else if(indexStr != NULL){
+    }else if(arq_index->vet_indx_str != NULL){
         //Se o tipo de dado é string...
         copiaDadoIndex_str(arq_index->vet_indx_str[pos_reg], indexStr);
         printf("campos do reg que li:\n");
@@ -277,15 +284,56 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     }
 }
 
+/*
+
+typedef int (*FncTipoIndexado)(ArqIndex_t *arq_index);
+
+int tipoIndexado_int (ArqIndex_t *arq_index){
+    if(arq_index->vet_indx_int != NULL){
+        return 1;
+    }
+}
+
+int tipoIndexado_str (ArqIndex_t *arq_index){
+    if(arq_index->vet_indx_str != NULL){
+        return 1;
+    }
+}
+
+
+FncEscreve escreve;
+
+escreve = selecionaEscreve(arq_index);
+
+for(int cont = inicio; inicio <= fim; ++cont){
+    escreve(arq_index)
+}
+
+if(arq_index->vet_indx_int != NULL){
+    escreve = selecionaEscreve(inteiro)
+}else if(arq_index->vet_indx_str != NULL){
+    for(int cont = inicio; cont <= fim; ++cont){
+        escrevePija_str(arq_index->vet_indx_str, arq_index->arqIndex);
+    }
+}
+*/
+
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário
 
     //Primeiro, escrevo que o status do arquivo de index é 
-    //positivo (ou "1")
+    //positivo (ou '1')
     setCabealhoIndex(arq_index->cabecalhoIndex, '1');
     escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
 
-    for(int cont = inicio; inicio <= fim; ++cont){
-        
+
+    if(arq_index->vet_indx_int != NULL){
+        for(int cont = inicio; cont <= fim; ++cont){
+            escrevePija_int(arq_index->vet_indx_int, arq_index->arqIndex);
+        }
+    }else if(arq_index->vet_indx_str != NULL){
+        for(int cont = inicio; cont <= fim; ++cont){
+            escrevePija_str(arq_index->vet_indx_str, arq_index->arqIndex);
+        }
     }
 }

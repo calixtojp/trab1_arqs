@@ -29,6 +29,7 @@ void ler_cabecalho_dados(ArqDados_t *arq_dados);
 void mostrar_cabecalhoDados(ArqDados_t *arq_dados);
 void confere_arq_dados(ArqDados_t *arq_dados);
 int get_nroRegValidos(ArqDados_t *arq_dados);
+void set_qtdReg(ArqIndex_t *arq_index, int qtdReg);
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos);
 int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg);
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg);

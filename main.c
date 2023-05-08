@@ -63,17 +63,19 @@ void create_index(){
 
     //Com o os index carregados em RAM, faço a ordenação
     int qntd_registros = pos_reg-1;
+    set_qtdReg(arq_index, qntd_registros);
     ordenaVetIndex(arq_index, qntd_registros);
 
     //Com os dados ordenados, escrevo-os no arquivo de index
-    escreveVetIndex(arq_index, 0, qntd_registros-1);
+    // escreveVetIndex(arq_index, 0, qntd_registros-1);
+
+    //Fechar arquivos
+    fechar_arq_index(arq_index);
+    fechar_arq_dados(arq_dados);
 
     //Desalocar tipos utilizados
     desalocar_ArqDados(arq_dados);
     desalocar_ArqIndex(arq_index);
 
-    //Fechar arquivos
-    fechar_arq_index(arq_index);
-    fechar_arq_dados(arq_dados);
     printf("fechamento dos arquivos concluído\n");
 }

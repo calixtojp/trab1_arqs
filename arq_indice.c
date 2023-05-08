@@ -32,29 +32,29 @@ cabecalho_indx_t *alocar_cbl_indx(void){
 }
 
 dados_indx_int_t *alocDadoIndxInt(void){
-    dados_indx_int_t *indxDado = malloc(sizeof(dados_indx_int_t*));
+    dados_indx_int_t *indxDado = malloc(sizeof(dados_indx_int_t));
     return indxDado; 
 }
 
 dados_indx_str_t *alocDadoIndxStr(void){
-    dados_indx_str_t *indxDado = malloc(sizeof(dados_indx_str_t*));
+    dados_indx_str_t *indxDado = malloc(sizeof(dados_indx_str_t));
     return indxDado; 
 }
 
-dados_indx_int_t **aloc_vet_DadoInt(int nroRegValidos){
+dados_indx_int_t **aloc_vet_indx_DadoInt(int nroRegValidos){
     dados_indx_int_t **vet_retorno;
     vet_retorno = (dados_indx_int_t**)malloc(sizeof(dados_indx_int_t*) * nroRegValidos);
     for(int i = 0; i < nroRegValidos; ++i){
-        vet_retorno[i] = malloc(sizeof(dados_indx_int_t*));
+        vet_retorno[i] = malloc(sizeof(dados_indx_int_t));
     }
     return vet_retorno;
 }
 
-dados_indx_str_t **aloc_vet_DadoStr(int nroRegValidos){
+dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
     dados_indx_str_t **vet_retorno;
     vet_retorno = (dados_indx_str_t**)malloc(sizeof(dados_indx_str_t*) * nroRegValidos);
     for(int i = 0; i < nroRegValidos; ++i){
-        vet_retorno[i] = malloc(sizeof(dados_indx_str_t*));
+        vet_retorno[i] = malloc(sizeof(dados_indx_str_t));
     }
     return vet_retorno;
 }
@@ -72,6 +72,7 @@ void setDadoIndxInt(dados_indx_int_t *dado, long int byteOffSet, int valor){
     dado->byteOffset = byteOffSet;
     dado->chaveBusca = valor;
 }
+
 
 void setDadoIndxStr(dados_indx_str_t *dado, long int byteOffSet, char *valor){
     dado->byteOffset = byteOffSet;

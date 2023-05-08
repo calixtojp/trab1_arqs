@@ -43,7 +43,7 @@ void mostrar_cabecalho_dados(cabecalho_t *cabecalho){
 dados_t *alocar_dados(){
 	//função que aloca dinamicamente um registro de dados
 
-	dados_t *dados = (dados_t *) malloc(sizeof(dados_t)*1);
+	dados_t *dados = (dados_t *) malloc(sizeof(dados_t));
     erro(dados);
 
     return dados;
