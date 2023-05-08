@@ -28,5 +28,9 @@
     void ordenaVetIndex_int(dados_indx_int_t **vet, int qntd_reg);
     void ordenaVetIndex_str(dados_indx_str_t **vet, int qntd_reg);
     void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho);
+    int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave);
+    int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave);
+    int busca_bin_rec_str(dados_indx_str_t **vetor, int ini, int fim, char *chave);
+    int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave){
 
 #endif

@@ -136,6 +136,68 @@ void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
 }
 
-void busca_bin_int(cabecalho_indx_t *cabecalho){
+int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave){
+    if(ini > fim) return -1; //não foi encontrado
 
+    int meio = (ini+fim)/2;
+
+    if((vetor[meio]->chaveBusca)==chave){
+        printf("achei %d na posicao %d\n",chave,meio);
+        return meio;
+    }
+    else if((vetor[meio]->chaveBusca)>chave){
+        fim = meio;
+        return (vetor, ini, fim, chave);
+    }else{ //((vetor[meio]->chaveBusca)<chave)
+        ini = meio;
+        return (vetor, ini, fim, chave);
+    }
+}
+
+int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave){
+    int pos = busca_bin_rec_int(vetor,0,cabecalho->qtdReg,chave);
+    
+    if(pos != -1){
+        /*Como há campos que podem ter valores iguais, a busca binaria retorna a posição de um dos valores que satisfaz a busca.
+        No arquivo de index, esses valores estão ordenados, então quero o primeiro deles*/
+        while(((pos-1)>=0) && ((vetor[pos-1]->chaveBusca) == (vetor[pos]->chaveBusca))){
+            //o teste ((pos-1) >=0) deve ser feito para evitar segmentation fault caso 'pos' seja igual a zero
+            pos--; //posição do primeiro registro que satisfaz a busca no vetor
+            printf("recuei para %d\n",pos);
+        }
+    }
+    return pos; 
+}
+
+
+int busca_bin_rec_str(dados_indx_str_t **vetor, int ini, int fim, char *chave){
+    if(ini > fim) return -1;
+
+    int meio = (ini+fim)/2;
+
+    if(strcmp(vetor[meio]->chaveBusca,chave)==0){
+        printf("achei %s na posicao %d\n",chave,meio);
+        return meio;
+    }else if(strcmp(vetor[meio]->chaveBusca,chave)>0){//(vetor[meio]->chaveBusca) > chave
+        fim = meio;
+        return (vetor, ini, fim, chave);
+    }else{//(vetor[meio]->chaveBusca) < chave
+        ini = meio;
+        return (vetor, ini, fim, chave);
+    }
+}
+
+int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave){
+    int pos = busca_bin_rec_str(vetor,0,cabecalho->qtdReg,chave);
+    
+    if(pos != -1){
+        /*Como há campos que podem ter valores iguais, a busca binaria retorna a posição de um dos valores que satisfaz a busca.
+        No arquivo de index, esses valores estão ordenados, então quero o primeiro deles*/
+        while(((pos-1)>=0) && strcmp(vetor[pos-1]->chaveBusca, vetor[pos]->chaveBusca)==0){
+            //o teste ((pos-1) >=0) deve ser feito para evitar segmentation fault caso 'pos' seja igual a zero
+            pos--; 
+        }    
+    }
+
+    return pos; //posição do primeiro registro que satisfaz a busca no vetor ou -1 caso nenhum satisfaça
 }

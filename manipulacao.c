@@ -25,6 +25,7 @@ struct ArqIndex{
     dados_indx_int_t **vet_indx_int;
 };
 
+
 ArqDados_t *alocar_arq_dados(void){
     //Aloca o cabeçalho e o tipo ArqDados_t
 
@@ -314,7 +315,7 @@ if(arq_index->vet_indx_int != NULL){
 }
 */
 
-void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
+/*void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário
 
     //Primeiro, escrevo que o status do arquivo de index é 
@@ -332,7 +333,7 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
             escrevePija_str(arq_index->vet_indx_str, arq_index->arqIndex);
         }
     }
-}
+}*/
 
 int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
     /*Função que, se o vetor de nomes (lido da entrada da funcionalidade [4]) 
@@ -357,7 +358,8 @@ void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *v
     if(strcmp(arq_index->tipoDado,"inteiro")==0){
         printf("O campo indexado eh int\n");
         printf("Quero buscar o valor %d\n",vet_vals_int[pos]);
-        busca_bin_int(arq_index->cabecalhoIndex);
+        int pos = busca_bin_int(arq_index->vet_indx_int,arq_index->cabecalhoIndex,vet_vals_int[pos]);
+        printf("manipulacao recebeu a pos %d\n",pos);
     }else{
         printf("O campo indexado eh string\n");
         printf("Quero buscar o valor %s\n",vet_vals_str[pos]);
