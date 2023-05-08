@@ -303,40 +303,6 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
 }
 
 /*
-
-typedef int (*FncTipoIndexado)(ArqIndex_t *arq_index);
-
-int tipoIndexado_int (ArqIndex_t *arq_index){
-    if(arq_index->vet_indx_int != NULL){
-        return 1;
-    }
-}
-
-int tipoIndexado_str (ArqIndex_t *arq_index){
-    if(arq_index->vet_indx_str != NULL){
-        return 1;
-    }
-}
-
-
-FncEscreve escreve;
-
-escreve = selecionaEscreve(arq_index);
-
-for(int cont = inicio; inicio <= fim; ++cont){
-    escreve(arq_index)
-}
-
-if(arq_index->vet_indx_int != NULL){
-    escreve = selecionaEscreve(inteiro)
-}else if(arq_index->vet_indx_str != NULL){
-    for(int cont = inicio; cont <= fim; ++cont){
-        escrevePija_str(arq_index->vet_indx_str, arq_index->arqIndex);
-    }
-}
-*/
-
-/*
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     int escrevi = 1;//tem 1 se conseguiu escrever o dado, 0 caso contrário
 
