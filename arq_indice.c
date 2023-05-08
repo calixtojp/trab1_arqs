@@ -8,6 +8,7 @@
 //Cabeçalho do arquivo de index
 struct Cabecalho_indx{
     char status;
+    int qtdReg;
 };
 
 //Registro de dados do aquivo index se o campo
@@ -133,4 +134,8 @@ void ordenaVetIndex_str(dados_indx_str_t **vet, int qntd_reg){
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
+}
+
+void busca_bin_int(cabecalho_indx_t *cabecalho){
+
 }

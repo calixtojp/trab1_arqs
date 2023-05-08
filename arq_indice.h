@@ -1,5 +1,5 @@
 /*
-	Biblioteca que fornece ferramentas para utilizar
+	Biblioteca que fornece ferramentas para manipular
 	os arquivos de Índice.
 */
 
@@ -9,6 +9,7 @@
     typedef struct Cabecalho_indx cabecalho_indx_t;
     typedef struct Dados_indx_int dados_indx_int_t;
     typedef struct Dados_indx_str dados_indx_str_t;
+
     cabecalho_indx_t *alocar_cbl_indx(void);
     dados_indx_int_t *alocDadoIndxInt(void);
     dados_indx_str_t *alocDadoIndxStr(void);
