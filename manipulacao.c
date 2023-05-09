@@ -8,8 +8,6 @@
 
 #define MAX_NOME_ARQ 50
 
-int globalTipoDado;
-
 struct ArqDados{
     char nomeArqDados[MAX_NOME_ARQ];
     FILE *arqDados;
@@ -20,7 +18,7 @@ struct ArqIndex{
     char campoIndexado[MAX_NOME_ARQ];
     char tipoDado[MAX_NOME_ARQ];
     char nomeArqIndex[MAX_NOME_ARQ];
-    int globalTipoDado;/*tu ja tem o campo tipo de dado mano*/
+    int tipoDadoInt;/*tu ja tem o campo tipo de dado mano*/
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
@@ -52,7 +50,7 @@ ArqIndex_t *alocar_arq_index(void){
 }
 
 void *escolhe_vet_indx(ArqIndex_t *arq_index){
-    switch(globalTipoDado){
+    switch(arq_index->tipoDadoInt){
         case 0:
             return arq_index->vet_indx_int;
             break;
@@ -60,13 +58,13 @@ void *escolhe_vet_indx(ArqIndex_t *arq_index){
             return arq_index->vet_indx_str;
             break;
         default:
-            printf("globalTipoDado não foi configurado\n");
+            printf("arq_index->tipoDadoInt não foi configurado\n");
             break;
     }
 }
 
 void *escolhe_indx_dado(ArqIndex_t *arq_index){
-    switch(globalTipoDado){
+    switch(arq_index->tipoDadoInt){
         case 0:
             return alocDadoIndxInt();
             break;
@@ -74,7 +72,7 @@ void *escolhe_indx_dado(ArqIndex_t *arq_index){
             return alocDadoIndxStr();
             break;
         default:
-            printf("globalTipoDado não foi configurado\n");
+            printf("arq_index->tipoDadoInt não foi configurado\n");
             break;
     }
 }
@@ -151,6 +149,7 @@ void abrir_arq_index(ArqIndex_t *arq_index, const char *tipo_leitura){
         cabecalho_indx_t *cabecalho = alocar_cbl_indx();
         setCabecalhoIndex(cabecalho, '0', 0);
         escreveCabecalhoIndex(arq_index->arqIndex, cabecalho);
+        free(cabecalho);
     }
 } 
 
@@ -217,6 +216,10 @@ int get_nroRegValidos(ArqDados_t *arq_dados){
     return resultado;
 }
 
+char *getNomeArqIndex(ArqIndex_t *arq_index){
+    return arq_index->nomeArqIndex;
+}
+
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     /*
             Aloca, na memória primária, um vetor que guardará os registros
@@ -230,10 +233,10 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     int tam;
     if(strcmp(arq_index->tipoDado, "inteiro") == 0){
         arq_index->vet_indx_int = aloc_vet_indx_DadoInt(nroRegValidos);
-        globalTipoDado = 0;
+        arq_index->tipoDadoInt = 0;
     }else if(strcmp(arq_index->tipoDado, "string") == 0){
         arq_index->vet_indx_str = aloc_vet_indx_DadoStr(nroRegValidos);
-        globalTipoDado = 1;
+        arq_index->tipoDadoInt = 1;
     }else{
         printf("Não tem esse tipo\n");
     }
@@ -251,7 +254,7 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
     consegui_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
 
     while(consegui_ler==1 && liRegValido==0){
-        // printf("li o registro:\n");
+        printf("li o registro:\n");
         mostrar_campos(atual_reg);
 
         liRegValido = get_registro_removido(atual_reg);
@@ -264,16 +267,16 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
             byteOffSetCampIndx = *byteOffSetAnt;
             byteOffSetCampIndx += bytesAteCampoIndexado(atual_reg, arq_index->campoIndexado);
 
-            typedef void (*FncSetDado) (void*, long int, void*);
-            FncSetDado fncsSetDado[] = {
-                setDadoIndxInt,
-                setDadoIndxStr
-            };
-
             typedef void* (*FncGetCampo) (dados_t*, char*);
             FncGetCampo fncsGetCampo[] = {
                 getCampoInt,
                 getCampoStr
+            };
+
+            typedef void (*FncSetDado) (void*, long int, void*);
+            FncSetDado fncsSetDado[] = {
+                setDadoIndxInt,
+                setDadoIndxStr
             };
 
             typedef void (*FncSetVetIndx) (void*, int, void*);
@@ -285,12 +288,16 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
             void *dadoIndx = malloc(sizeof(void));
             void *vet_indx = malloc(sizeof(void));
             void *campoIndexado = malloc(sizeof(void));
+
             vet_indx = escolhe_vet_indx(arq_index);
             dadoIndx = escolhe_indx_dado(arq_index);
 
-            campoIndexado = fncsGetCampo[globalTipoDado](atual_reg, arq_index->campoIndexado);
-            fncsSetDado[globalTipoDado](dadoIndx, byteOffSetCampIndx, campoIndexado);
-            fncsSetVetIndx[globalTipoDado](vet_indx, posReg, dadoIndx);
+            //obtenho o campo indexado
+            campoIndexado = fncsGetCampo[arq_index->tipoDadoInt](atual_reg, arq_index->campoIndexado);
+            //escrevo os dados do campo indexado
+            fncsSetDado[arq_index->tipoDadoInt](dadoIndx, byteOffSetCampIndx, campoIndexado);
+            //escrevo o dado no vetor de index
+            fncsSetVetIndx[arq_index->tipoDadoInt](vet_indx, posReg, dadoIndx);
 
             //Depois de tudso dou return
             *byteOffSetAnt = *(byteOffSetAnt) + len_reg_dados(atual_reg);//IMPLEMENTAR
@@ -308,8 +315,6 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
         return 0;
     }
 }
-
-
 
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     //Ordena o vetor de index carregado em RAM
@@ -329,12 +334,12 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     vet_indx = escolhe_vet_indx(arq_index);
 
     printf("antes de ordenar:\n");
-    fncs_MostraVet[globalTipoDado](vet_indx, qntd_reg);
+    fncs_MostraVet[arq_index->tipoDadoInt](vet_indx, qntd_reg);
 
-    fncs_ordena_vet_indx[globalTipoDado](vet_indx, qntd_reg);
+    fncs_ordena_vet_indx[arq_index->tipoDadoInt](vet_indx, qntd_reg);
 
     printf("depois de ordenar:\n");
-    fncs_MostraVet[globalTipoDado](vet_indx, qntd_reg);
+    fncs_MostraVet[arq_index->tipoDadoInt](vet_indx, qntd_reg);
 }
 
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
@@ -346,14 +351,15 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     };
 
     int tamCabecalho = getTamCabecalhoIndx();
-    int tamDado = fncsGetTamDadoIndx[globalTipoDado]();
+    int tamDado = fncsGetTamDadoIndx[arq_index->tipoDadoInt]();
 
     fseek(
         arq_index->arqIndex,
-        tamCabecalho + inicio*tamDado,
+        tamCabecalho + (inicio*tamDado),
         SEEK_SET
     );
 
+    //escolho que tipo de dado será escrito
     void *vet_indx = malloc(sizeof(void));
     vet_indx = escolhe_vet_indx(arq_index);
     typedef void (*FncEscreveIndx) (FILE*, void*, int);
@@ -362,9 +368,21 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
         escreveVetIndx_str
     };
 
+    //escrevo efetivamente o dado
     for(int cont = inicio; cont <= fim; ++cont){
-        fncsEscreveIndx[globalTipoDado](arq_index->arqIndex, vet_indx, cont);    
+        fncsEscreveIndx[arq_index->tipoDadoInt](arq_index->arqIndex, vet_indx, cont);    
     }
+}
+
+void terminaEscritaIndex(ArqIndex_t *arq_index, int qtndReg){
+    //volto pára o início do arquivo e escrevo o cabeçalho final
+    setCabecalhoIndex(
+        arq_index->cabecalhoIndex,
+        '1',
+        qtndReg
+    );
+    fseek(arq_index->arqIndex, 0, SEEK_SET);
+    escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
 }
 
 int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
@@ -394,7 +412,8 @@ void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *v
         }
     }else{    
         //como, no arquivo de index, os valores sao todos truncados, deve-se tratar a chave de busca
-        char *chave = truncar(vet_vals_str[pos]);
+        char *chave;
+        // chave = truncar(vet_vals_str[pos]);
 
         int res = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,chave);
         if(res == -1){
@@ -409,4 +428,21 @@ void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *v
 
 void busca_seq_dados(ArqDados_t *arq_dados, int m, char **vet_vals_str, int *vet_vals_int){
     printf("Nao existe arquivo index\n");
+}
+
+int get_nroRegIndex(ArqIndex_t *arq_index){
+    return get_qtdReg(arq_index->cabecalhoIndex);
+}
+
+void mostrar_arq_index(ArqIndex_t *arq_index){
+    typedef void (*FncMostraTipo) (void*, int);
+    FncMostraTipo fncs_MostraVet[] = {
+        mostraVetInt,
+        mostraVetStr
+    }; 
+
+    void *vet_gen = malloc(sizeof(void));
+    vet_gen = escolhe_vet_indx(arq_index);
+
+    fncs_MostraVet[arq_index->tipoDadoInt](vet_gen, get_qtdReg(arq_index->cabecalhoIndex));
 }

@@ -7,6 +7,27 @@
 #define TAM_MAX_NOME 50
 #define TAM_MAX_VALOR 50
 
+//debug
+void debug(void){
+    //nomeArqIndx.bin tipoDado
+
+    ArqIndex_t *arq_index = alocar_arq_index();
+    ler_nome_arq_index(arq_index);
+    ler_tipoDado(arq_index);
+    abrir_arq_index(arq_index, "rb");
+    ler_cabecalho_arq_index(arq_index);
+    ler_dados_arq_index(arq_index);
+
+    int nroRegVal = get_nroRegIndex(arq_index);
+    printf("existem %d registros indexados\n", nroRegVal);
+
+    alocar_vet_index(arq_index, nroRegVal);
+    mostrar_arq_index(arq_index);
+
+    desalocar_ArqIndex(arq_index);
+    fechar_arq_index(arq_index);
+}
+
 //Funcionalidade [3]
 void create_index(){
 
@@ -21,19 +42,20 @@ void create_index(){
     ler_campoIndexado(arq_index);
     ler_tipoDado(arq_index);
     ler_nome_arq_index(arq_index);
-    // printf("leitura dos dados concluída\n");
+    printf("leitura dos dados concluída\n");
+    
 
     //Com os inputs armazenados, faço 
     //a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "rb");
     abrir_arq_index(arq_index, "wb");
-    // printf("abertura dos arquivos concluída\n");
+    printf("abertura dos arquivos concluída\n");
 
     //Ler o cabeçalho do arquivo de dados
     ler_cabecalho_dados(arq_dados);
 
     long int byteOffSetAtual;
-    byteOffSetAtual = getTamCabecalhoDados(arq_dados);
+    byteOffSetAtual = getTamCabecalhoDados(arq_dados) - 1;
 
     //Verificar consistência dos dados do arquivo
     confere_arq_dados(arq_dados);
@@ -58,20 +80,21 @@ void create_index(){
     ordenaVetIndex(arq_index, qntd_registros);
 
     //Com os dados ordenados, escrevo-os no arquivo de index
-    // escreveVetIndex(arq_index, 0, qntd_registros-1);
     escreveVetIndex(arq_index, 0, qntd_registros-1);
+    terminaEscritaIndex(arq_index, qntd_registros);
 
-    binarioNaTela(getNomeArqIndex(arq_index));
 
     //Fechar arquivos
     fechar_arq_index(arq_index);
     fechar_arq_dados(arq_dados);
 
+    binarioNaTela(getNomeArqIndex(arq_index));
+
     //Desalocar tipos utilizados
     desalocar_ArqDados(arq_dados);
     desalocar_ArqIndex(arq_index);
 
-    // printf("fechamento dos arquivos concluído\n");
+    printf("fechamento dos arquivos concluído\n");
 }
 
 //Funcionalidade [4]

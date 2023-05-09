@@ -151,7 +151,7 @@ char *truncar(char *original){
     //caso contrario, a string ja tem tamanho 12 e nao preciso fazer nada
 
     return truncado;
-}
+} 
 
 /* --- T0, ARRUMAR -------------------*/
 int tamanhoStr(char *string){

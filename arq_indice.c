@@ -64,14 +64,27 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
     return vet_retorno;
 }
 
-cabecalho_indx_t *ler_index_cabecalho(FILE *arq){
+cabecalho_indx_t *ler_index_cabecalho(FILE *arq){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
+    printf("entrei em ler_index_cabecalho\n");
 
 	cabecalho_indx_t *cabecalho_retorno = alocar_cbl_indx();
 
-    fread(&(cabecalho_retorno->status),sizeof(char),1,arq);
-    fread(&(cabecalho_retorno->qtdReg),sizeof(int),1,arq);
+    char status;
+    int qtdReg;
+    if(fread(&status,sizeof(char),1,arq)!=1){
+        printf("não consegui ler o status\n");
+    }
+
+    if(fread(&qtdReg,sizeof(int),1,arq)!=1){
+        printf("Não consegui ler a qtdReg\n");
+    }
+    
+    cabecalho_retorno->status = status;
+    cabecalho_retorno->qtdReg = qtdReg;
+
+    printf("status:%c|qtdReg:%d\n", cabecalho_retorno->status, cabecalho_retorno->qtdReg);
 	
 	return cabecalho_retorno;
 }
@@ -154,7 +167,7 @@ void setVetIndx_str(void *vet, int pos, void *dado){
     dados_indx_str_t *dado_real;
     vet_real = (dados_indx_str_t**)vet;
     dado_real = (dados_indx_str_t*)dado;
-    setDadoIndxInt(
+    setDadoIndxStr(
         vet_real[pos],
         dado_real->byteOffset,
         (dado_real->chaveBusca)
@@ -187,6 +200,10 @@ int getTamDadoIndx_int(void){
 
 int getTamDadoIndx_str(void){
     return TAM_DADO_INDX_STR;
+}
+
+int get_qtdReg(cabecalho_indx_t *cabecalho){
+    return cabecalho->qtdReg;
 }
 
 void mostraRegIndx_int(dados_indx_int_t *dado){
@@ -237,7 +254,7 @@ int compara_str(const void *a, const void *b){
 
     int diferenca = strcmp(str_a, str_b);
     if(diferenca == 0){
-        return byte_a - byte_b;
+        return 2;
     }else{
         diferenca;
     }
@@ -260,12 +277,16 @@ void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
 
 void escreveDadoIndx_int(FILE *arqIndex, void *dado){
     dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;
+    // printf("vou escrever o dado:");
+    // mostraRegIndx_int(dado_real);
     fwrite(&(dado_real->chaveBusca), sizeof(int), 1, arqIndex);
     fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
 }
 
 void escreveDadoIndx_str(FILE *arqIndex, void *dado){
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
+    // printf("vou escrever o dado:");
+    // mostraRegIndx_str(dado_real);
     fwrite((dado_real->chaveBusca), sizeof(char), TAM_CAMP_STR, arqIndex);
     fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
 }

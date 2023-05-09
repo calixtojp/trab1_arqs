@@ -1,9 +1,11 @@
 *.o
-arq
-/arquivos
-/casos_de_teste
 *.bin
 *.in
 *.out
+*.zip
 /.vscode
+/casos_de_teste
+/arquivos
+arq
 funcoesFornecidas.c
+testes.*

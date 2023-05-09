@@ -33,6 +33,10 @@ int main(){
         case 7:
             update();
             break;
+        case 8:
+            printf("func%d\n", funcionalidade);
+            debug();
+            break;
     }
 
     return 0;

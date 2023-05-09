@@ -97,17 +97,31 @@ void *getCampoInt(dados_t *dado, char *campo){
 }
 
 void *getCampoStr(dados_t *dado, char *campo){
+	int tam_max = 12;
+	char *retorno_char = malloc(sizeof(char)*(tam_max+1));
+	void *retorno = malloc(sizeof(void));
+	strcpy(retorno_char, "$$$$$$$$$$$$");
 	if(strcmp(campo, "dataCrime")==0){
-		return dado->dataCrime;
+		// return dado->dataCrime;
+		retorno = dado->dataCrime;
 	}else if(strcmp(campo, "marcaCelular")==0){
-		return dado->marcaCelular;
+		// return dado->marcaCelular;
+		retorno = dado->marcaCelular;
+	}else if(strcmp(campo, "lugarCrime")==0){
+		strncpy(retorno_char, dado->lugarCrime, tam_max);
+		retorno = retorno_char;
+	}else if(strcmp(campo, "descricaoCrime")==0){
+		strncpy(retorno_char, dado->descricaoCrime, tam_max);
+		retorno = retorno_char;
 	}else{
 		printf("ERRO: campo str não encontrado\n");
 	}
+
+	return retorno;
 }
 
 int bytesAteCampoIndexado(dados_t *reg, char *campo){
-	long int retorno = 0;
+	int retorno = 0;
 	retorno += 1;//Acrescento o byte do campo "removido"
 
 	if(strcmp(campo, "idCrime")==0){
@@ -131,7 +145,20 @@ int bytesAteCampoIndexado(dados_t *reg, char *campo){
 	if(strcmp(campo, "marcaCelular")==0){
 		return retorno;
 	}else{
-		printf("Erro na leitura do byteAteCampIndex\n");
+		retorno += 12;
+	}
+
+	if(strcmp(campo, "lugarCrime")==0){
+		return retorno;
+	}else{
+		retorno += strlen(reg->lugarCrime) + 1;
+	}
+
+	if(strcmp(campo, "descricaoCrime")==0){
+		return retorno;
+	}else{
+		printf("Erro em bytesAteCampoIndexado\n");
+		exit(0);
 	}
 }
 
