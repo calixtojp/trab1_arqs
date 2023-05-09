@@ -135,20 +135,28 @@ int ehInteiro(char *campo){
         return 0;//nao eh inteiro
     }
 }
+
 char *truncar(char *original){
+    //funcao que faz um string ter exatos 12 caracteres
     char *truncado = malloc(sizeof(char)*12);
-    strcpy(truncado,original);
-    int tam = strlen(truncado);
-    if(tam > 12){
+
+    int tam = strlen(original);
+
+    if(tam>=12){
         //se a string tem mais que 12 chars, entao armazeno só até o char 12
-        
-    }else if(tam < 12){
+        //se ela tem exatamente 12 chars, eu copio-os apenas
+        for(int i=0; i<12; i++){
+            truncado[i] = original[i];
+        }
+    }else if(tam<12){
         //se a string nao ocupa 12 chars, preenche-se com '$' até ter 12 chars
-        for(int i=tam;i<12;i++){
+        for(int i=0; i<tam; i++){
+            truncado[i] = original[i];
+        }
+        for(int i=tam; i<12; i++){
             truncado[i] = '$';
         }
     }
-    //caso contrario, a string ja tem tamanho 12 e nao preciso fazer nada
 
     return truncado;
 } 

@@ -401,22 +401,39 @@ int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
     return -1;
 }
 
-void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *vet_vals_int){
-    printf("Existe arquivo index\n");
+
+
+void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *vet_vals_int, int qtd_crit){
+
     if(strcmp(arq_index->tipoDado,"inteiro")==0){
+        //se o campo indexado for do tipo inteiro, faço uma busca binária para valores inteiros
+
         int res = busca_bin_int(arq_index->vet_indx_int,arq_index->cabecalhoIndex,vet_vals_int[pos]);
+        //'busca_bin_int' retorna a posição do primeiro registro que satisfaz o criterio de busca no vet_indx_int,
+        //caso nenhum satisfaça, retorna -1
+
         if(res == -1){
+            //como nao foi encontrado nenhum registro que satisfaz a busca, informo que o registro nao existe
             printf("Registro inexistente.\n");
         }else{
+            /*Como existe pelo menos 1 registro que satisfaz a busca, 
+            percorro o vet_indx_int para todos os registros que satisfazem o criterio de busca do campo indexado
+            e testo os outros criterios de busca*/
+            percorrer_vet_indx_int(arq_index->vet_indx_int, res, vet_vals_int, vet_vals_str, qtd_crit);
             printf("tenho que testar os outros criterios e printar as coisa\n");
         }
     }else{    
-        //como, no arquivo de index, os valores sao todos truncados, deve-se tratar a chave de busca
-        char *chave;
-        // chave = truncar(vet_vals_str[pos]);
+        //se o campo indexado nao for inteiro, entao é string. Assim, faço busca binária para strings
+
+        //como, no arquivo de index, as strings sao todas truncadas, deve-se tratar a chave de busca
+        char *chave = truncar(vet_vals_str[pos]);
 
         int res = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,chave);
+        //'busca_bin_str' retorna a posição do primeiro registro que satisfaz o criterio de busca no vet_indx_str,
+        //caso nenhum satisfaça, retorna -1
+
         if(res == -1){
+            //como nao foi encontrado nenhum registro que satisfaz a busca, informo que o registro nao existe
             printf("Registro inexistente.\n");
         }else{
             printf("tenho que testar os outros criterios e printar as coisa\n");
@@ -427,6 +444,7 @@ void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *v
 }
 
 void busca_seq_dados(ArqDados_t *arq_dados, int m, char **vet_vals_str, int *vet_vals_int){
+    
     printf("Nao existe arquivo index\n");
 }
 

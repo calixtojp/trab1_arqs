@@ -656,3 +656,40 @@ cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 
 	return cabecalho_retorno;
 }
+
+void acessar_ler_reg_dados(int byteOffset){
+	fseek(arq,byteOffset,SEEK_SET);
+	registro = ler_bin_registro();
+	testar_criterios(registro);
+}
+
+void testar_criterios(dados_t *reg_dados){
+
+	//se o registro está removido, ignoro ele
+	if(reg_dados->removido == '1'){
+		return;
+	}
+
+	//cada criterio, é um dos 6 campos do registro de dados (tirando o campo removido e o hashtag)
+	int criterios[6] = {1,1,1,1,1,1};
+
+	for(int i=0; i<m; i++){
+		if(strcmp(vet_nomes[i],"idCrime")){
+
+		}else if(strcmp(vet_nomes[i],"dataCrime")){
+
+		}else if(strcmp(vet_nomes[i],"numeroArtigo")){
+			
+		}else if(strcmp(vet_nomes[i],"marcaCelular")){
+			
+		}else if(strcmp(vet_nomes[i],"lugarCrime")){
+			
+		}else if(strcmp(vet_nomes[i],"descricaoCrime")){
+			
+		}
+	}
+
+	if(criterios[0] && criterios[1] && criterios[2] && criterios[3] && criterios[4] && criterios[5]){
+		//printar registro
+	}
+}
