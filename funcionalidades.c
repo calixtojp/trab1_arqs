@@ -125,15 +125,15 @@ void where(void){
     	}
 
         int existe = existe_index(m,vet_nomes,arq_index);
-        /*Se existe arquivo de index para um dos campos a serem buscados,
+        /*Se existe arquivo de indice para um dos campos a serem buscados,
         a variável 'existe' recebe o indice do nome desse campo no vet_nomes.
         Se não existe, a variável recebe -1.*/
 
         if(existe >= 0 ){
             /*se existe arquivo de index para um dos campos que se deseja 
-            buscar, faz-se busca binária no arquivo de index*/
+            buscar, faz-se busca binária no arquivo de indice*/
 
-            busca_bin_index(arq_index,existe,vet_vals_str,vet_vals_int);
+            busca_bin_index(arq_index,existe,vet_vals_str,vet_vals_int,m);
 
         }else{
             //se não, faz-se busca sequencial no arquivo de dados
