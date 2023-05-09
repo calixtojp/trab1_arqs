@@ -12,6 +12,8 @@
 	cabecalho_t *alocar_cabecalho_dados();
 	void mostrar_cabecalho_dados(cabecalho_t *cabecalho);
 	dados_t *alocar_dados();
+	dados_t **alocar_vet_dados(int n);
+	void desalocar_vet_dados(dados_t **vetor, int n);
 	void inicializar_cabecalho(cabecalho_t *cabecalho);
 	void arquivo_status(cabecalho_t *cabecalho,char status);
 	int get_nroRegArq(cabecalho_t *cabecalho);
@@ -48,5 +50,9 @@
 	void mostrar_campo_fixo(char cursor[], int tam_palavra);
 	void mostrar_campo_variavel(char *palavra);
 	cabecalho_t* ler_dados_cabecalho(FILE *arq_bin);
+	int testar_byteOffset(long int byteoffset, FILE *arq, char **vet_nomes, 
+	char **vet_vals_str, int *vet_vals_int, int qtd_crit, dados_t *registro);
+
+	void print_registros(dados_t **vetor_registros, int cont_reg_vet);
 
 #endif

@@ -197,17 +197,30 @@ int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave){
     }
 }
 
-int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave){
+int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave, int *qtd_reg_val){
     int pos = busca_bin_rec_int(vetor,0,cabecalho->qtdReg,chave);
+    //'busca_bin_rec_int' retorna a posição de algum registro que satisfaz o critério de busca, ou -1 caso nenhum satisfaça
     
-    if(pos != -1){
-        /*Como há campos que podem ter valores iguais, a busca binaria retorna a posição de um dos valores que satisfaz a busca.
-        No arquivo de index, esses valores estão ordenados, então quero o primeiro deles*/
-        while(((pos-1)>=0) && ((vetor[pos-1]->chaveBusca) == (vetor[pos]->chaveBusca))){
-            //o teste ((pos-1)>=0) deve ser feito para evitar segmentation fault caso 'pos' seja igual a zero
-            pos--; //posição do primeiro registro que satisfaz a busca no vetor
-        }
+    if(pos == -1){
+        //se nenhum registro satisfaz o critério, nao preciso fazer os tratamentos que ocorrem a seguir
+        return pos; 
     }
+
+    /*Como há campos que podem ter valores iguais, a busca binaria retorna a posição de um dos valores que satisfaz a busca.
+    No arquivo de index, esses valores estão ordenados, então quero o primeiro deles*/
+    while(((pos-1)>=0) && ((vetor[pos-1]->chaveBusca) == (vetor[pos]->chaveBusca))){
+        //o teste ((pos-1)>=0) deve ser feito para evitar segmentation fault caso 'pos' seja igual a zero
+        pos--; //posição do primeiro registro que satisfaz a busca no vetor
+    }
+    
+    //A partir do primeiro, conto quantos registros tem a mesma chave de busca e salvo essa info no qtd_reg_val
+    int pos_aux = pos;
+    do{
+        (*qtd_reg_val)++;
+        pos_aux++;
+    }while(vetor[pos_aux]->chaveBusca == vetor[pos_aux-1]->chaveBusca);
+    //enquanto a chave de busca do atual for igual a do que acabou de ser contado
+
     return pos; 
 }
 
@@ -246,11 +259,10 @@ int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *c
     return pos; //posição do primeiro registro que satisfaz a busca no vetor ou -1 caso nenhum satisfaça
 }
 
-void percorrer_vet_indx_int(dados_indx_int_t **vet_indx_int, int pos, int *vet_vals_int, char **vet_vals_str, int qtd_crit){
-    do{
-        acessar_testar(vet_indx_int[pos]->byteOffset, vet_vals_int, vet_vals_str, qtd_crit);
+long int get_byteOffset_int(dados_indx_int_t *registro){
+    return registro->byteOffset;
+}
 
-        pos++;
-    }while(vet_indx_int[pos]->chaveBusca == vet_indx_int[pos-1]->chaveBusca);
-    //enquanto o registro atual tiver a mesma chave daquele que acabou de ser processado
+long int get_byteOffset_str(dados_indx_str_t *registro){
+    return registro->byteOffset;
 }

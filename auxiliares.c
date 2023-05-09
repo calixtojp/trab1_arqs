@@ -137,7 +137,7 @@ int ehInteiro(char *campo){
 }
 
 char *truncar(char *original){
-    //funcao que faz um string ter exatos 12 caracteres
+    //funcao que faz uma string ter exatos 12 caracteres
     char *truncado = malloc(sizeof(char)*12);
 
     int tam = strlen(original);

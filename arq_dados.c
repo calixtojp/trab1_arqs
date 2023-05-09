@@ -49,6 +49,27 @@ dados_t *alocar_dados(){
     return dados;
 }
 
+dados_t **alocar_vet_dados(int n){
+	dados_t **vetor = malloc(n*sizeof(dados_t *));
+	erro(vetor);
+
+	for(int i=0; i<n; i++){
+		vetor[i] = alocar_dados();
+	}
+
+	return vetor;
+}
+
+void desalocar_vet_dados(dados_t **vetor, int n){
+	erro(vetor);
+
+	for(int i=0; i<n; i++){
+		desalocar_registro(vetor[i]);
+	}
+	free(vetor);
+}
+
+
 void inicializar_cabecalho(cabecalho_t *cabecalho){
 	//inicializa o cabeçalho para um arquivo binário que ainda não tem conteúdo
 	cabecalho->status = '0';
@@ -324,6 +345,7 @@ void sair_fechando(FILE *arq_bin){
 void desalocar_registro(dados_t *registro){
 	free(registro->descricaoCrime);
 	free(registro->lugarCrime);
+	free(registro);
 }
 
 char status_disponivel(cabecalho_t *cabecalho){
@@ -387,14 +409,12 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 	ler_bin_campos_fixos(arq_bin, registro, &chegou_fim);
 	if(chegou_fim != 0){
 		//Não conseguiu ler algum dos campos fixos
-		printf("não consegui ler algum dos campos fixos\n");
 		registro = NULL;
 		return 0;
 	}
 
 	ler_bin_campos_variaveis(arq_bin, registro, &chegou_fim);
 	if(chegou_fim != 0){
-		printf("não consegui ler algum dos campos variáveis\n");
 		//Não conseguiu ler algum dos campos variáveis
 		registro = NULL;
 		return 0;
@@ -402,7 +422,6 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 
 	//ler # no final
 	if(fread(&(registro->hashtag), sizeof(char), 1, arq_bin)!=1){
-		printf("não consegui ler a hashtag\n");
 		registro = NULL;
 		return 0;
 	}
@@ -613,39 +632,83 @@ cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 	return cabecalho_retorno;
 }
 
-void acessar_ler_reg_dados(int byteOffset){
-	fseek(arq,byteOffset,SEEK_SET);
-	registro = ler_bin_registro();
-	testar_criterios(registro);
-}
-
-void testar_criterios(dados_t *reg_dados){
+int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit){
 
 	//se o registro está removido, ignoro ele
 	if(reg_dados->removido == '1'){
-		return;
+		return 0;
 	}
 
-	//cada criterio, é um dos 6 campos do registro de dados (tirando o campo removido e o hashtag)
+	//cada criterio é um dos 6 campos do registro de dados (tirando o campo removido e o hashtag)
 	int criterios[6] = {1,1,1,1,1,1};
 
-	for(int i=0; i<m; i++){
-		if(strcmp(vet_nomes[i],"idCrime")){
+	//Para todos os criterios que vou testar, preciso descobrir o campo e qual a chave de busca
+	for(int i=0; i<qtd_crit; i++){
+		//se o valor do campo nao for igual à chave de busca, eu coloco 0 no criterio[i]
+		//se for igual, o criterio[i] já é 1, logo não faço nada
 
+		if(strcmp(vet_nomes[i],"idCrime")){
+			//como é do tipo int, eu olho o vet_vals_int
+			if(reg_dados->idCrime != vet_vals_int[i]){
+				criterios[0] = 0;
+			}
 		}else if(strcmp(vet_nomes[i],"dataCrime")){
+			//como é do tipo str, eu olho o vet_vals_str
+			if(strcmp(vet_vals_str[i],reg_dados->dataCrime)!=0){
+				criterios[1] = 0;
+			}
 
 		}else if(strcmp(vet_nomes[i],"numeroArtigo")){
+			//como é do tipo int, eu olho o vet_vals_int
+			if(reg_dados->numeroArtigo != vet_vals_int[i]){
+				criterios[2] = 0;
+			}
 			
 		}else if(strcmp(vet_nomes[i],"marcaCelular")){
-			
+			//como é do tipo str, eu olho o vet_vals_str
+			if(strcmp(vet_vals_str[i],reg_dados->marcaCelular)!=0){
+				criterios[3] = 0;
+			}
 		}else if(strcmp(vet_nomes[i],"lugarCrime")){
-			
+			//como é do tipo str, eu olho o vet_vals_str
+			if(strcmp(vet_vals_str[i],reg_dados->lugarCrime)!=0){
+				criterios[4] = 0;
+			}
 		}else if(strcmp(vet_nomes[i],"descricaoCrime")){
-			
+			//como é do tipo str, eu olho o vet_vals_str
+			if(strcmp(vet_vals_str[i],reg_dados->descricaoCrime)!=0){
+				criterios[5] = 0;
+			}
 		}
 	}
 
 	if(criterios[0] && criterios[1] && criterios[2] && criterios[3] && criterios[4] && criterios[5]){
-		//printar registro
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+int testar_byteOffset(long int byteoffset, FILE *arq, char **vet_nomes, 
+char **vet_vals_str, int *vet_vals_int, int qtd_crit, dados_t *registro){
+
+	fseek(arq,byteoffset,SEEK_SET);
+	ler_bin_registro(registro,arq);
+
+	if(testar_criterios(registro,vet_nomes,vet_vals_str,vet_vals_int,qtd_crit)){
+		return 1;
+	}else{
+		//se o registro nao satisfaz os criterios de busca, ele nao sera usado
+		//Assim, para nao vazar memória, ele deve ser desalocado
+		desalocar_registro(registro);
+		return 0;
+	}
+	
+}
+
+void print_registros(dados_t **vetor_registros, int cont_reg_vet){
+	//funcao que printa os campos de cada registro de um vetor de registros
+	for(int i=0; i<cont_reg_vet; i++){
+		mostrar_campos(vetor_registros[i]);
 	}
 }

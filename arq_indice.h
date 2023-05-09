@@ -20,7 +20,6 @@
     cabecalho_indx_t *ler_index_cabecalho(FILE *arq);
     dados_indx_int_t **ler_index_dado_int(FILE *arq, cabecalho_indx_t *cabecalho);
     dados_indx_str_t **ler_index_dado_str(FILE *arq, cabecalho_indx_t *cabecalho);
-    void percorrer_vet_indx_int(dados_indx_int_t **vet_indx_int, int pos, int *vet_vals_int, char **vet_vals_str, int qtd_crit);
     void setDadoIndxInt(dados_indx_int_t *dado, long int byteOffSet, int valor);
     void setDadoIndxStr(dados_indx_str_t *dado, long int byteOffSet, char *valor);
     void copiaDadoIndex_int(dados_indx_int_t *destino, dados_indx_int_t *origem);
@@ -32,9 +31,11 @@
     void ordenaVetIndex_int(void *vetor_generico, int qntd_reg);
     void ordenaVetIndex_str(void *vetor_generico, int qntd_reg);
     void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho);
-    int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave);
+    int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave, int *qtd_reg_val);
     int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave);
     int busca_bin_rec_str(dados_indx_str_t **vetor, int ini, int fim, char *chave);
     int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave);
+    long int get_byteOffset_int(dados_indx_int_t *registro);
+    long int get_byteOffset_str(dados_indx_str_t *registro);
  
 #endif

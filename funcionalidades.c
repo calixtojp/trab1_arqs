@@ -92,12 +92,11 @@ void where(void){
     abrir_arq_dados(arq_dados, "rb");
     abrir_arq_index(arq_index, "rb");
 
-
+    //Carrego o arquivo de indice na memoria primaria
     ler_cabecalho_arq_index(arq_index);
     ler_dados_arq_index(arq_index);
 
     for(int i=1; i<=n; i++){
-
         printf("Resposta para a busca %d\n",i);
 
     	int m;
@@ -133,7 +132,7 @@ void where(void){
             /*se existe arquivo de index para um dos campos que se deseja 
             buscar, faz-se busca binária no arquivo de indice*/
 
-            busca_bin_index(arq_index,existe,vet_vals_str,vet_vals_int,m);
+            busca_bin_index(arq_index,arq_dados,existe,vet_nomes,vet_vals_str,vet_vals_int,m);
 
         }else{
             //se não, faz-se busca sequencial no arquivo de dados
