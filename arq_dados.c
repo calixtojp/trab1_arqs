@@ -5,7 +5,7 @@
 #include "auxiliares.h"
 
 #define TAM_MAX_BUFFER_INT 10
-
+#define TAM_CABECALHO_DADOS 17
 struct Cabecalho{
 	char status;
 	long int proxByteOffset;
@@ -73,7 +73,7 @@ void desalocar_vet_dados(dados_t **vetor, int n){
 void inicializar_cabecalho(cabecalho_t *cabecalho){
 	//inicializa o cabeçalho para um arquivo binário que ainda não tem conteúdo
 	cabecalho->status = '0';
-	cabecalho->proxByteOffset = 17;
+	cabecalho->proxByteOffset = TAM_CABECALHO_DADOS;
 	cabecalho->nroRegArq = 0;
 	cabecalho->nroRegRem = 0;
 }
@@ -107,28 +107,53 @@ void getMarcaCelular(dados_t *dado, char *marcaDestino){
 	strcpy(marcaDestino, dado->marcaCelular);
 }
 
-int getCampoInt(dados_t *dado, char *campo){
+void *getCampoInt(dados_t *dado, char *campo){
 	if(strcmp(campo, "idCrime")==0){
-		return dado->idCrime;
+		return &(dado->idCrime);
 	}else if(strcmp(campo, "numeroArtigo")==0){
-		return dado->numeroArtigo;
+		return &(dado->numeroArtigo);
 	}else{
 		printf("ERRO: campo int não encontrado\n");
 	}
 }
 
-char *getCampoStr(dados_t *dado, char *campo){
+void *getCampoStr(dados_t *dado, char *campo){
+
 	if(strcmp(campo, "dataCrime")==0){
-		return dado->dataCrime;
+		return truncar(dado->dataCrime);
 	}else if(strcmp(campo, "marcaCelular")==0){
-		return dado->marcaCelular;
+		return truncar(dado->marcaCelular);
+	}else if(strcmp(campo, "lugarCrime")==0){
+		return truncar(dado->lugarCrime);
+	}else if(strcmp(campo, "descricaoCrime")==0){
+		return truncar(dado->descricaoCrime);
 	}else{
 		printf("ERRO: campo str não encontrado\n");
+	}
+
+}
+
+int campoNulo_int(void *campo_int){
+	int campo_real = *((int*)campo_int);
+	if(campo_real == -1){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+int campoNulo_str(void *campo_str){
+	char *campo_real = malloc(sizeof(char)*12);
+	campo_real = (char*)campo_str;
+	if(strcmp(campo_real, "$$$$$$$$$$$$")==0){
+		return 1;
+	}else{
+		return 0;
 	}
 }
 
 int bytesAteCampoIndexado(dados_t *reg, char *campo){
-	long int retorno = 0;
+	int retorno = 0;
 	retorno += 1;//Acrescento o byte do campo "removido"
 
 	if(strcmp(campo, "idCrime")==0){
@@ -152,8 +177,38 @@ int bytesAteCampoIndexado(dados_t *reg, char *campo){
 	if(strcmp(campo, "marcaCelular")==0){
 		return retorno;
 	}else{
-		printf("Erro na leitura do byteAteCampIndex\n");
+		retorno += 12;
 	}
+
+	if(strcmp(campo, "lugarCrime")==0){
+		return retorno;
+	}else{
+		retorno += strlen(reg->lugarCrime) + 1;
+	}
+
+	if(strcmp(campo, "descricaoCrime")==0){
+		return retorno;
+	}else{
+		printf("Erro em bytesAteCampoIndexado\n");
+		exit(0);
+	}
+}
+
+int len_reg_dados(dados_t *dado){
+	int contador = 0;
+	contador += sizeof(dado->removido);
+	contador += sizeof(dado->idCrime);
+	contador += strlen(dado->dataCrime)*(sizeof(char));
+	contador += sizeof(dado->numeroArtigo);
+	contador += strlen(dado->marcaCelular)*(sizeof(char));
+	contador += strlen(dado->lugarCrime)*(sizeof(char)) + 1;//+1 por conta do '|'
+	contador += strlen(dado->descricaoCrime)*(sizeof(char)) + 1;//+1 por conta do '|'
+	contador += sizeof(char);
+	return contador;	 
+}
+
+int len_cabecalho_dados(void){
+	return TAM_CABECALHO_DADOS;
 }
 
 void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd){

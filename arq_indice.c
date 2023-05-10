@@ -4,9 +4,12 @@
 #include "arq_indice.h"
 #include "auxiliares.h"
 
+#define TAM_CBCL_INDX 5
 #define TAM_CAMP_STR 12
+#define TAM_DADO_INDX_STR 20
+#define TAM_DADO_INDX_INT 12
 
-//Cabeçalho do arquivo de index
+//Cabeçalho do arquivo de indice
 struct Cabecalho_indx{
     char status;
     int qtdReg;
@@ -64,11 +67,24 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
 cabecalho_indx_t *ler_index_cabecalho(FILE *arq){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
+    printf("entrei em ler_index_cabecalho\n");
 
 	cabecalho_indx_t *cabecalho_retorno = alocar_cbl_indx();
 
-    fread(&(cabecalho_retorno->status),sizeof(char),1,arq);
-    fread(&(cabecalho_retorno->qtdReg),sizeof(int),1,arq);
+    char status;
+    int qtdReg;
+    if(fread(&status,sizeof(char),1,arq)!=1){
+        printf("não consegui ler o status\n");
+    }
+
+    if(fread(&qtdReg,sizeof(int),1,arq)!=1){
+        printf("Não consegui ler a qtdReg\n");
+    }
+    
+    cabecalho_retorno->status = status;
+    cabecalho_retorno->qtdReg = qtdReg;
+
+    printf("status:%c|qtdReg:%d\n", cabecalho_retorno->status, cabecalho_retorno->qtdReg);
 	
 	return cabecalho_retorno;
 }
@@ -102,30 +118,92 @@ char *alocarCampoIndexado(void){
     return vet_retorno;
 }
 
-void setCabecalhoIndex(cabecalho_indx_t *cabecalho, const char status){
+void setCabecalhoIndex(cabecalho_indx_t *cabecalho, const char status, int qtdReg){
     cabecalho->status = status;
+    cabecalho->qtdReg = qtdReg;
 }
 
+cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
+    cabecalho_indx_t *cabecalho = alocar_cbl_indx();
+	if(fread(&(cabecalho->status), sizeof(char), 1, arqIndex)!=1){
+		printf("Falha no processamento do arquivo.\n");
+		return NULL;
+	}
 
-void setDadoIndxInt(dados_indx_int_t *dado, long int byteOffSet, int valor){
-    dado->byteOffset = byteOffSet;
-    dado->chaveBusca = valor;
+	if(fread(&(cabecalho->qtdReg), sizeof(int), 1, arqIndex)!=1){
+		printf("Falha no processamento do arquivo.\n");
+		return NULL;
+	}
 }
 
-
-void setDadoIndxStr(dados_indx_str_t *dado, long int byteOffSet, char *valor){
-    dado->byteOffset = byteOffSet;
-    strcpy(dado->chaveBusca, valor);
+void setDadoIndxInt(void *dado, long int byteOffSet, void *valor){
+    dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;
+    int valor_real = *((int*)valor);
+    dado_real->byteOffset = byteOffSet;
+    dado_real->chaveBusca = valor_real;
 }
 
-void copiaDadoIndex_int(dados_indx_int_t *destino, dados_indx_int_t *origem){
-    destino->byteOffset = origem->byteOffset;
-    destino->chaveBusca = origem->chaveBusca;
+void setDadoIndxStr(void *dado, long int byteOffSet, void *valor){
+    dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
+    char *valor_real = (char*)valor;
+    dado_real->byteOffset = byteOffSet;
+    strcpy(dado_real->chaveBusca, valor_real);
 }
 
-void copiaDadoIndex_str(dados_indx_str_t *destino, dados_indx_str_t *origem){
-    destino->byteOffset = origem->byteOffset;
-    strcpy(destino->chaveBusca, origem->chaveBusca);
+void setVetIndx_int(void *vet, int pos, void *dado){
+    dados_indx_int_t **vet_real;
+    dados_indx_int_t *dado_real;
+    vet_real = (dados_indx_int_t**)vet;
+    dado_real = (dados_indx_int_t*)dado;
+    setDadoIndxInt(
+        vet_real[pos],
+        dado_real->byteOffset,
+        &(dado_real->chaveBusca)
+    );
+}
+
+void setVetIndx_str(void *vet, int pos, void *dado){
+    dados_indx_str_t **vet_real;
+    dados_indx_str_t *dado_real;
+    vet_real = (dados_indx_str_t**)vet;
+    dado_real = (dados_indx_str_t*)dado;
+    setDadoIndxStr(
+        vet_real[pos],
+        dado_real->byteOffset,
+        (dado_real->chaveBusca)
+    );
+}
+
+void copiaDadoIndex_int(void *destino, void *origem){
+    dados_indx_int_t *destino_real, *origem_real;
+    destino_real = (dados_indx_int_t*)destino;
+    origem_real = (dados_indx_int_t*)origem;
+    destino_real->byteOffset = origem_real->byteOffset;
+    destino_real->chaveBusca = origem_real->chaveBusca;
+}
+
+void copiaDadoIndex_str(void *destino, void *origem){
+    dados_indx_str_t *destino_real, *origem_real;
+    destino_real = (dados_indx_str_t*)destino;
+    origem_real = (dados_indx_str_t*)origem;
+    destino_real->byteOffset = origem_real->byteOffset;
+    strcpy(destino_real->chaveBusca, origem_real->chaveBusca);
+}
+
+int getTamCabecalhoIndx(void){
+    return TAM_CBCL_INDX;
+}
+
+int getTamDadoIndx_int(void){
+    return TAM_DADO_INDX_INT;
+}
+
+int getTamDadoIndx_str(void){
+    return TAM_DADO_INDX_STR;
+}
+
+int get_qtdReg(cabecalho_indx_t *cabecalho){
+    return cabecalho->qtdReg;
 }
 
 void mostraRegIndx_int(dados_indx_int_t *dado){
@@ -151,17 +229,45 @@ void mostraVetStr(void *vet_generico, int qntd_reg){
 }
 
 int compara_int(const void *a, const void *b){
-    int valor_a = (*((dados_indx_int_t**)a))->chaveBusca;
-    int valor_b = (*((dados_indx_int_t**)b))->chaveBusca;
-    return (valor_a - valor_b);
+    int valor_a, valor_b;
+    long int byte_a, byte_b;
+    valor_a = (*((dados_indx_int_t**)a))->chaveBusca;
+    valor_b = (*((dados_indx_int_t**)b))->chaveBusca;
+    byte_a = (*((dados_indx_int_t**)a))->byteOffset;
+    byte_b = (*((dados_indx_int_t**)b))->byteOffset;
+    
+    if(valor_a == valor_b){
+        return byte_a - byte_b;
+    }else{
+        return valor_a - valor_b;
+    }
 }
 
 int compara_str(const void *a, const void *b){
     char str_a[TAM_CAMP_STR];
     char str_b[TAM_CAMP_STR];
+    long int byte_a, byte_b;
+    byte_a = (*((dados_indx_int_t**)a))->byteOffset;
+    byte_b = (*((dados_indx_int_t**)b))->byteOffset;
     strcpy(str_a, (*((dados_indx_str_t**)a))->chaveBusca);
     strcpy(str_b, (*((dados_indx_str_t**)b))->chaveBusca);
-    return strcmp(str_a, str_b);
+
+    int cont=0;
+    char curs_a, curs_b;
+    do{
+        curs_a = str_a[cont];
+        curs_b = str_b[cont];
+        int result = curs_a - curs_b;
+        if(result != 0){
+            return result;
+        }else{
+            cont++;
+        }
+    }while(curs_a!='$' && curs_b!='$' && cont<12);
+
+    if(cont==0){
+        return byte_a - byte_b;
+    }
 }
 
 void ordenaVetIndex_int(void *vetor_generico, int qntd_reg){
@@ -176,6 +282,36 @@ void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
+    fwrite(&cabecalho->qtdReg,sizeof(int), 1, arqIndex);
+}
+
+void escreveDadoIndx_int(FILE *arqIndex, void *dado){
+    dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;
+    // printf("vou escrever o dado:");
+    // mostraRegIndx_int(dado_real);
+    fwrite(&(dado_real->chaveBusca), sizeof(int), 1, arqIndex);
+    fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
+}
+
+void escreveDadoIndx_str(FILE *arqIndex, void *dado){
+    dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
+    // printf("vou escrever o dado:");
+    // mostraRegIndx_str(dado_real);
+    fwrite((dado_real->chaveBusca), sizeof(char), TAM_CAMP_STR, arqIndex);
+    fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
+}
+
+void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos){
+    dados_indx_int_t **vet_real;
+    vet_real = (dados_indx_int_t**)vet_indx_int;
+    escreveDadoIndx_int(arqIndex, vet_real[pos]);
+}
+
+void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos){
+    dados_indx_str_t **vet_real;
+    vet_real = (dados_indx_str_t**)vet_indx_str;
+    escreveDadoIndx_str(arqIndex, vet_real[pos]);
+
 }
 
 int comparacao_vet_dados_indx_int(void *ponteiro, int pos1, int pos2){
@@ -311,54 +447,4 @@ long int get_byteOffset_str(void *ponteiro, int pos){
     //funcao que retorna o byteoffset de um registro dentro de um vetor de registros de dados de um arquivo de indice tipo string
     dados_indx_str_t **registro = (dados_indx_str_t **)ponteiro;
     return registro[pos]->byteOffset;
-}
-
-
-
-
-
-/*-----------------------------SO PRA GARANTIR---------------------------*/
-int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave){
-    if(ini > fim){
-        return -1; //não foi encontrado    
-    } 
-
-    int meio = (ini+fim)/2;
-
-    if((vetor[meio]->chaveBusca)==chave){
-        return meio;
-    }
-    else if((vetor[meio]->chaveBusca)>chave){
-        fim = meio-1;
-        return busca_bin_rec_int(vetor, ini, fim, chave);
-    }else{ //((vetor[meio]->chaveBusca)<chave)
-        ini = meio+1;
-        return busca_bin_rec_int(vetor, ini, fim, chave);
-    }
-}
-
-
-
-
-
-
-int busca_bin_rec_str(dados_indx_str_t **vetor, int ini, int fim, char *chave){
-    if(ini > fim){
-        return -1;
-    } 
-
-    int meio = (ini+fim)/2;
-
-    if(comparar_strings(vetor[meio]->chaveBusca,chave)==0){
-
-        return meio;
-    }else if(comparar_strings(vetor[meio]->chaveBusca,chave)>0){//(vetor[meio]->chaveBusca) > chave
-        fim = meio-1;
-
-        return busca_bin_rec_str(vetor, ini, fim, chave);
-    }else{//(vetor[meio]->chaveBusca) < chave
-        ini = meio+1;
-
-        return busca_bin_rec_str(vetor, ini, fim, chave);
-    }
 }
