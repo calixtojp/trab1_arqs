@@ -172,9 +172,6 @@ void where(void){
     pra poder passar no and com qualquer coisa (1 and A == A).
     Faço variaveis booleanas de verificacao de cada campo, e inicializo todas com 1.
     se um dos campos for uma das m chaves de busca da entrada, eu troco o 1 pela comparação*/
-
-
-
 }
 
 //Funcionalidade [5]

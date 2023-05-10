@@ -9,6 +9,8 @@
 	void desalocar_vetor_string(char **vetor, int n_elem);
 	int ehInteiro(char *campo);
 	char *truncar(char *original);
+	int comparar_strings(char *s1, char *s2);
+	int comparar_n_chars(char *s1, char *s2, int n);
 
 	/* --- T0, ARRUMAR -------------------*/
 	int tamanhoStr(char *string);

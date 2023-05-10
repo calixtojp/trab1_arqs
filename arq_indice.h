@@ -34,8 +34,8 @@
     int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave, int *qtd_reg_val);
     int busca_bin_rec_int(dados_indx_int_t **vetor, int ini, int fim, int chave);
     int busca_bin_rec_str(dados_indx_str_t **vetor, int ini, int fim, char *chave);
-    int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave);
-    long int get_byteOffset_int(dados_indx_int_t *registro);
-    long int get_byteOffset_str(dados_indx_str_t *registro);
+    int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave, int *qtd_reg_val);
+    long int get_byteOffset_int(void *ponteiro, int pos);
+    long int get_byteOffset_str(void *ponteiro, int pos);
  
 #endif

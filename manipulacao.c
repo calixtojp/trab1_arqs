@@ -352,12 +352,50 @@ int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
     return -1;
 }
 
+void percorrer_index(long int (*get_byteOffset)(void *,int), int pos_prim, int qtd_reg_val, void *vetor, 
+ArqDados_t *arq_dados,char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit){
 
+    if(pos_prim == -1){
+        //como nao foi encontrado nenhum registro que satisfaz a busca, informo que o registro nao existe
+        printf("Registro inexistente.\n");
+    }else{
+        /*Como existe pelo menos 1 registro que satisfaz a busca, percorro o vet_indx_int para todos os 
+        registros que satisfazem o criterio de busca do campo indexado e testo os outros criterios de busca*/
+
+        //vetor com todos os registros que serão printados. Inicialmente tem tamanho 1
+        dados_t **vetor_registros = alocar_vet_dados(1);
+        //contador de quantos elementos há no vetor de registros
+        int cont_reg_vet = 0;
+
+        for(int i=0; i<qtd_reg_val; i++){
+            //com a pos do primeiro e a qtd de registros, eu pego o byteoffset de todos eles
+            long int byteoffset = get_byteOffset(vetor,pos_prim+i);//PONTEIRO DE FUNCAO AQUI 2X
+            
+            //pra cada byteoffset, eu checo todos os criterios e retorno um registro de dados
+            dados_t *registro = alocar_dados();
+            if(testar_byteOffset(byteoffset, arq_dados->arqDados, vet_nomes, vet_vals_str, vet_vals_int, qtd_crit,registro)){
+                //se o registro satisfaz todos os criterios, adiciono ele no vetor de registros que serão printados 
+                vetor_registros = realloc(vetor_registros, (cont_reg_vet+1)*sizeof(dados_t *));
+                vetor_registros[cont_reg_vet] = registro;
+                cont_reg_vet++;
+            }
+        }
+
+        if(cont_reg_vet == 0){
+            //se apos testar os outros criterios, nenhum registro satisfaz a busca, informo que o registro nao existe
+            printf("Registro inexistente.\n");
+        }else{
+            //se o numero de registros que satisfaz a busca é pelo menos 1, printo ele
+            print_registros(vetor_registros,cont_reg_vet);
+            desalocar_vet_dados(vetor_registros,cont_reg_vet);
+        }
+    }
+}
 
 void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave, char **vet_nomes, 
 char **vet_vals_str, int *vet_vals_int, int qtd_crit){
-    printf("Existe arq index\n");
-    if(strcmp(arq_index->tipoDado,"inteiro")==0){
+
+    if(comparar_strings(arq_index->tipoDado,"inteiro")==0){
         //se o campo indexado for do tipo inteiro, faço uma busca binária para valores inteiros
 
         int qtd_reg_val = 0; //guarda o numero de registros que satisfazem o criterio de busca do arquivo de indice
@@ -367,53 +405,27 @@ char **vet_vals_str, int *vet_vals_int, int qtd_crit){
         //caso nenhum satisfaça, retorna -1
         //por referencia, passa o numero de registros que satisfazem o criterio de busca para 'qtd_reg_val'
 
-        if(pos_prim == -1){
-            //como nao foi encontrado nenhum registro que satisfaz a busca, informo que o registro nao existe
-            printf("Registro inexistente.\n");
-        }else{
-            /*Como existe pelo menos 1 registro que satisfaz a busca, percorro o vet_indx_int para todos os 
-            registros que satisfazem o criterio de busca do campo indexado e testo os outros criterios de busca*/
+        //com a posição do primeiro e o numero de registros, percorro o vetor vet_indx_int
+        percorrer_index(get_byteOffset_int,pos_prim,qtd_reg_val,arq_index->vet_indx_int,arq_dados,
+        vet_nomes,vet_vals_str,vet_vals_int,qtd_crit);
 
-            //vetor com todos os registros que serão printados. Inicialmente tem tamanho 1
-            dados_t **vetor_registros = alocar_vet_dados(1);
-            //contador de quantos elementos há no vetor de registros
-            int cont_reg_vet = 0;
-
-            for(int i=0; i<qtd_reg_val; i++){
-                //com a pos do primeiro e a qtd de registros, eu pego o byteoffset de todos eles
-                long int byteoffset = get_byteOffset_int(arq_index->vet_indx_int[pos_prim+i]);
-
-                //pra cada byteoffset, eu checo todos os criterios e retorno um registro de dados
-                dados_t *registro = alocar_dados();
-                if(testar_byteOffset(byteoffset, arq_dados->arqDados, vet_nomes, vet_vals_str, vet_vals_int, qtd_crit,registro)){
-                    //se o registro satisfaz todos os criterios, adiciono ele no vetor de registros que serão printados 
-                    vetor_registros = realloc(vetor_registros, cont_reg_vet+1);
-                    vetor_registros[cont_reg_vet] = registro;
-                    cont_reg_vet++;
-                }
-            }
-
-            print_registros(vetor_registros,cont_reg_vet);
-            desalocar_vet_dados(vetor_registros,cont_reg_vet);
-        }
     }else{    
         //se o campo indexado nao for inteiro, entao é string. Assim, faço busca binária para strings
+
+        int qtd_reg_val = 0; //guarda o numero de registros que satisfazem o criterio de busca do arquivo de indice
 
         //como, no arquivo de index, as strings sao todas truncadas, deve-se tratar a chave de busca
         char *chave = truncar(vet_vals_str[pos_chave]);
 
-        int res = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,chave);
+        int pos_prim = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,chave,&qtd_reg_val);
+        free(chave);
         //'busca_bin_str' retorna a posição do primeiro registro que satisfaz o criterio de busca no vet_indx_str,
         //caso nenhum satisfaça, retorna -1
+        //por referencia, passa o numero de registros que satisfazem o criterio de busca para 'qtd_reg_val'
 
-        if(res == -1){
-            //como nao foi encontrado nenhum registro que satisfaz a busca, informo que o registro nao existe
-            printf("Registro inexistente.\n");
-        }else{
-            printf("tenho que testar os outros criterios e printar as coisa\n");
-        }
-        
-        free(chave);
+         //com a posição do primeiro e o numero de registros, percorro o vetor vet_indx_str
+        percorrer_index(get_byteOffset_str,pos_prim,qtd_reg_val,arq_index->vet_indx_str,arq_dados,
+        vet_nomes,vet_vals_str,vet_vals_int,qtd_crit);
     }
 }
 

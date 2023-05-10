@@ -161,6 +161,36 @@ char *truncar(char *original){
     return truncado;
 } 
 
+int comparar_n_chars(char *s1, char *s2, int n){
+    //função que compara, char a char, os primeiros n caracteres de duas strings e retorna 0 se são iguais 
+    //Se sao diferentes, retorna a diferença entre os dois primeiros caracteres diferentes
+    int i=0;
+    do{
+        if(s1[i] != s2[i]){
+            return s1[i]-s2[i];
+         
+        }
+        i++;
+    }while(i<12);
+    
+    return 0;
+}
+
+int comparar_strings(char *s1, char *s2){
+    //função que compara, char a char, duas strings e retorna 0 se são iguais 
+    //Se sao diferentes, retorna a diferença entre os dois primeiros caracteres diferentes
+    int i=0;
+    do{
+        if(s1[i] != s2[i]){
+            return s1[i]-s2[i];
+         
+        }
+        i++;
+    }while(s1[i]!='\0' && s2[i]!='\0');
+    
+    return 0;
+}
+
 /* --- T0, ARRUMAR -------------------*/
 int tamanhoStr(char *string){
     int tamanho = 0;

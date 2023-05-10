@@ -578,10 +578,10 @@ void mostrar_campos(dados_t *registro){
 	printf("\n");
 }
 
-void mostrar_campo_fixo(char cursor[], int tam_palavra){
+void mostrar_campo_fixo(char *cursor, int tam_palavra){
 	int letras_validas = 0;//indica a quantidade de letras válidas de uma palavra
 
-	while(cursor[letras_validas] != '$' && (letras_validas < tam_palavra)){
+	while((cursor[letras_validas] != '$') && (letras_validas < tam_palavra)){
 		printf("%c", cursor[letras_validas]);
 		letras_validas++;
 	}
@@ -643,45 +643,46 @@ int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, 
 	int criterios[6] = {1,1,1,1,1,1};
 
 	//Para todos os criterios que vou testar, preciso descobrir o campo e qual a chave de busca
-	for(int i=0; i<qtd_crit; i++){
+	for(int i=0; i<qtd_crit; i++){	
 		//se o valor do campo nao for igual à chave de busca, eu coloco 0 no criterio[i]
 		//se for igual, o criterio[i] já é 1, logo não faço nada
 
-		if(strcmp(vet_nomes[i],"idCrime")){
+		if(comparar_strings(vet_nomes[i],"idCrime")==0){
 			//como é do tipo int, eu olho o vet_vals_int
 			if(reg_dados->idCrime != vet_vals_int[i]){
 				criterios[0] = 0;
 			}
-		}else if(strcmp(vet_nomes[i],"dataCrime")){
+		}else if(comparar_strings(vet_nomes[i],"dataCrime")==0){
 			//como é do tipo str, eu olho o vet_vals_str
-			if(strcmp(vet_vals_str[i],reg_dados->dataCrime)!=0){
+			if(comparar_strings(reg_dados->dataCrime,vet_vals_str[i])!=0){
 				criterios[1] = 0;
 			}
 
-		}else if(strcmp(vet_nomes[i],"numeroArtigo")){
+		}else if(comparar_strings(vet_nomes[i],"numeroArtigo")==0){
 			//como é do tipo int, eu olho o vet_vals_int
 			if(reg_dados->numeroArtigo != vet_vals_int[i]){
 				criterios[2] = 0;
 			}
 			
-		}else if(strcmp(vet_nomes[i],"marcaCelular")){
+		}else if(comparar_strings(vet_nomes[i],"marcaCelular")==0){
 			//como é do tipo str, eu olho o vet_vals_str
-			if(strcmp(vet_vals_str[i],reg_dados->marcaCelular)!=0){
+			if(comparar_strings(reg_dados->marcaCelular,vet_vals_str[i])!=0){
 				criterios[3] = 0;
 			}
-		}else if(strcmp(vet_nomes[i],"lugarCrime")){
+		}else if(comparar_strings(vet_nomes[i],"lugarCrime")==0){
 			//como é do tipo str, eu olho o vet_vals_str
-			if(strcmp(vet_vals_str[i],reg_dados->lugarCrime)!=0){
+			if(comparar_strings(reg_dados->lugarCrime,vet_vals_str[i])!=0){
 				criterios[4] = 0;
 			}
-		}else if(strcmp(vet_nomes[i],"descricaoCrime")){
+		}else if(comparar_strings(vet_nomes[i],"descricaoCrime")==0){
 			//como é do tipo str, eu olho o vet_vals_str
-			if(strcmp(vet_vals_str[i],reg_dados->descricaoCrime)!=0){
+			if(comparar_strings(reg_dados->descricaoCrime,vet_vals_str[i])!=0){
 				criterios[5] = 0;
 			}
 		}
 	}
-
+	
+	//se satisfaz todos os criterios, retorno 1. Se nao satisfaz pelo menos 1 deles, retorno 0
 	if(criterios[0] && criterios[1] && criterios[2] && criterios[3] && criterios[4] && criterios[5]){
 		return 1;
 	}else{
