@@ -246,72 +246,77 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
     dados_t *atual_reg = alocar_dados();
     int liRegValido=0;//0 até que se prove o contrário
     int consegui_ler;
-    long int byteOffSetCampIndx;//byteOffSet do campo indexado
-    
-    //Faço loop enquanto conseguir ler (não cheguei no fim do arquivo)
-    //e enquanto não li um registro válido (pois devo pular registros removidos)
 
+    //tipo de dado que será usado (int ou str)
+    int tipDado = arq_index->tipoDadoInt;
+ 
     consegui_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
+    while(consegui_ler){
+        //Se consegui ler, devo conferir se esse é um registro
+        //indexável - isto é, não removido e com campo válido.
 
-    while(consegui_ler==1 && liRegValido==0){
-        printf("li o registro:\n");
-        mostrar_campos(atual_reg);
+        int eh_removido = get_registro_removido(atual_reg); 
+        typedef int (*FncCampoNulo) (void*);
+        FncCampoNulo fncsCampoNulo[] = {
+            campoNulo_int,
+            campoNulo_str
+        };
+        typedef void* (*FncGetCampoIndexIndexado) (dados_t*, char*);
+        FncGetCampoIndexIndexado fncsGetCampo[] = {
+            getCampoInt,
+            getCampoStr
+        };
 
-        liRegValido = get_registro_removido(atual_reg);
-        // printf("liRegValido:%d\n",liRegValido);
-        if(liRegValido == 0){
-            printf("esse era um registro válido\n");
+        void *campoIndexado = malloc(sizeof(void));
+        int eh_campo_nulo;
 
-            //byteOffSet do campo indexado = 
-            //byteOffSet do inicio do registro + bytes até o campo indexado
-            byteOffSetCampIndx = *byteOffSetAnt;
-            byteOffSetCampIndx += bytesAteCampoIndexado(atual_reg, arq_index->campoIndexado);
+        //obtenho o campo indexado (int ou str)
+        campoIndexado = fncsGetCampo[tipDado](atual_reg, arq_index->campoIndexado);
 
-            typedef void* (*FncGetCampo) (dados_t*, char*);
-            FncGetCampo fncsGetCampo[] = {
-                getCampoInt,
-                getCampoStr
-            };
+        //sejo se o campo é nulo ou não
+        eh_campo_nulo = fncsCampoNulo[tipDado](campoIndexado);
 
-            typedef void (*FncSetDado) (void*, long int, void*);
-            FncSetDado fncsSetDado[] = {
+        if(eh_removido || eh_campo_nulo){
+            //Se não é um registro indexável, tento ler o próximo
+            *byteOffSetAnt = (*byteOffSetAnt) + len_reg_dados(atual_reg);
+            consegui_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
+        }else{
+            //Se consegui ler, devo indexá-lo
+            liRegValido=1;
+
+            //Crio o dado
+            void *dadoIndexado = malloc(sizeof(void));
+            void *vetIndx = malloc(sizeof(void));
+
+            typedef void (*FncSetDadoIndx) (void*, long int, void*);
+            FncSetDadoIndx fncsSetDadoIndx[] = {
                 setDadoIndxInt,
                 setDadoIndxStr
             };
-
             typedef void (*FncSetVetIndx) (void*, int, void*);
             FncSetVetIndx fncsSetVetIndx[] = {
                 setVetIndx_int,
                 setVetIndx_str
             };
 
-            void *dadoIndx = malloc(sizeof(void));
-            void *vet_indx = malloc(sizeof(void));
-            void *campoIndexado = malloc(sizeof(void));
+            //escolho entre dado e o vetor para int ou str
+            dadoIndexado = escolhe_indx_dado(arq_index);
+            vetIndx = escolhe_vet_indx(arq_index);
 
-            vet_indx = escolhe_vet_indx(arq_index);
-            dadoIndx = escolhe_indx_dado(arq_index);
+            //escrevo as informações (campo indexado e byteOffSet)
+            fncsSetDadoIndx[tipDado](dadoIndexado, *byteOffSetAnt, campoIndexado); 
 
-            //obtenho o campo indexado
-            campoIndexado = fncsGetCampo[arq_index->tipoDadoInt](atual_reg, arq_index->campoIndexado);
-            //escrevo os dados do campo indexado
-            fncsSetDado[arq_index->tipoDadoInt](dadoIndx, byteOffSetCampIndx, campoIndexado);
-            //escrevo o dado no vetor de index
-            fncsSetVetIndx[arq_index->tipoDadoInt](vet_indx, posReg, dadoIndx);
+            //agora escrevo o dado no vetor em RAM
+            fncsSetVetIndx[tipDado](vetIndx, posReg, dadoIndexado);
 
-            //Depois de tudso dou return
-            *byteOffSetAnt = *(byteOffSetAnt) + len_reg_dados(atual_reg);//IMPLEMENTAR
+            //agora incremento o contador de byteOffSet
+            *byteOffSetAnt += len_reg_dados(atual_reg);
+            //Como a escrita ocorreu bem, retorno 1
             return 1;
         }
-
-        //DEIXAR POR ÚLTIMO
-        *byteOffSetAnt = *(byteOffSetAnt) + len_reg_dados(atual_reg);//IMPLEMENTAR
-        consegui_ler = ler_bin_registro(atual_reg, arq_dados->arqDados);
     }
 
-    if(liRegValido == 0){
-        //Significa que passei pelo arquivo de dados até o fim e
-        //não consegui ler 
+    if(liRegValido == 0){//significa que não li nenhum registro indexável
         return 0;
     }
 }
@@ -333,13 +338,13 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     void *vet_indx = malloc(sizeof(void));
     vet_indx = escolhe_vet_indx(arq_index);
 
-    printf("antes de ordenar:\n");
-    fncs_MostraVet[arq_index->tipoDadoInt](vet_indx, qntd_reg);
+    // printf("antes de ordenar:\n");
+    // fncs_MostraVet[arq_index->tipoDadoInt](vet_indx, qntd_reg);
 
     fncs_ordena_vet_indx[arq_index->tipoDadoInt](vet_indx, qntd_reg);
 
-    printf("depois de ordenar:\n");
-    fncs_MostraVet[arq_index->tipoDadoInt](vet_indx, qntd_reg);
+    // printf("depois de ordenar:\n");
+    // fncs_MostraVet[arq_index->tipoDadoInt](vet_indx, qntd_reg);
 }
 
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
@@ -419,7 +424,7 @@ void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *v
             /*Como existe pelo menos 1 registro que satisfaz a busca, 
             percorro o vet_indx_int para todos os registros que satisfazem o criterio de busca do campo indexado
             e testo os outros criterios de busca*/
-            percorrer_vet_indx_int(arq_index->vet_indx_int, res, vet_vals_int, vet_vals_str, qtd_crit);
+            // percorrer_vet_indx_int(arq_index->vet_indx_int, res, vet_vals_int, vet_vals_str, qtd_crit);
             printf("tenho que testar os outros criterios e printar as coisa\n");
         }
     }else{    

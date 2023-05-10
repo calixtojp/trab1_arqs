@@ -22,6 +22,8 @@
 	void getMarcaCelular(dados_t *dado, char *marcaDestino);
 	void *getCampoInt(dados_t *dado, char *campo);
 	void *getCampoStr(dados_t *dado, char *campo);
+	int campoNulo_int(void *campo_int);
+	int campoNulo_str(void *campo_str);
 	int bytesAteCampoIndexado(dados_t *reg, char *campo);
 	int len_reg_dados(dados_t *dado);
 	int len_cabecalho_dados(void);

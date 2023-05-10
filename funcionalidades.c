@@ -42,20 +42,20 @@ void create_index(){
     ler_campoIndexado(arq_index);
     ler_tipoDado(arq_index);
     ler_nome_arq_index(arq_index);
-    printf("leitura dos dados concluída\n");
+    // printf("leitura dos dados concluída\n");
     
 
     //Com os inputs armazenados, faço 
     //a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "rb");
     abrir_arq_index(arq_index, "wb");
-    printf("abertura dos arquivos concluída\n");
+    // printf("abertura dos arquivos concluída\n");
 
     //Ler o cabeçalho do arquivo de dados
     ler_cabecalho_dados(arq_dados);
 
     long int byteOffSetAtual;
-    byteOffSetAtual = getTamCabecalhoDados(arq_dados) - 1;
+    byteOffSetAtual = getTamCabecalhoDados(arq_dados);
 
     //Verificar consistência dos dados do arquivo
     confere_arq_dados(arq_dados);
@@ -83,7 +83,6 @@ void create_index(){
     escreveVetIndex(arq_index, 0, qntd_registros-1);
     terminaEscritaIndex(arq_index, qntd_registros);
 
-
     //Fechar arquivos
     fechar_arq_index(arq_index);
     fechar_arq_dados(arq_dados);
@@ -94,7 +93,7 @@ void create_index(){
     desalocar_ArqDados(arq_dados);
     desalocar_ArqIndex(arq_index);
 
-    printf("fechamento dos arquivos concluído\n");
+    // printf("fechamento dos arquivos concluído\n");
 }
 
 //Funcionalidade [4]

@@ -252,11 +252,21 @@ int compara_str(const void *a, const void *b){
     strcpy(str_a, (*((dados_indx_str_t**)a))->chaveBusca);
     strcpy(str_b, (*((dados_indx_str_t**)b))->chaveBusca);
 
-    int diferenca = strcmp(str_a, str_b);
-    if(diferenca == 0){
-        return 2;
-    }else{
-        diferenca;
+    int cont=0;
+    char curs_a, curs_b;
+    do{
+        curs_a = str_a[cont];
+        curs_b = str_b[cont];
+        int result = curs_a - curs_b;
+        if(result != 0){
+            return result;
+        }else{
+            cont++;
+        }
+    }while(curs_a!='$' && curs_b!='$' && cont<12);
+
+    if(cont==0){
+        return byte_a - byte_b;
     }
 }
 
@@ -374,7 +384,7 @@ int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *c
 
 void percorrer_vet_indx_int(dados_indx_int_t **vet_indx_int, int pos, int *vet_vals_int, char **vet_vals_str, int qtd_crit){
     do{
-        acessar_testar(vet_indx_int[pos]->byteOffset, vet_vals_int, vet_vals_str, qtd_crit);
+        // acessar_testar(vet_indx_int[pos]->byteOffset, vet_vals_int, vet_vals_str, qtd_crit);
 
         pos++;
     }while(vet_indx_int[pos]->chaveBusca == vet_indx_int[pos-1]->chaveBusca);

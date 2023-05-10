@@ -97,27 +97,38 @@ void *getCampoInt(dados_t *dado, char *campo){
 }
 
 void *getCampoStr(dados_t *dado, char *campo){
-	int tam_max = 12;
-	char *retorno_char = malloc(sizeof(char)*(tam_max+1));
-	void *retorno = malloc(sizeof(void));
-	strcpy(retorno_char, "$$$$$$$$$$$$");
+
 	if(strcmp(campo, "dataCrime")==0){
-		// return dado->dataCrime;
-		retorno = dado->dataCrime;
+		return truncar(dado->dataCrime);
 	}else if(strcmp(campo, "marcaCelular")==0){
-		// return dado->marcaCelular;
-		retorno = dado->marcaCelular;
+		return truncar(dado->marcaCelular);
 	}else if(strcmp(campo, "lugarCrime")==0){
-		strncpy(retorno_char, dado->lugarCrime, tam_max);
-		retorno = retorno_char;
+		return truncar(dado->lugarCrime);
 	}else if(strcmp(campo, "descricaoCrime")==0){
-		strncpy(retorno_char, dado->descricaoCrime, tam_max);
-		retorno = retorno_char;
+		return truncar(dado->descricaoCrime);
 	}else{
 		printf("ERRO: campo str não encontrado\n");
 	}
 
-	return retorno;
+}
+
+int campoNulo_int(void *campo_int){
+	int campo_real = *((int*)campo_int);
+	if(campo_real == -1){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+int campoNulo_str(void *campo_str){
+	char *campo_real = malloc(sizeof(char)*12);
+	campo_real = (char*)campo_str;
+	if(strcmp(campo_real, "$$$$$$$$$$$$")==0){
+		return 1;
+	}else{
+		return 0;
+	}
 }
 
 int bytesAteCampoIndexado(dados_t *reg, char *campo){
@@ -655,41 +666,4 @@ cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 	}
 
 	return cabecalho_retorno;
-}
-
-void acessar_ler_reg_dados(int byteOffset){
-	fseek(arq,byteOffset,SEEK_SET);
-	registro = ler_bin_registro();
-	testar_criterios(registro);
-}
-
-void testar_criterios(dados_t *reg_dados){
-
-	//se o registro está removido, ignoro ele
-	if(reg_dados->removido == '1'){
-		return;
-	}
-
-	//cada criterio, é um dos 6 campos do registro de dados (tirando o campo removido e o hashtag)
-	int criterios[6] = {1,1,1,1,1,1};
-
-	for(int i=0; i<m; i++){
-		if(strcmp(vet_nomes[i],"idCrime")){
-
-		}else if(strcmp(vet_nomes[i],"dataCrime")){
-
-		}else if(strcmp(vet_nomes[i],"numeroArtigo")){
-			
-		}else if(strcmp(vet_nomes[i],"marcaCelular")){
-			
-		}else if(strcmp(vet_nomes[i],"lugarCrime")){
-			
-		}else if(strcmp(vet_nomes[i],"descricaoCrime")){
-			
-		}
-	}
-
-	if(criterios[0] && criterios[1] && criterios[2] && criterios[3] && criterios[4] && criterios[5]){
-		//printar registro
-	}
 }
