@@ -43,5 +43,6 @@
     int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave, int *qtd_reg_val);
     long int get_byteOffset_int(void *ponteiro, int pos);
     long int get_byteOffset_str(void *ponteiro, int pos);
+    int testar_status_indx(cabecalho_indx_t *cabecalho);
  
 #endif

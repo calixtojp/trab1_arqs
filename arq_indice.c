@@ -67,24 +67,19 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
 cabecalho_indx_t *ler_index_cabecalho(FILE *arq){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
-    printf("entrei em ler_index_cabecalho\n");
 
 	cabecalho_indx_t *cabecalho_retorno = alocar_cbl_indx();
 
     char status;
     int qtdReg;
     if(fread(&status,sizeof(char),1,arq)!=1){
-        printf("não consegui ler o status\n");
     }
 
     if(fread(&qtdReg,sizeof(int),1,arq)!=1){
-        printf("Não consegui ler a qtdReg\n");
     }
     
     cabecalho_retorno->status = status;
     cabecalho_retorno->qtdReg = qtdReg;
-
-    printf("status:%c|qtdReg:%d\n", cabecalho_retorno->status, cabecalho_retorno->qtdReg);
 	
 	return cabecalho_retorno;
 }
@@ -341,6 +336,9 @@ int comparacao_vet_dados_indx_str(void *ponteiro, int pos1, int pos2){
 
 int tratamento(int pos, int *qtd_reg_val, void *vetor, int (*comparacao)(void*,int,int)){
     //funcao que trata o retorno da busca binaria recursiva
+    //retorna -1 caso nenhum registro satisfaça os criterios de busca
+    //Caso contrario, retorna a pos do primeiro registro que satisfaz a busca
+    //por parametro ('qtd_reg_val'), retorna a quantidade de registros que satisfazem a busca 
 
     if(pos == -1){
         //se nenhum registro satisfaz o critério, nao preciso fazer os tratamentos que ocorrem a seguir
@@ -428,12 +426,20 @@ int busca_bin_rec(void *vetor, int ini, int fim, void *chave, int(*comparacao)(v
 int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave, int *qtd_reg_val){
     //funcao que prepara para a busca binaria recursiva para tipo inteiro e trata o retorno
     int pos = busca_bin_rec(vetor,0,cabecalho->qtdReg,&chave,comparacao_vet_dados_indx_int_const);
+
     return tratamento(pos,qtd_reg_val,vetor,comparacao_vet_dados_indx_int);
 }
 
 int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave, int *qtd_reg_val){
     //funcao que prepara para a busca binaria recursiva para tipo string e trata o retorno
-    int pos = busca_bin_rec(vetor,0,cabecalho->qtdReg,chave,comparacao_vet_dados_indx_str_const);
+    
+    //como, no arquivo de index, as strings sao todas truncadas, deve-se tratar a chave de busca
+    char *chave_truncada = truncar(chave);
+
+    int pos = busca_bin_rec(vetor,0,cabecalho->qtdReg,chave_truncada,comparacao_vet_dados_indx_str_const);
+
+    free(chave_truncada);
+
     return tratamento(pos,qtd_reg_val,vetor,comparacao_vet_dados_indx_str);
 }
 
@@ -447,4 +453,12 @@ long int get_byteOffset_str(void *ponteiro, int pos){
     //funcao que retorna o byteoffset de um registro dentro de um vetor de registros de dados de um arquivo de indice tipo string
     dados_indx_str_t **registro = (dados_indx_str_t **)ponteiro;
     return registro[pos]->byteOffset;
+}
+
+int testar_status_indx(cabecalho_indx_t *cabecalho){
+	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
+	if(cabecalho->status == '1'){
+		return 1;
+	}
+	return 0;
 }

@@ -54,9 +54,9 @@
 	void mostrar_campo_fixo(char cursor[], int tam_palavra);
 	void mostrar_campo_variavel(char *palavra);
 	cabecalho_t* ler_dados_cabecalho(FILE *arq_bin);
-	int testar_byteOffset(long int byteoffset, FILE *arq, char **vet_nomes, 
-	char **vet_vals_str, int *vet_vals_int, int qtd_crit, dados_t *registro);
-
-	void print_registros(dados_t **vetor_registros, int cont_reg_vet);
+	int testar_byteOffset(long int byteoffset, FILE *arq, char **nomes, char **vals_str, int *vals_int, int qtd_crit);
+	int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit);
+	void printar_busca(FILE *arq_dados, long int *vetor_byteOffset, int cont_reg_vet);
+	int testar_status_dados(cabecalho_t *cabecalho);
 
 #endif

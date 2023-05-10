@@ -745,26 +745,52 @@ int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, 
 	}
 }
 
-int testar_byteOffset(long int byteoffset, FILE *arq, char **vet_nomes, 
-char **vet_vals_str, int *vet_vals_int, int qtd_crit, dados_t *registro){
-
+int testar_byteOffset(long int byteoffset, FILE *arq, char **nomes, 
+					char **vals_str, int *vals_int, int qtd_crit){
+	
+	//funcao que testa se o registro do byteOffset informado satisfaz os criterios de busca. Retorna 1 se sim, 0 se nao
 	fseek(arq,byteoffset,SEEK_SET);
+
+	dados_t *registro = alocar_dados();
 	ler_bin_registro(registro,arq);
 
-	if(testar_criterios(registro,vet_nomes,vet_vals_str,vet_vals_int,qtd_crit)){
-		return 1;
-	}else{
-		//se o registro nao satisfaz os criterios de busca, ele nao sera usado
-		//Assim, para nao vazar memória, ele deve ser desalocado
+	if(testar_criterios(registro,nomes,vals_str,vals_int,qtd_crit)){
 		desalocar_registro(registro);
-		return 0;
+		return 1;
 	}
-	
+
+	desalocar_registro(registro);
+	return 0;
 }
 
-void print_registros(dados_t **vetor_registros, int cont_reg_vet){
-	//funcao que printa os campos de cada registro de um vetor de registros
-	for(int i=0; i<cont_reg_vet; i++){
-		mostrar_campos(vetor_registros[i]);
+void printar_busca(FILE *arq_dados, long int *vetor_byteOffset, int cont_reg_vet){
+	//funcao que printa o resultado da busca por um ou mais registros
+	if(cont_reg_vet == 0){
+		//se apos testar os outros criterios, nenhum registro satisfaz a busca, informo que o registro nao existe
+		printf("Registro inexistente.\n");
+	}else{
+		//se o numero de registros que satisfaz a busca é pelo menos 1, printo eles
+		for(int i=0; i<cont_reg_vet; i++){
+			//acesso o registro pelo byteOffset dele
+			fseek(arq_dados,vetor_byteOffset[i],SEEK_SET);
+
+			//leio ele
+			dados_t *registro = alocar_dados();
+			ler_bin_registro(registro,arq_dados);
+
+			//printo ele
+			mostrar_campos(registro);
+			
+			//desaloco ele
+			desalocar_registro(registro);
+		}
 	}
+}
+
+int testar_status_dados(cabecalho_t *cabecalho){
+	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
+	if(cabecalho->status == '1'){
+		return 1;
+	}
+	return 0;
 }

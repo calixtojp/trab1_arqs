@@ -4,9 +4,6 @@
 #include "auxiliares.h"
 #include "manipulacao.h"
 
-#define TAM_MAX_NOME 50
-#define TAM_MAX_VALOR 50
-
 //debug
 void debug(void){
     //nomeArqIndx.bin tipoDado
@@ -120,82 +117,25 @@ void where(void){
     ler_cabecalho_arq_index(arq_index);
     ler_dados_arq_index(arq_index);
 
-    for(int i=1; i<=n; i++){
-        printf("Resposta para a busca %d\n",i);
+    //Ler o cabeçalho do arquivo de dados
+    ler_cabecalho_dados(arq_dados);
 
-    	int m;
-    	scanf("%d",&m);
-
-    	char **vet_nomes = alocar_vetor_string(m,TAM_MAX_NOME);
-    	char **vet_vals_str = alocar_vetor_string(m, TAM_MAX_VALOR);
-    	int *vet_vals_int = malloc(sizeof(int)*m);
-
-    	for(int j=0; j<m; j++){
-    		scanf("%s",vet_nomes[j]);
-    		if(ehInteiro(vet_nomes[j])){
-    			//se o campo for um int
-				scanf("%d",&vet_vals_int[j]); //leio o valor
-
-    			//indico no vetor de valores string que o valor deve ser procurado no vetor de int
-    			strcpy(vet_vals_str[j],"int");
-    		}else{
-    			//se nao for int, é string
-    			ler_aspas_string(vet_vals_str[j]); //leio o valor
-
-    			//indico no vetor de valores int que o valor deve ser procurado no vetor de strings
-    			vet_vals_int[j] = -1;
-    		}
-    	}
-
-        int existe = existe_index(m,vet_nomes,arq_index);
-        /*Se existe arquivo de indice para um dos campos a serem buscados,
-        a variável 'existe' recebe o indice do nome desse campo no vet_nomes.
-        Se não existe, a variável recebe -1.*/
-
-        if(existe >= 0 ){
-            /*se existe arquivo de index para um dos campos que se deseja 
-            buscar, faz-se busca binária no arquivo de indice*/
-
-            busca_bin_index(arq_index,arq_dados,existe,vet_nomes,vet_vals_str,vet_vals_int,m);
-
-        }else{
-            //se não, faz-se busca sequencial no arquivo de dados
-            busca_seq_dados(arq_dados,m,vet_vals_str,vet_vals_int);
-        }
-
-		//Desalocar tipos utilizados    	
-	    desalocar_vetor_string(vet_vals_str,m);
-    	desalocar_vetor_string(vet_nomes,m);
-    	free(vet_vals_int);
+    //Testo se os dois arquivos estao consistentes
+    if(testar_status(arq_index,arq_dados) != 2){
+        printf("Falha no processamento do arquivo.\n");
+        exit(0);
     }
 
-    //Desalocar tipos utilizados
-    desalocar_ArqDados(arq_dados);
-    desalocar_ArqIndex(arq_index);
+    //Chamo a funcao que busca e printa os registros desejados
+    busca(arq_dados,arq_index,n);
 
     //Fechar arquivos
     fechar_arq_index(arq_index);
     fechar_arq_dados(arq_dados);
 
-    //DENTRO DO LOOP DE N BUSCAS:
-    //checo se existe um arq de indice para pelo menos 1 dos campos chave de busca
-    /*se sim, 
-    -faz busca binaria do arquivo de indice (com a funcao de comparacao)
-	-acha o primeiro (todos que satisfazem a condição do arq de indice vao estar ordenados)
-	-segue sequencialmente essa lista, testa pros outros criterios (com a função de comp) e printa ou nao
-	*/
-
-    /*se nao,
-    -faz busca sequencial no arquivo de dados (com a funcao de comparacao) 
-    -le tudo até o fim e printa todos q achar no caminho
-    */
-
-    /*
-    Criar função de comparação, que está preparada pra comparar 
-    todos os campos da struct dados, mas os q nao for usar, vai marcar como true
-    pra poder passar no and com qualquer coisa (1 and A == A).
-    Faço variaveis booleanas de verificacao de cada campo, e inicializo todas com 1.
-    se um dos campos for uma das m chaves de busca da entrada, eu troco o 1 pela comparação*/
+    //Desalocar tipos utilizados
+    desalocar_ArqDados(arq_dados);
+    desalocar_ArqIndex(arq_index);
 }
 
 //Funcionalidade [5]
