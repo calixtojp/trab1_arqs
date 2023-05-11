@@ -122,8 +122,7 @@ void where(void){
 
     //Testo se os dois arquivos estao consistentes
     if(testar_status(arq_index,arq_dados) != 2){
-        printf("Falha no processamento do arquivo.\n");
-        exit(0);
+        mensagem_erro();
     }
 
     //Chamo a funcao que busca e printa os registros desejados
@@ -140,6 +139,33 @@ void where(void){
 
 //Funcionalidade [5]
 void delete_from(){
+    //Aloca os tipos que serão usados
+    ArqDados_t *arq_dados = alocar_arq_dados();
+    erro(arq_dados);
+    ArqIndex_t *arq_index = alocar_arq_index();
+    erro(arq_index);
+    int n;
+
+    //Faz a leitura dos inputs
+    ler_nome_arq_dados(arq_dados);
+    ler_campoIndexado(arq_index);
+    ler_tipoDado(arq_index);
+    ler_nome_arq_index(arq_index);
+    scanf("%d",&n);
+
+    //Com os inputs armazenados, faço a abertura dos arquivos.
+    abrir_arq_dados(arq_dados, "rb");
+    abrir_arq_index(arq_index, "rb");
+
+    //Carrego o arquivo de indice na memoria primaria
+    ler_cabecalho_arq_index(arq_index);
+    ler_dados_arq_index(arq_index);
+
+    deletar(arq_dados,arq_index,n);
+
+    
+
+
 
 }
 

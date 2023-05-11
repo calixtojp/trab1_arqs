@@ -121,12 +121,12 @@ void ler_tipoDado(ArqIndex_t *arq_index){
 
 void ler_cabecalho_arq_index(ArqIndex_t *arq_index){
     //funcao que carrega na memoria primaria o registro de cabecalho de um arquivo de indice
-    arq_index->cabecalhoIndex = ler_index_cabecalho(arq_index->arqIndex);
+    ler_index_cabecalho(arq_index->arqIndex, arq_index->cabecalhoIndex);
 }
 
 void ler_dados_arq_index(ArqIndex_t *arq_index){
     //funcao que carrega na memoria primaria os registros de dados de um arquivo de indice
-    if(ehInteiro(arq_index->campoIndexado)){
+    if(comparar_strings(arq_index->tipoDado,"inteiro")==0){
         //se o campo for inteiro, preencho o vetor de dados inteiros
         arq_index->vet_indx_int = ler_index_dado_int(arq_index->arqIndex,arq_index->cabecalhoIndex);
     }else{
@@ -565,33 +565,31 @@ long int *busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_
 
 long int *busca_seq_dados(ArqDados_t *arq_dados, InfoBusca_t *criterios, int *cont_reg_vet){
     
-    long int *vetor_byteOffset = malloc(sizeof(long int));
+    long int *vetor_byteOffset = malloc(sizeof(long int));//aloco memoria para o vetor de retorno
 
-    long int byteOffset_atual = len_cabecalho_dados();
+    long int byteOffset_atual = len_cabecalho_dados(); //Conto o o tamanho do cabecalho uma vez, fora do loop
     
-    dados_t *registro = alocar_dados();
+    dados_t *registro = alocar_dados();//aloco um memoria para leitura de um registro de dados
         
     int consegui_ler = ler_bin_registro(registro, arq_dados->arqDados);
     while(consegui_ler){
-
-        //Se consegui ler, devo conferir se esse é um registro removido
-        int eh_removido = get_registro_removido(registro);
-
-        if(eh_removido == 0){
-            //se o registro nao é removido, avalio os criterios de busca
-            if(testar_criterios(registro,criterios->nomes,criterios->vals_str,criterios->vals_int,criterios->qtd_crit)){
-                //se o registro satisfaz todos os criterios, adiciono ele no vetor de byteOffsets que serão printados 
-                vetor_byteOffset = realloc(vetor_byteOffset, (*cont_reg_vet+1)*sizeof(long int));
-                vetor_byteOffset[*cont_reg_vet] = byteOffset_atual;
-                (*cont_reg_vet)++;
-            }
+        //Se consegui ler, avalio os criterios de busca
+        if(testar_criterios(registro,criterios->nomes,criterios->vals_str,criterios->vals_int,criterios->qtd_crit)){
+            //se o registro satisfaz todos os criterios, adiciono ele no vetor de byteOffsets que serão printados 
+            vetor_byteOffset = realloc(vetor_byteOffset, (*cont_reg_vet+1)*sizeof(long int));
+            vetor_byteOffset[*cont_reg_vet] = byteOffset_atual;
+            (*cont_reg_vet)++;
         }
-
+        
+        //depois de adicionar ou nao o byteOffset atual no vetor, incremento o contador de byteOffset
         byteOffset_atual += len_reg_dados(registro);
+        //sempre desaloco o registro, pois preciso desalocar os campos de tamanho variavel do registro
         desalocar_registro(registro);
+        //Em seguida aloco outro registro, para fazer a leitura
         registro = alocar_dados();
         consegui_ler = ler_bin_registro(registro, arq_dados->arqDados);
     }
+    //se não conseguiu ler, os campos de tamanho variavel nao foram alocados. Assim, desaloco apenas o ponteiro para o tipo dados_t
     free(registro);
 
     return vetor_byteOffset;
@@ -626,4 +624,27 @@ int testar_status(ArqIndex_t *arq_index, ArqDados_t *arq_dados){
     retorno += testar_status_indx(arq_index->cabecalhoIndex);
 
     return retorno;
+}
+
+void deletar(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtd_delecoes){
+    binarioNaTela(arq_dados->nomeArqDados);
+    binarioNaTela(arq_index->nomeArqIndex);
+
+    for(int i=1; i<=qtd_delecoes; i++){
+
+        InfoBusca_t *criterios = ler_criterios_busca();
+
+        int cont_reg_vet = 0; //quantidade de registros que satisfazem os criterios de busca
+        long int *resultado_busca = qual_busca(arq_dados,arq_index,criterios,&cont_reg_vet);
+
+        //printar o vetor buscado
+        marcar_removido(arq_dados->arqDados,cont_reg_vet);
+
+        //Desalocar tipos utilizados    	
+        desalocar_InfoBusca(criterios);
+        free(resultado_busca);
+
+        //reiniciar o ponteiro do arquivo de dados para o primeiro registro de dados (pulando o cabecalho)
+        fseek(arq_dados->arqDados,len_cabecalho_dados(),SEEK_SET);
+    }  
 }

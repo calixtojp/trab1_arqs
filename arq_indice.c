@@ -64,24 +64,23 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
     return vet_retorno;
 }
 
-cabecalho_indx_t *ler_index_cabecalho(FILE *arq){ 
+void ler_index_cabecalho(FILE *arq, cabecalho_indx_t* cabecalho){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
-
-	cabecalho_indx_t *cabecalho_retorno = alocar_cbl_indx();
 
     char status;
     int qtdReg;
     if(fread(&status,sizeof(char),1,arq)!=1){
+        mensagem_erro();
     }
 
     if(fread(&qtdReg,sizeof(int),1,arq)!=1){
+        mensagem_erro();
     }
     
-    cabecalho_retorno->status = status;
-    cabecalho_retorno->qtdReg = qtdReg;
+    cabecalho->status = status;
+    cabecalho->qtdReg = qtdReg;
 	
-	return cabecalho_retorno;
 }
 
 dados_indx_int_t **ler_index_dado_int(FILE *arq, cabecalho_indx_t *cabecalho){

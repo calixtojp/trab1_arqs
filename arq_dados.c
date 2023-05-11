@@ -689,6 +689,9 @@ cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 }
 
 int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit){
+	//funcao que testa os criterios de busca de um registro.
+	//Se o registro satisfaz todos os criterios, retorna 1
+	//Se nao satisfaz pelo menos 1, retorno 0
 
 	//se o registro está removido, ignoro ele
 	if(reg_dados->removido == '1'){
@@ -779,7 +782,7 @@ void printar_busca(FILE *arq_dados, long int *vetor_byteOffset, int cont_reg_vet
 
 			//printo ele
 			mostrar_campos(registro);
-			
+
 			//desaloco ele
 			desalocar_registro(registro);
 		}
@@ -792,4 +795,58 @@ int testar_status_dados(cabecalho_t *cabecalho){
 		return 1;
 	}
 	return 0;
+}
+
+void marcar_removido(FILE *arqDados, long int *vet_registros, int n_registros){
+    for(int i=0; i<n_registros; i++){
+		//acesso o registro pelo byteOffset dele
+		fseek(arqDados,vet_registros[i],SEEK_SET);
+
+		//leio ele
+		dados_t *registro = alocar_dados();
+		ler_bin_registro(registro,arqDados);
+
+		//altero o campo
+		registro->removido = '1';
+
+		//retorno o cursor do arquivo para o comeco do registro
+		fseek(arqDados,vet_registros[i],SEEK_SET);
+
+		//reescrevo ele no arquivo de dados
+		reescrever_registro_dados(registro, arqDados);
+
+		//apago ele do arquivo de indice, se necessario
+		//apagar_registro_index();
+		
+		//desaloco ele
+		desalocar_registro(registro);
+    }
+}
+
+void reescrever_registro_dados(dados_t *dados, FILE *arq){
+	//função que escreve, no arquivo binário, um registro de dados inteiro
+
+	fwrite(&dados->removido,sizeof(char),1,arq);
+	fwrite(&dados->idCrime,sizeof(int),1,arq);
+	fwrite(dados->dataCrime,sizeof(char),10,arq);
+	fwrite(&dados->numeroArtigo,sizeof(int),1,arq);
+	fwrite(dados->marcaCelular,sizeof(char),12,arq);
+	reescrever_campo_variavel(dados->lugarCrime,arq);
+	reescrever_campo_variavel(dados->descricaoCrime,arq);
+	fwrite(&dados->hashtag,sizeof(char),1,arq);
+}
+
+void reescrever_campo_variavel(char *texto, FILE *arq){
+	//função que escreve, no arquivo binário, campos de tamanho variável	
+
+	/*No laço, escreve-se, caractere a caractere, uma string de tamanho variável inteira,
+	sendo que seu fim é dado pela presença do caractere '\0'*/
+	int i=0;
+	while(texto[i]!='\0'){
+		fwrite(&texto[i],sizeof(char),1,arq);
+		i++;
+	}
+	//ao final, ao inves de escrever o '\0',escrevo o '|'
+	texto[i] = '|';
+	fwrite(&texto[i],sizeof(char),1,arq);
 }

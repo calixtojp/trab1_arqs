@@ -27,7 +27,7 @@
     int getTamDadoIndx_int(void);
     int getTamDadoIndx_str(void);
     int get_qtdReg(cabecalho_indx_t *cabecalho);
-    cabecalho_indx_t *ler_index_cabecalho(FILE *arq);
+    void ler_index_cabecalho(FILE *arq, cabecalho_indx_t* cabecalho);
     dados_indx_int_t **ler_index_dado_int(FILE *arq, cabecalho_indx_t *cabecalho);
     dados_indx_str_t **ler_index_dado_str(FILE *arq, cabecalho_indx_t *cabecalho);
     void mostraRegIndx_int(dados_indx_int_t *dado);

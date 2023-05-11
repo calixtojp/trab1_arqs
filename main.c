@@ -8,9 +8,9 @@
 /*coisas que tem q mudar:
 -ver quais funções vai ficar no auxiliares e quais ficam em arq_dados ou arq_indice
 -trocar cabecalho do arq_index
--ler_bin_campos_variaveis -> fazer retornar int ao inves de passar por parametro
 -colocar apenas as mensagens de erro que a Cristina manda
 -tem dois campos 'tipo de dado' na struct arq_index
+-adicionar as mensagens de erro certinho
 */
 
 int main(){

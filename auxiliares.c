@@ -107,8 +107,14 @@ void ler_aspas_string(char *str) {
 void erro(void *ponteiro){
     //verifica a existência de algum erro ao longo das funcionalidades
     if(ponteiro == NULL){
+        printf("Falha no processamento do arquivo.\n");
         exit(0);
     }
+}
+
+void mensagem_erro(){
+    printf("Falha no processamento do arquivo.\n");
+    exit(0);
 }
 
 char **alocar_vetor_string(int n_elem, int n_chars){

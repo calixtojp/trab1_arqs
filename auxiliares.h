@@ -5,6 +5,7 @@
 	void readline(char *string);
 	void ler_aspas_string(char *str);
 	void erro(void *ponteiro);
+	void mensagem_erro();
 	char **alocar_vetor_string(int n_elem, int n_chars);
 	void desalocar_vetor_string(char **vetor, int n_elem);
 	int ehInteiro(char *campo);
