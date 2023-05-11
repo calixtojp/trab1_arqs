@@ -70,6 +70,10 @@ int get_nroRegRem(cabecalho_t *cabecalho){
 	return cabecalho->nroRegRem;
 }
 
+long int get_proxByteOffset(cabecalho_t *cabecalho){
+	return cabecalho->proxByteOffset;
+}
+
 int getIdCrime(dados_t *dado){
 	return dado->idCrime;
 }
@@ -99,13 +103,13 @@ void *getCampoInt(dados_t *dado, char *campo){
 void *getCampoStr(dados_t *dado, char *campo){
 
 	if(strcmp(campo, "dataCrime")==0){
-		return truncar(dado->dataCrime);
+		return truncar(dado->dataCrime, 12);
 	}else if(strcmp(campo, "marcaCelular")==0){
-		return truncar(dado->marcaCelular);
+		return truncar(dado->marcaCelular, 12);
 	}else if(strcmp(campo, "lugarCrime")==0){
-		return truncar(dado->lugarCrime);
+		return truncar(dado->lugarCrime, 12);
 	}else if(strcmp(campo, "descricaoCrime")==0){
-		return truncar(dado->descricaoCrime);
+		return truncar(dado->descricaoCrime, 12);
 	}else{
 		printf("ERRO: campo str não encontrado\n");
 	}
@@ -193,6 +197,14 @@ int len_cabecalho_dados(void){
 void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd){
 	//incrementa o número de registros escritos no arquivo binário na quantidade informada
 	cabecalho->nroRegArq = cabecalho->nroRegArq + qtd;
+}
+
+void setCabecalhoDados_nroRegArq(cabecalho_t *cabecalho, int nroRegArq){
+	cabecalho->nroRegArq = nroRegArq;
+}
+
+void setCabecalhoDados_proxByteOffSet(cabecalho_t *cabecalho, int byteOffSet){
+	cabecalho->proxByteOffset = byteOffSet;
 }
 
 void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq){
@@ -330,9 +342,36 @@ char *ler_csv_campo_str_variavel(FILE *arq, char *c){
 	return texto;
 }
 
+void colocaPipe_camp_variavel(char *campo){
+	char cursor;
+	int cont = 0;
+	do{
+		cursor = campo[cont];
+		cont++;
+	}while(cursor != '\0' && cursor != '|');
+	campo[cont-1] = '|';
+}
+
+void prepara_campo_fixo(char *campo, int tam){
+	int i=-1;
+	do{
+		i++;
+	}while(campo[i] != '\0');
+
+	for(int j = i; j < tam; ++j){
+		campo[j] = '$';
+	}
+}
+
+void prepara_para_escrita(dados_t *reg){
+	colocaPipe_camp_variavel(reg->lugarCrime);
+	colocaPipe_camp_variavel(reg->descricaoCrime);
+	prepara_campo_fixo(reg->dataCrime, 10);
+	prepara_campo_fixo(reg->marcaCelular, 12);
+}
+
 void escrever_bin_registro_dados(dados_t *dados, FILE *arq, cabecalho_t *cabecalho){
 	//função que escreve, no arquivo binário, um registro de dados inteiro
-
 	//inicializando campos que não foram lidos do csv
 	dados->removido = '0';
 	dados->hashtag = '#';
@@ -366,7 +405,6 @@ void escrever_bin_campo_variavel(char *texto, FILE *arq, cabecalho_t *cabecalho)
 	cabecalho->proxByteOffset += (i+1);
 
 	//como as strings de tamanho variável são alocadas dinamicamente a cada leitura, devem ser liberadas a cada escrita.
-	free(texto);
 }
 
 void sair_fechando(FILE *arq_bin){
@@ -402,8 +440,8 @@ int existem_registros(cabecalho_t *cabecalho){
 
 void copia_registro(dados_t *destino, dados_t *origem){
 
-	printf("vou mostrar a origem\n");
-	mostrar_campos(origem);
+	// printf("vou mostrar a origem\n");
+	// mostrar_campos(origem);
 
 	destino->removido = origem->removido;
 	destino->numeroArtigo = origem->numeroArtigo;
@@ -425,8 +463,8 @@ void copia_registro(dados_t *destino, dados_t *origem){
 	strcpy(destino->descricaoCrime, origem->descricaoCrime);
 
 
-	printf("vou mostrar o destino\n");
-	mostrar_campos(destino);
+	// printf("vou mostrar o destino\n");
+	// mostrar_campos(destino);
 }
 
 int ler_bin_registro(dados_t *registro, FILE *arq_bin){
@@ -590,25 +628,25 @@ void mostrar_campos(dados_t *registro){
 	//Método que mostra um registroa
 
 	if(registro->idCrime != -1){
-		printf("%d, ", registro->idCrime);
+		printf("id:(%d),", registro->idCrime);
 	}else{
 		mensagem_NULO();
 	}
 
 	mostrar_campo_fixo((registro->dataCrime), 10);
-	printf(", ");
+	printf(",");
 
 	if(registro->numeroArtigo != -1){
-		printf("%d, ", registro->numeroArtigo);
+		printf("artigo(%d),", registro->numeroArtigo);
 	}else{
 		mensagem_NULO();
 	}
 
 	mostrar_campo_variavel(registro->lugarCrime);
-	printf(", ");
+	printf(",");
 
 	mostrar_campo_variavel(registro->descricaoCrime);
-	printf(", ");
+	printf(",");
 
 	mostrar_campo_fixo((registro->marcaCelular), 12);
 	printf("\n");
@@ -617,6 +655,7 @@ void mostrar_campos(dados_t *registro){
 void mostrar_campo_fixo(char cursor[], int tam_palavra){
 	int letras_validas = 0;//indica a quantidade de letras válidas de uma palavra
 
+	printf("fixo(");
 	while(cursor[letras_validas] != '$' && (letras_validas < tam_palavra)){
 		printf("%c", cursor[letras_validas]);
 		letras_validas++;
@@ -624,9 +663,11 @@ void mostrar_campo_fixo(char cursor[], int tam_palavra){
 	if(letras_validas == 0){//ou seja, não existe palavra
 		printf("NULO");
 	}
+	printf(")");
 }
 
 void mostrar_campo_variavel(char *palavra){
+	printf("variavel(");
 	if(palavra[0] == '\0'){
 		//isso significa que não existe palavra, ou seja
 		//é um campo NULO
@@ -634,6 +675,7 @@ void mostrar_campo_variavel(char *palavra){
 	}else{
 		printf("%s", palavra);
 	}
+	printf(")");
 }
 
 cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
@@ -666,4 +708,42 @@ cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 	}
 
 	return cabecalho_retorno;
+}
+
+void leRegStdin(dados_t *reg){
+    /*
+            Lê um buffer da entrada padrão stdin e insere o
+        os dados do registro.
+    */
+   	const int max_tam_str = 200;
+
+   	scanf("%d", &(reg)->idCrime);
+	// printf("id(%d)", reg->idCrime);
+
+	ler_aspas_string(reg->dataCrime);
+	// printf(",data(%s)", reg->dataCrime);
+	
+	char artigo_char[13];
+	ler_aspas_string(artigo_char);
+	reg->numeroArtigo = strParaInt(artigo_char);
+	// printf(",artigo(%d)", reg->numeroArtigo);
+
+	int tam_real;
+	reg->lugarCrime = malloc(sizeof(char)*max_tam_str);
+	ler_aspas_string(reg->lugarCrime);
+	tam_real = strlen(reg->lugarCrime);
+	reg->lugarCrime = realloc(reg->lugarCrime, (sizeof(char))*(tam_real+1));
+	// printf(",lugar(%s)", reg->lugarCrime);
+
+	reg->descricaoCrime = malloc(sizeof(char)*max_tam_str);
+	ler_aspas_string(reg->descricaoCrime);
+	tam_real = strlen(reg->descricaoCrime);
+	reg->descricaoCrime = realloc(reg->descricaoCrime, (sizeof(char))*(tam_real+1));
+	// printf(",descricao(%s)", reg->descricaoCrime);
+
+	ler_aspas_string(reg->marcaCelular);
+	// printf(",marca(%s)", reg->marcaCelular);
+
+	// printf("\nacabei de ler o registro:\n");
+	// mostrar_campos(reg);
 }

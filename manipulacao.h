@@ -33,16 +33,20 @@ void mostrar_cabecalhoDados(ArqDados_t *arq_dados);
 void confere_arq_dados(ArqDados_t *arq_dados);
 int get_nroRegValidos(ArqDados_t *arq_dados);
 char *getNomeArqIndex(ArqIndex_t *arq_index);
+char *getNomeArqDados(ArqDados_t *arq_dados);
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos);
+void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo);
 int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg, long int *byteOffSetAnt);
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg);
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim);
 void terminaEscritaIndex(ArqIndex_t *arq_index, int qntdReg);
+void terminaEscritaDados(ArqDados_t *arq_dados, int qntdReg);
 int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index);
 void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *vet_vals_int, int qtd_crit);
 void busca_seq_dados(ArqDados_t *arq_dados, int pos, char **vet_vals_str, int *vet_vals_int);
 int get_nroRegIndex(ArqIndex_t *arq_index);
 void mostrar_arq_index(ArqIndex_t *arq_index);
+int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos);
 
 
 #endif

@@ -170,13 +170,13 @@ void where(void){
     	free(vet_vals_int);
     }
 
-    //Desalocar tipos utilizados
-    desalocar_ArqDados(arq_dados);
-    desalocar_ArqIndex(arq_index);
-
     //Fechar arquivos
     fechar_arq_index(arq_index);
     fechar_arq_dados(arq_dados);
+
+    //Desalocar tipos utilizados
+    desalocar_ArqDados(arq_dados);
+    desalocar_ArqIndex(arq_index);
 
     //DENTRO DO LOOP DE N BUSCAS:
     //checo se existe um arq de indice para pelo menos 1 dos campos chave de busca
@@ -209,7 +209,77 @@ void delete_from(){
 
 //Funcionalidade [6]
 void insert_into(){
+    //Alocar tipos utilizados
+    ArqDados_t *arq_dados = alocar_arq_dados();
+    erro(arq_dados);
+    ArqIndex_t *arq_index = alocar_arq_index();
+    erro(arq_index);
 
+    //Ler entrada de dados
+    ler_nome_arq_dados(arq_dados);
+    ler_campoIndexado(arq_index);
+    ler_tipoDado(arq_index);
+    ler_nome_arq_index(arq_index);
+
+    //abrir arquivos
+    abrir_arq_index(arq_index, "rb");
+    abrir_arq_dados(arq_dados, "a+b");
+
+    //Ler os cabeçalhos
+    ler_cabecalho_arq_index(arq_index);
+    ler_dados_arq_index(arq_index);
+    ler_cabecalho_dados(arq_dados);
+
+    int qtdInserir;
+    int qtdRegEscritosIndex;
+    int qtdRegIndexAntes;
+    int qtdRegDadosAntes;
+    int qtdRegEscritosDados;
+
+    scanf(" %d", &qtdInserir);
+
+    qtdRegIndexAntes = get_nroRegIndex(arq_index);
+    qtdRegDadosAntes = get_nroRegValidos(arq_dados);
+
+    qtdRegEscritosDados = qtdRegDadosAntes + qtdInserir;
+
+    realocar_vet_index(arq_index, qtdRegIndexAntes, qtdInserir);
+
+    int regNaoInseridos = 0;
+    for(int cont = 0; cont < qtdInserir; ++cont){
+        // printf("cont:%d\n", cont);
+        regNaoInseridos += inserirRegStdin(
+            arq_dados,
+            arq_index,
+            cont+qtdRegIndexAntes-regNaoInseridos
+        );
+    }
+
+    qtdRegEscritosIndex = qtdInserir + qtdRegIndexAntes - regNaoInseridos;
+
+    ordenaVetIndex(arq_index, qtdRegEscritosIndex);
+
+    fechar_arq_index(arq_index);
+    abrir_arq_index(arq_index, "wb");
+
+    escreveVetIndex(arq_index, 0, qtdRegEscritosIndex-1);
+    terminaEscritaIndex(arq_index, qtdRegEscritosIndex);
+
+    fechar_arq_dados(arq_dados);
+    abrir_arq_dados(arq_dados, "r+b");
+
+    terminaEscritaDados(arq_dados, qtdRegEscritosDados);
+
+    //Fechar os arquivos utilizados
+    fechar_arq_dados(arq_dados);
+    fechar_arq_index(arq_index);
+
+    binarioNaTela(getNomeArqDados(arq_dados)); 
+    binarioNaTela(getNomeArqIndex(arq_index));
+
+    //Desalocar os tipos utilizados
+    desalocar_ArqDados(arq_dados);
+    desalocar_ArqIndex(arq_index);
 }
 
 //Funcionalidade [7]

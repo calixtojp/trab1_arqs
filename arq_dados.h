@@ -16,6 +16,7 @@
 	void arquivo_status(cabecalho_t *cabecalho,char status);
 	int get_nroRegArq(cabecalho_t *cabecalho);
 	int get_nroRegRem(cabecalho_t *cabecalho);
+	long int get_proxByteOffset(cabecalho_t *cabecalho);
 	int getIdCrime(dados_t *dado);
 	void getDataCrime(dados_t *dado, char *dataDestino);
 	int getNumeroArtigo(dados_t *dado);
@@ -28,11 +29,14 @@
 	int len_reg_dados(dados_t *dado);
 	int len_cabecalho_dados(void);
 	void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd);
+	void setCabecalhoDados_nroRegArq(cabecalho_t *cabecalho, int nroRegArq);
+	void setCabecalhoDados_proxByteOffSet(cabecalho_t *cabecalho, int byteOffSet);
 	void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq);
 	void ler_csv_registro(FILE *arq, dados_t *dados, char *c, int *registro_nulo);
 	int ler_csv_campo_int(FILE *arq, char *c, int *registro_nulo);
 	void ler_csv_campo_str_fixo(FILE *arq, char *c, char *str_fixo, int tam);
 	char *ler_csv_campo_str_variavel(FILE *arq, char *c);
+	void prepara_para_escrita(dados_t *reg);
 	void escrever_bin_registro_dados(dados_t *dados, FILE *arq, cabecalho_t *cabecalho);
 	void escrever_bin_campo_variavel(char *texto, FILE *arq, cabecalho_t *cabecalho);
 	cabecalho_t *ler_cabecalho(FILE *arq_bin);
@@ -52,5 +56,6 @@
 	void mostrar_campo_fixo(char cursor[], int tam_palavra);
 	void mostrar_campo_variavel(char *palavra);
 	cabecalho_t* ler_dados_cabecalho(FILE *arq_bin);
+	void leRegStdin(dados_t *reg);
 
 #endif

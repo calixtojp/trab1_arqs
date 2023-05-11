@@ -136,30 +136,40 @@ int ehInteiro(char *campo){
     }
 }
 
-char *truncar(char *original){
+char *truncar(char *original, int tam_truncamento){
     //funcao que faz um string ter exatos 12 caracteres
-    char *truncado = malloc(sizeof(char)*12);
+    char *truncado = malloc(sizeof(char)*tam_truncamento);
 
     int tam = strlen(original);
 
-    if(tam>=12){
-        //se a string tem mais que 12 chars, entao armazeno só até o char 12
-        //se ela tem exatamente 12 chars, eu copio-os apenas
-        for(int i=0; i<12; i++){
+    if(tam>=tam_truncamento){
+        //se a string tem mais que tam_truncamento chars, entao armazeno só até o char tam_truncamento
+        //se ela tem exatamente tam_truncamento chars, eu copio-os apenas
+        for(int i=0; i<tam_truncamento; i++){
             truncado[i] = original[i];
         }
-    }else if(tam<12){
-        //se a string nao ocupa 12 chars, preenche-se com '$' até ter 12 chars
+    }else if(tam<tam_truncamento){
+        //se a string nao ocupa tam_truncamento chars, preenche-se com '$' até ter tam_truncamento chars
         for(int i=0; i<tam; i++){
             truncado[i] = original[i];
         }
-        for(int i=tam; i<12; i++){
+        for(int i=tam; i<tam_truncamento; i++){
             truncado[i] = '$';
         }
     }
 
     return truncado;
-} 
+}
+
+int strParaInt(char *str){
+    if(str[0] == '\0'){
+        //Se a estring está vazia (valor nulo)
+        return -1;
+    }else{
+        //Se existe um valor válido
+        return atoi(str);
+    }
+}
 
 /* --- T0, ARRUMAR -------------------*/
 int tamanhoStr(char *string){

@@ -67,7 +67,6 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
 cabecalho_indx_t *ler_index_cabecalho(FILE *arq){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
-    printf("entrei em ler_index_cabecalho\n");
 
 	cabecalho_indx_t *cabecalho_retorno = alocar_cbl_indx();
 
@@ -83,8 +82,6 @@ cabecalho_indx_t *ler_index_cabecalho(FILE *arq){
     
     cabecalho_retorno->status = status;
     cabecalho_retorno->qtdReg = qtdReg;
-
-    printf("status:%c|qtdReg:%d\n", cabecalho_retorno->status, cabecalho_retorno->qtdReg);
 	
 	return cabecalho_retorno;
 }
@@ -112,6 +109,35 @@ dados_indx_str_t **ler_index_dado_str(FILE *arq, cabecalho_indx_t *cabecalho){
     return vetor_dados;
 }
 
+void *leDadoIndx_int(FILE *arqIndex){
+    dados_indx_int_t *dado_retorno;
+    dado_retorno = alocDadoIndxInt();
+    int campoIndexado;
+    long int byteOffSet;
+    fread(&campoIndexado, sizeof(int), 1, arqIndex);
+    fread(&byteOffSet, sizeof(long int), 1, arqIndex);
+
+    dado_retorno->chaveBusca = campoIndexado;
+    dado_retorno->byteOffset = byteOffSet;
+
+    return dado_retorno;
+}
+
+void *leDadoIndx_str(FILE *arqIndex){
+    dados_indx_str_t *dado_retorno;
+    dado_retorno = alocDadoIndxStr();
+    char campoIndexado[TAM_CAMP_STR];
+    long int byteOffSet;
+    fread(campoIndexado, sizeof(char), TAM_CAMP_STR, arqIndex);
+    fread(&byteOffSet, sizeof(long int), 1, arqIndex);
+
+    for(int i = 0; i < TAM_CAMP_STR; i++){
+        dado_retorno->chaveBusca[i] = campoIndexado[i];
+    }
+    dado_retorno->byteOffset = byteOffSet;
+
+    return dado_retorno;
+}
 
 char *alocarCampoIndexado(void){
     char *vet_retorno = malloc(sizeof(char)*TAM_CAMP_STR);
@@ -228,7 +254,7 @@ void mostraVetStr(void *vet_generico, int qntd_reg){
     }
 }
 
-int compara_int(const void *a, const void *b){
+int compara_dado_int(const void *a, const void *b){
     int valor_a, valor_b;
     long int byte_a, byte_b;
     valor_a = (*((dados_indx_int_t**)a))->chaveBusca;
@@ -243,7 +269,7 @@ int compara_int(const void *a, const void *b){
     }
 }
 
-int compara_str(const void *a, const void *b){
+int compara_dado_str(const void *a, const void *b){
     char str_a[TAM_CAMP_STR];
     char str_b[TAM_CAMP_STR];
     long int byte_a, byte_b;
@@ -272,15 +298,21 @@ int compara_str(const void *a, const void *b){
 
 void ordenaVetIndex_int(void *vetor_generico, int qntd_reg){
     dados_indx_int_t **vetor_real = (dados_indx_int_t**)vetor_generico;
-    qsort(vetor_real, qntd_reg, sizeof(dados_indx_int_t*), compara_int);
+    qsort(vetor_real, qntd_reg, sizeof(dados_indx_int_t*), compara_dado_int);
 }
 
 void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
     dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor_generico;
-    qsort(vetor_real, qntd_reg, sizeof(dados_indx_str_t*), compara_str);
+    qsort(vetor_real, qntd_reg, sizeof(dados_indx_str_t*), compara_dado_str);
 }
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
+    // printf("escrever o cabecalho:status(%c)|qtdReg(%d)|ftel(%ld)\n",
+    //     cabecalho->status,
+    //     cabecalho->qtdReg,
+    //     ftell(arqIndex)
+    // );
+
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
     fwrite(&cabecalho->qtdReg,sizeof(int), 1, arqIndex);
 }

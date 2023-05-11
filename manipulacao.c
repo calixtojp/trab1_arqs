@@ -220,6 +220,10 @@ char *getNomeArqIndex(ArqIndex_t *arq_index){
     return arq_index->nomeArqIndex;
 }
 
+char *getNomeArqDados(ArqDados_t *arq_dados){
+    return arq_dados->nomeArqDados;
+}
+
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     /*
             Aloca, na memória primária, um vetor que guardará os registros
@@ -239,6 +243,30 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
         arq_index->tipoDadoInt = 1;
     }else{
         printf("Não tem esse tipo\n");
+    }
+}
+
+void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo){
+    int tam_tot = original + acrescimo;
+    if(strcmp(arq_index->tipoDado, "inteiro")==0){
+        arq_index->vet_indx_int = (dados_indx_int_t**)realloc(
+            arq_index->vet_indx_int,
+            (sizeof(dados_indx_int_t*))*(tam_tot)
+        );
+
+        for(int i = original; i < tam_tot; ++i){
+            arq_index->vet_indx_int[i] = alocDadoIndxInt();
+        }
+
+    }else if(strcmp(arq_index->tipoDado, "string")==0){
+        arq_index->vet_indx_str = (dados_indx_str_t**)realloc(
+            arq_index->vet_indx_str,
+            (sizeof(dados_indx_str_t*))*(tam_tot)
+        );
+
+        for(int i = original; i < tam_tot; ++i){
+            arq_index->vet_indx_str[i] = alocDadoIndxStr();
+        }
     }
 }
 
@@ -381,13 +409,23 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
 
 void terminaEscritaIndex(ArqIndex_t *arq_index, int qtndReg){
     //volto pára o início do arquivo e escrevo o cabeçalho final
+    // printf("vou escrever %d registros\n", qtndReg);
+
     setCabecalhoIndex(
         arq_index->cabecalhoIndex,
         '1',
         qtndReg
     );
+
     fseek(arq_index->arqIndex, 0, SEEK_SET);
     escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
+}
+
+void terminaEscritaDados(ArqDados_t *arq_dados, int qntdReg){
+    setCabecalhoDados_nroRegArq(arq_dados->cabecalhoDados, qntdReg);
+    // mostrar_cabecalho_dados(arq_dados->cabecalhoDados);
+    rewind(arq_dados->arqDados);
+    escrever_bin_registro_cabecalho(arq_dados->cabecalhoDados, arq_dados->arqDados);
 }
 
 int existe_index(int m, char **vet_nomes, ArqIndex_t *arq_index){
@@ -431,7 +469,7 @@ void busca_bin_index(ArqIndex_t *arq_index, int pos, char **vet_vals_str, int *v
         //se o campo indexado nao for inteiro, entao é string. Assim, faço busca binária para strings
 
         //como, no arquivo de index, as strings sao todas truncadas, deve-se tratar a chave de busca
-        char *chave = truncar(vet_vals_str[pos]);
+        char *chave = truncar(vet_vals_str[pos], 12);
 
         int res = busca_bin_str(arq_index->vet_indx_str,arq_index->cabecalhoIndex,chave);
         //'busca_bin_str' retorna a posição do primeiro registro que satisfaz o criterio de busca no vet_indx_str,
@@ -468,4 +506,90 @@ void mostrar_arq_index(ArqIndex_t *arq_index){
     vet_gen = escolhe_vet_indx(arq_index);
 
     fncs_MostraVet[arq_index->tipoDadoInt](vet_gen, get_qtdReg(arq_index->cabecalhoIndex));
+}
+
+int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos){
+    /*
+            Lê um buffer da entrada padrão stdin e insere o
+        Respectivo registro no arquivo de dados e de index.
+    */
+
+    int tipDado = arq_index->tipoDadoInt;
+    dados_t *reg_inserir = alocar_dados();
+
+    leRegStdin(reg_inserir);
+
+    typedef int (*FncCampoNulo) (void*);
+    FncCampoNulo fncsCampoNulo[] = {
+        campoNulo_int,
+        campoNulo_str
+    };
+    typedef void* (*FncGetCampoIndexIndexado) (dados_t*, char*);
+    FncGetCampoIndexIndexado fncsGetCampo[] = {
+        getCampoInt,
+        getCampoStr
+    };
+
+    void *campoIndexado = malloc(sizeof(void));
+    int eh_campo_nulo;
+    
+    //obtenho o campo indexado (int ou str)
+    campoIndexado = fncsGetCampo[tipDado](reg_inserir, arq_index->campoIndexado);
+
+    //Vejo se o campo é nulo ou não (para poder indexá-lo)
+    eh_campo_nulo = fncsCampoNulo[tipDado](campoIndexado);
+    //depois dar append no arq
+
+    if(eh_campo_nulo){
+        prepara_para_escrita(reg_inserir);
+        escrever_bin_registro_dados(
+            reg_inserir,
+            arq_dados->arqDados,
+            arq_dados->cabecalhoDados
+        );
+        return 1;//Se o campo indexado for nulo, cancelo a inserção
+    }
+
+    //A partir de agora, se não cancelou a inserção no if acima,
+    //considera-se que o campo indexado é válido.
+
+    long int byte_reg_inserir;
+    byte_reg_inserir = get_proxByteOffset(arq_dados->cabecalhoDados);
+
+    //Com o campo indexado e com o byteOffSet, consigo criar dado
+    //de index do registro a ser inserido
+
+    void *dadoInserir = malloc(sizeof(void));
+    void *vetIndex = malloc(sizeof(void));
+
+    typedef void (*FncSetDadoIndx) (void*, long int, void*);
+    FncSetDadoIndx fncsSetDadoIndx[] = {
+        setDadoIndxInt,
+        setDadoIndxStr
+    };
+    typedef void (*FncSetVetIndx) (void*, int, void*);
+    FncSetVetIndx fncsSetVetIndx[] = {
+        setVetIndx_int,
+        setVetIndx_str
+    };
+
+    dadoInserir = escolhe_indx_dado(arq_index);
+    vetIndex = escolhe_vet_indx(arq_index);
+
+    // printf("antes\n");
+    fncsSetDadoIndx[tipDado](dadoInserir, byte_reg_inserir, campoIndexado);
+    // printf("depois\n");
+    fncsSetVetIndx[tipDado](vetIndex, pos, dadoInserir);
+
+    // printf("vou inserir o registro: no byte %ld\n", byte_reg_inserir);
+    // mostrar_campos(reg_inserir);
+    prepara_para_escrita(reg_inserir);
+    escrever_bin_registro_dados(
+        reg_inserir,
+        arq_dados->arqDados,
+        arq_dados->cabecalhoDados
+    );
+
+    // setCabecalhoDados_proxByteOffSet(arq_dados->cabecalhoDados, byte_reg_inserir);
+    return 0;
 }

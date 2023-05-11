@@ -30,10 +30,14 @@
     cabecalho_indx_t *ler_index_cabecalho(FILE *arq);
     dados_indx_int_t **ler_index_dado_int(FILE *arq, cabecalho_indx_t *cabecalho);
     dados_indx_str_t **ler_index_dado_str(FILE *arq, cabecalho_indx_t *cabecalho);
+    void *leDadoIndx_int(FILE *arqIndex);
+    void *leDadoIndx_str(FILE *arqIndex);
     void mostraRegIndx_int(dados_indx_int_t *dado);
     void mostraRegIndx_str(dados_indx_str_t *dado);
     void mostraVetInt(void *vet_generico, int qntd_reg);
     void mostraVetStr(void *vet_generico, int qntd_reg);
+    int compara_dado_int(const void *a, const void *b);
+    int compara_dado_str(const void *a, const void *b);
     void ordenaVetIndex_int(void *vetor_generico, int qntd_reg);
     void ordenaVetIndex_str(void *vetor_generico, int qntd_reg);
     void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho);
