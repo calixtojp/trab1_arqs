@@ -49,6 +49,27 @@ dados_t *alocar_dados(){
     return dados;
 }
 
+dados_t **alocar_vet_dados(int n){
+	dados_t **vetor = malloc(n*sizeof(dados_t *));
+	erro(vetor);
+
+	for(int i=0; i<n; i++){
+		vetor[i] = alocar_dados();
+	}
+
+	return vetor;
+}
+
+void desalocar_vet_dados(dados_t **vetor, int n){
+	erro(vetor);
+
+	for(int i=0; i<n; i++){
+		desalocar_registro(vetor[i]);
+	}
+	free(vetor);
+}
+
+
 void inicializar_cabecalho(cabecalho_t *cabecalho){
 	//inicializa o cabeçalho para um arquivo binário que ainda não tem conteúdo
 	cabecalho->status = '0';
@@ -177,16 +198,17 @@ int bytesAteCampoIndexado(dados_t *reg, char *campo){
 	}
 }
 
-int len_reg_dados(dados_t *dado){
-	int contador = 0;
+long int len_reg_dados(dados_t *dado){
+	long int contador = 0;
 	contador += sizeof(dado->removido);
 	contador += sizeof(dado->idCrime);
-	contador += strlen(dado->dataCrime)*(sizeof(char));
+	contador += 10*(sizeof(char));//o campo dado->dataCrime é fixo de 10 chars
 	contador += sizeof(dado->numeroArtigo);
-	contador += strlen(dado->marcaCelular)*(sizeof(char));
+	contador += 12*(sizeof(char));//o campo dado->marcaCelular é fixo de 12 chars
 	contador += strlen(dado->lugarCrime)*(sizeof(char)) + 1;//+1 por conta do '|'
 	contador += strlen(dado->descricaoCrime)*(sizeof(char)) + 1;//+1 por conta do '|'
-	contador += sizeof(char);
+	contador += sizeof(dado->hashtag);
+
 	return contador;	 
 }
 
@@ -417,6 +439,7 @@ void sair_fechando(FILE *arq_bin){
 void desalocar_registro(dados_t *registro){
 	free(registro->descricaoCrime);
 	free(registro->lugarCrime);
+	free(registro);
 }
 
 char status_disponivel(cabecalho_t *cabecalho){
@@ -480,14 +503,12 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 	ler_bin_campos_fixos(arq_bin, registro, &chegou_fim);
 	if(chegou_fim != 0){
 		//Não conseguiu ler algum dos campos fixos
-		printf("não consegui ler algum dos campos fixos\n");
 		registro = NULL;
 		return 0;
 	}
 
 	ler_bin_campos_variaveis(arq_bin, registro, &chegou_fim);
 	if(chegou_fim != 0){
-		printf("não consegui ler algum dos campos variáveis\n");
 		//Não conseguiu ler algum dos campos variáveis
 		registro = NULL;
 		return 0;
@@ -495,7 +516,6 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 
 	//ler # no final
 	if(fread(&(registro->hashtag), sizeof(char), 1, arq_bin)!=1){
-		printf("não consegui ler a hashtag\n");
 		registro = NULL;
 		return 0;
 	}
@@ -652,11 +672,10 @@ void mostrar_campos(dados_t *registro){
 	printf("\n");
 }
 
-void mostrar_campo_fixo(char cursor[], int tam_palavra){
+void mostrar_campo_fixo(char *cursor, int tam_palavra){
 	int letras_validas = 0;//indica a quantidade de letras válidas de uma palavra
 
-	printf("fixo(");
-	while(cursor[letras_validas] != '$' && (letras_validas < tam_palavra)){
+	while((cursor[letras_validas] != '$') && (letras_validas < tam_palavra)){
 		printf("%c", cursor[letras_validas]);
 		letras_validas++;
 	}
@@ -746,4 +765,167 @@ void leRegStdin(dados_t *reg){
 
 	// printf("\nacabei de ler o registro:\n");
 	// mostrar_campos(reg);
+}
+
+int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit){
+	//funcao que testa os criterios de busca de um registro.
+	//Se o registro satisfaz todos os criterios, retorna 1
+	//Se nao satisfaz pelo menos 1, retorno 0
+
+	//se o registro está removido, ignoro ele
+	if(reg_dados->removido == '1'){
+		return 0;
+	}
+
+	//cada criterio é um dos 6 campos do registro de dados (tirando o campo removido e o hashtag)
+	int criterios[6] = {1,1,1,1,1,1};
+
+	//Para todos os criterios que vou testar, preciso descobrir o campo e qual a chave de busca
+	for(int i=0; i<qtd_crit; i++){	
+		//se o valor do campo nao for igual à chave de busca, eu coloco 0 no criterio[i]
+		//se for igual, o criterio[i] já é 1, logo não faço nada
+
+		if(comparar_strings(vet_nomes[i],"idCrime")==0){
+			//como é do tipo int, eu olho o vet_vals_int
+			if(reg_dados->idCrime != vet_vals_int[i]){
+				criterios[0] = 0;
+			}
+		}else if(comparar_strings(vet_nomes[i],"dataCrime")==0){
+			//como é do tipo str, eu olho o vet_vals_str
+			if(comparar_strings(reg_dados->dataCrime,vet_vals_str[i])!=0){
+				criterios[1] = 0;
+			}
+		}else if(comparar_strings(vet_nomes[i],"numeroArtigo")==0){
+			//como é do tipo int, eu olho o vet_vals_int
+			if(reg_dados->numeroArtigo != vet_vals_int[i]){
+				criterios[2] = 0;
+			}
+		}else if(comparar_strings(vet_nomes[i],"marcaCelular")==0){
+			//como é do tipo str, eu olho o vet_vals_str
+			if(comparar_strings(reg_dados->marcaCelular,vet_vals_str[i])!=0){
+				criterios[3] = 0;
+			}
+		}else if(comparar_strings(vet_nomes[i],"lugarCrime")==0){
+			//como é do tipo str, eu olho o vet_vals_str
+			if(comparar_strings(reg_dados->lugarCrime,vet_vals_str[i])!=0){
+				criterios[4] = 0;
+			}
+		}else if(comparar_strings(vet_nomes[i],"descricaoCrime")==0){
+			//como é do tipo str, eu olho o vet_vals_str
+			if(comparar_strings(reg_dados->descricaoCrime,vet_vals_str[i])!=0){
+				criterios[5] = 0;
+			}
+		}
+	}
+	
+	//se satisfaz todos os criterios, retorno 1. Se nao satisfaz pelo menos 1 deles, retorno 0
+	if(criterios[0] && criterios[1] && criterios[2] && criterios[3] && criterios[4] && criterios[5]){
+		return 1;
+	}else{
+		return 0;
+	}
+}
+
+int testar_byteOffset(long int byteoffset, FILE *arq, char **nomes, 
+					char **vals_str, int *vals_int, int qtd_crit){
+	
+	//funcao que testa se o registro do byteOffset informado satisfaz os criterios de busca. Retorna 1 se sim, 0 se nao
+	fseek(arq,byteoffset,SEEK_SET);
+
+	dados_t *registro = alocar_dados();
+	ler_bin_registro(registro,arq);
+
+	if(testar_criterios(registro,nomes,vals_str,vals_int,qtd_crit)){
+		desalocar_registro(registro);
+		return 1;
+	}
+
+	desalocar_registro(registro);
+	return 0;
+}
+
+void printar_busca(FILE *arq_dados, long int *vetor_byteOffset, int cont_reg_vet){
+	//funcao que printa o resultado da busca por um ou mais registros
+	if(cont_reg_vet == 0){
+		//se apos testar os outros criterios, nenhum registro satisfaz a busca, informo que o registro nao existe
+		printf("Registro inexistente.\n");
+	}else{
+		//se o numero de registros que satisfaz a busca é pelo menos 1, printo eles
+		for(int i=0; i<cont_reg_vet; i++){
+			//acesso o registro pelo byteOffset dele
+			fseek(arq_dados,vetor_byteOffset[i],SEEK_SET);
+
+			//leio ele
+			dados_t *registro = alocar_dados();
+			ler_bin_registro(registro,arq_dados);
+
+			//printo ele
+			mostrar_campos(registro);
+
+			//desaloco ele
+			desalocar_registro(registro);
+		}
+	}
+}
+
+int testar_status_dados(cabecalho_t *cabecalho){
+	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
+	if(cabecalho->status == '1'){
+		return 1;
+	}
+	return 0;
+}
+
+void marcar_removido(FILE *arqDados, long int *vet_registros, int n_registros){
+    for(int i=0; i<n_registros; i++){
+		//acesso o registro pelo byteOffset dele
+		fseek(arqDados,vet_registros[i],SEEK_SET);
+
+		//leio ele
+		dados_t *registro = alocar_dados();
+		ler_bin_registro(registro,arqDados);
+
+		//altero o campo
+		registro->removido = '1';
+
+		//retorno o cursor do arquivo para o comeco do registro
+		fseek(arqDados,vet_registros[i],SEEK_SET);
+
+		//reescrevo ele no arquivo de dados
+		reescrever_registro_dados(registro, arqDados);
+
+		//apago ele do arquivo de indice, se necessario
+		//apagar_registro_index();
+		
+		//desaloco ele
+		desalocar_registro(registro);
+    }
+}
+
+void reescrever_registro_dados(dados_t *dados, FILE *arq){
+	//função que escreve, no arquivo binário, um registro de dados inteiro
+
+	fwrite(&dados->removido,sizeof(char),1,arq);
+	fwrite(&dados->idCrime,sizeof(int),1,arq);
+	fwrite(dados->dataCrime,sizeof(char),10,arq);
+	fwrite(&dados->numeroArtigo,sizeof(int),1,arq);
+	fwrite(dados->marcaCelular,sizeof(char),12,arq);
+	reescrever_campo_variavel(dados->lugarCrime,arq);
+	reescrever_campo_variavel(dados->descricaoCrime,arq);
+	fwrite(&dados->hashtag,sizeof(char),1,arq);
+}
+
+void reescrever_campo_variavel(char *texto, FILE *arq){
+	//função que escreve, no arquivo binário, campos de tamanho variável	
+
+	/*No laço, escreve-se, caractere a caractere, uma string de tamanho variável inteira,
+	sendo que seu fim é dado pela presença do caractere '\0'*/
+	int i=0;
+	while(texto[i]!='\0'){
+		fwrite(&texto[i],sizeof(char),1,arq);
+		i++;
+	}
+	//ao final, ao inves de escrever o '\0',escrevo o '|'
+	texto[i] = '|';
+	fwrite(&texto[i],sizeof(char),1,arq);
 }

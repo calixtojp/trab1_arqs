@@ -5,6 +5,8 @@
 
 #ifndef _ARQDADOS
 #define _ARQDADOS
+
+	#include <stdlib.h>
 	
 	typedef struct Cabecalho cabecalho_t;
 	typedef struct Dados dados_t;	
@@ -12,6 +14,8 @@
 	cabecalho_t *alocar_cabecalho_dados();
 	void mostrar_cabecalho_dados(cabecalho_t *cabecalho);
 	dados_t *alocar_dados();
+	dados_t **alocar_vet_dados(int n);
+	void desalocar_vet_dados(dados_t **vetor, int n);
 	void inicializar_cabecalho(cabecalho_t *cabecalho);
 	void arquivo_status(cabecalho_t *cabecalho,char status);
 	int get_nroRegArq(cabecalho_t *cabecalho);
@@ -26,7 +30,7 @@
 	int campoNulo_int(void *campo_int);
 	int campoNulo_str(void *campo_str);
 	int bytesAteCampoIndexado(dados_t *reg, char *campo);
-	int len_reg_dados(dados_t *dado);
+	long int len_reg_dados(dados_t *dado);
 	int len_cabecalho_dados(void);
 	void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd);
 	void setCabecalhoDados_nroRegArq(cabecalho_t *cabecalho, int nroRegArq);
@@ -53,9 +57,13 @@
 	void ler_bin_campos_variaveis(FILE *arq_bin, dados_t *registro, int *flag_chegou_fim);
 	char *ler_bin_char_variavel(FILE *arq_bin);
 	void mostrar_campos(dados_t *registro);
-	void mostrar_campo_fixo(char cursor[], int tam_palavra);
+	void mostrar_campo_fixo(char *cursor, int tam_palavra);
 	void mostrar_campo_variavel(char *palavra);
 	cabecalho_t* ler_dados_cabecalho(FILE *arq_bin);
 	void leRegStdin(dados_t *reg);
+	int testar_byteOffset(long int byteoffset, FILE *arq, char **nomes, char **vals_str, int *vals_int, int qtd_crit);
+	int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit);
+	void printar_busca(FILE *arq_dados, long int *vetor_byteOffset, int cont_reg_vet);
+	int testar_status_dados(cabecalho_t *cabecalho);
 
 #endif

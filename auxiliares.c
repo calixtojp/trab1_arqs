@@ -107,8 +107,14 @@ void ler_aspas_string(char *str) {
 void erro(void *ponteiro){
     //verifica a existência de algum erro ao longo das funcionalidades
     if(ponteiro == NULL){
+        printf("Falha no processamento do arquivo.\n");
         exit(0);
     }
+}
+
+void mensagem_erro(){
+    printf("Falha no processamento do arquivo.\n");
+    exit(0);
 }
 
 char **alocar_vetor_string(int n_elem, int n_chars){
@@ -169,6 +175,36 @@ int strParaInt(char *str){
         //Se existe um valor válido
         return atoi(str);
     }
+}
+
+int comparar_n_chars(char *s1, char *s2, int n){
+    //função que compara, char a char, os primeiros n caracteres de duas strings e retorna 0 se são iguais 
+    //Se sao diferentes, retorna a diferença entre os dois primeiros caracteres diferentes
+    int i=0;
+    do{
+        if(s1[i] != s2[i]){
+            return s1[i]-s2[i];
+         
+        }
+        i++;
+    }while(i<12);
+    
+    return 0;
+}
+
+int comparar_strings(char *s1, char *s2){
+    //função que compara, char a char, duas strings e retorna 0 se são iguais 
+    //Se sao diferentes, retorna a diferença entre os dois primeiros caracteres diferentes
+    int i=0;
+    do{
+        if(s1[i] != s2[i]){
+            return s1[i]-s2[i];
+         
+        }
+        i++;
+    }while(s1[i]!='\0' && s2[i]!='\0');
+    
+    return 0;
 }
 
 /* --- T0, ARRUMAR -------------------*/
