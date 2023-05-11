@@ -194,16 +194,17 @@ int bytesAteCampoIndexado(dados_t *reg, char *campo){
 	}
 }
 
-int len_reg_dados(dados_t *dado){
-	int contador = 0;
+long int len_reg_dados(dados_t *dado){
+	long int contador = 0;
 	contador += sizeof(dado->removido);
 	contador += sizeof(dado->idCrime);
-	contador += strlen(dado->dataCrime)*(sizeof(char));
+	contador += 10*(sizeof(char));//o campo dado->dataCrime é fixo de 10 chars
 	contador += sizeof(dado->numeroArtigo);
-	contador += strlen(dado->marcaCelular)*(sizeof(char));
+	contador += 12*(sizeof(char));//o campo dado->marcaCelular é fixo de 12 chars
 	contador += strlen(dado->lugarCrime)*(sizeof(char)) + 1;//+1 por conta do '|'
 	contador += strlen(dado->descricaoCrime)*(sizeof(char)) + 1;//+1 por conta do '|'
-	contador += sizeof(char);
+	contador += sizeof(dado->hashtag);
+
 	return contador;	 
 }
 
@@ -712,13 +713,11 @@ int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, 
 			if(comparar_strings(reg_dados->dataCrime,vet_vals_str[i])!=0){
 				criterios[1] = 0;
 			}
-
 		}else if(comparar_strings(vet_nomes[i],"numeroArtigo")==0){
 			//como é do tipo int, eu olho o vet_vals_int
 			if(reg_dados->numeroArtigo != vet_vals_int[i]){
 				criterios[2] = 0;
 			}
-			
 		}else if(comparar_strings(vet_nomes[i],"marcaCelular")==0){
 			//como é do tipo str, eu olho o vet_vals_str
 			if(comparar_strings(reg_dados->marcaCelular,vet_vals_str[i])!=0){

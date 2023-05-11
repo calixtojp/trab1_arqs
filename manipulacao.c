@@ -500,8 +500,10 @@ void busca(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtd_buscas){
         //Desalocar tipos utilizados    	
         desalocar_InfoBusca(criterios);
         free(resultado_busca);
-    }
-    
+
+        //reiniciar o ponteiro do arquivo de dados para o primeiro registro de dados (pulando o cabecalho)
+        fseek(arq_dados->arqDados,len_cabecalho_dados(),SEEK_SET);
+    }   
 }
 
 long int *qual_busca(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, int *cont_reg_vet){
@@ -554,9 +556,8 @@ long int *busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_
         //por referencia, passa o numero de registros que satisfazem o criterio de busca para 'qtd_reg_val'
 
         //com a posição do primeiro e o numero de registros, percorro o vetor vet_indx_str
-        int cont_reg_vet = 0; //contador de quantos elementos há no vetor de registros retornado pelo 'percorrer_index'
         vetor_byteOffset = percorrer_index(get_byteOffset_str,pos_prim,qtd_reg_val,arq_index->vet_indx_str,
-                                        arq_dados,criterios, &cont_reg_vet);
+                                        arq_dados,criterios, cont_reg_vet);
     }
 
     return vetor_byteOffset;
@@ -565,15 +566,13 @@ long int *busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_
 long int *busca_seq_dados(ArqDados_t *arq_dados, InfoBusca_t *criterios, int *cont_reg_vet){
     
     long int *vetor_byteOffset = malloc(sizeof(long int));
-    long int byteOffset_atual = len_cabecalho_dados();
 
+    long int byteOffset_atual = len_cabecalho_dados();
     
     dados_t *registro = alocar_dados();
         
     int consegui_ler = ler_bin_registro(registro, arq_dados->arqDados);
     while(consegui_ler){
-
-        byteOffset_atual += len_reg_dados(registro);
 
         //Se consegui ler, devo conferir se esse é um registro removido
         int eh_removido = get_registro_removido(registro);
@@ -587,10 +586,13 @@ long int *busca_seq_dados(ArqDados_t *arq_dados, InfoBusca_t *criterios, int *co
                 (*cont_reg_vet)++;
             }
         }
+
+        byteOffset_atual += len_reg_dados(registro);
         desalocar_registro(registro);
         registro = alocar_dados();
         consegui_ler = ler_bin_registro(registro, arq_dados->arqDados);
     }
+    free(registro);
 
     return vetor_byteOffset;
 }
