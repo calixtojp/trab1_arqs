@@ -68,7 +68,12 @@ void create_index(){
     //Guarda a posição que será escrito o registro  
 
     do{
-        foi_escrito = indexaRegistro(arq_dados, arq_index, pos_reg, &byteOffSetAtual);
+        foi_escrito = indexaRegistro(
+            arq_dados,
+            arq_index,
+            pos_reg,
+            &byteOffSetAtual
+        );
         pos_reg++;
     }while(foi_escrito==1);
 
@@ -161,7 +166,7 @@ void delete_from(){
     ler_cabecalho_arq_index(arq_index);
     ler_dados_arq_index(arq_index);
 
-    deletar(arq_dados,arq_index,n);
+    // deletar(arq_dados,arq_index,n);
 }
 
 //Funcionalidade [6]
@@ -241,5 +246,49 @@ void insert_into(){
 
 //Funcionalidade [7]
 void update(){
+    //Aloca os tipos que serão usados.
+    ArqDados_t *arq_dados = alocar_arq_dados();
+    erro(arq_dados);
+    ArqIndex_t *arq_index = alocar_arq_index();
+    erro(arq_index);
+    int n;
 
+    //Faz a leitura dos inputs.
+    ler_nome_arq_dados(arq_dados);
+    ler_campoIndexado(arq_index);
+    ler_tipoDado(arq_index);
+    ler_nome_arq_index(arq_index);
+    scanf("%d\n\n",&n);
+
+    //Com os inputs armazenados, faço a abertura dos arquivos.
+    abrir_arq_dados(arq_dados, "r+b");
+    abrir_arq_index(arq_index, "r+b");
+
+    //Carrego o arquivo de indice na memoria primaria.
+    ler_cabecalho_arq_index(arq_index);
+    ler_dados_arq_index(arq_index);
+
+    //Ler o cabeçalho do arquivo de dados.
+    ler_cabecalho_dados(arq_dados);
+
+    //Testo se os dois arquivos estao consistentes.
+    if(testar_status(arq_index,arq_dados) != 2){
+        mensagem_erro();
+    }
+
+    //Total de registros antes das modificações.
+    int qtdRegIndexAntes = get_nroRegIndex(arq_index);
+    int qtdRegDadosAntes = get_nroRegValidos(arq_dados);
+
+    int cont_n;
+    for(cont_n = 0; cont_n < n; cont_n++){
+        editarRegStdin(
+            arq_index,
+            arq_dados,
+            &qtdRegDadosAntes,
+            &qtdRegIndexAntes
+        );
+    }
+
+    
 }

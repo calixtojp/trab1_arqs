@@ -41,10 +41,10 @@
     void ordenaVetIndex_int(void *vetor_generico, int qntd_reg);
     void ordenaVetIndex_str(void *vetor_generico, int qntd_reg);
     void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho);
-    int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave, int *qtd_reg_val);
     void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos);
     void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos);
-    int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave, int *qtd_reg_val);
+    int busca_bin_int(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val);
+    int busca_bin_str(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val);
     long int get_byteOffset_int(void *ponteiro, int pos);
     long int get_byteOffset_str(void *ponteiro, int pos);
     int testar_status_indx(cabecalho_indx_t *cabecalho);

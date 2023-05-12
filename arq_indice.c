@@ -456,24 +456,31 @@ int busca_bin_rec(void *vetor, int ini, int fim, void *chave, int(*comparacao)(v
     }
 }
 
-int busca_bin_int(dados_indx_int_t **vetor, cabecalho_indx_t *cabecalho,int chave, int *qtd_reg_val){
+int busca_bin_int(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val){
     //funcao que prepara para a busca binaria recursiva para tipo inteiro e trata o retorno
-    int pos = busca_bin_rec(vetor,0,cabecalho->qtdReg,&chave,comparacao_vet_dados_indx_int_const);
+    dados_indx_int_t **vetor_real = (dados_indx_int_t**)vetor;
+    int chave_real = *((int*)chave);
+
+    int pos = busca_bin_rec(vetor,0,cabecalho->qtdReg,&chave_real,comparacao_vet_dados_indx_int_const);
 
     return tratamento(pos,qtd_reg_val,vetor,comparacao_vet_dados_indx_int);
 }
 
-int busca_bin_str(dados_indx_str_t **vetor, cabecalho_indx_t *cabecalho, char *chave, int *qtd_reg_val){
+int busca_bin_str(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val){
+
+    dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor;
+    char *chave_real = (char*)chave;
+
     //funcao que prepara para a busca binaria recursiva para tipo string e trata o retorno
     
     //como, no arquivo de index, as strings sao todas truncadas, deve-se tratar a chave de busca
-    char *chave_truncada = truncar(chave);
+    char *chave_truncada = truncar(chave, 12);
 
-    int pos = busca_bin_rec(vetor,0,cabecalho->qtdReg,chave_truncada,comparacao_vet_dados_indx_str_const);
+    int pos = busca_bin_rec(vetor_real,0,cabecalho->qtdReg,chave_truncada,comparacao_vet_dados_indx_str_const);
 
     free(chave_truncada);
 
-    return tratamento(pos,qtd_reg_val,vetor,comparacao_vet_dados_indx_str);
+    return tratamento(pos,qtd_reg_val,vetor_real,comparacao_vet_dados_indx_str);
 }
 
 long int get_byteOffset_int(void *ponteiro, int pos){

@@ -648,25 +648,27 @@ void mostrar_campos(dados_t *registro){
 	//Método que mostra um registroa
 
 	if(registro->idCrime != -1){
-		printf("id:(%d),", registro->idCrime);
+		printf("%d", registro->idCrime);
 	}else{
 		mensagem_NULO();
 	}
+	printf(", ");
 
 	mostrar_campo_fixo((registro->dataCrime), 10);
-	printf(",");
+	printf(", ");
 
 	if(registro->numeroArtigo != -1){
-		printf("artigo(%d),", registro->numeroArtigo);
+		printf("%d", registro->numeroArtigo);
 	}else{
 		mensagem_NULO();
 	}
+	printf(", ");
 
 	mostrar_campo_variavel(registro->lugarCrime);
-	printf(",");
+	printf(", ");
 
 	mostrar_campo_variavel(registro->descricaoCrime);
-	printf(",");
+	printf(", ");
 
 	mostrar_campo_fixo((registro->marcaCelular), 12);
 	printf("\n");
@@ -682,11 +684,9 @@ void mostrar_campo_fixo(char *cursor, int tam_palavra){
 	if(letras_validas == 0){//ou seja, não existe palavra
 		printf("NULO");
 	}
-	printf(")");
 }
 
 void mostrar_campo_variavel(char *palavra){
-	printf("variavel(");
 	if(palavra[0] == '\0'){
 		//isso significa que não existe palavra, ou seja
 		//é um campo NULO
@@ -694,7 +694,6 @@ void mostrar_campo_variavel(char *palavra){
 	}else{
 		printf("%s", palavra);
 	}
-	printf(")");
 }
 
 cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
@@ -767,6 +766,7 @@ void leRegStdin(dados_t *reg){
 	// mostrar_campos(reg);
 }
 
+
 int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit){
 	//funcao que testa os criterios de busca de um registro.
 	//Se o registro satisfaz todos os criterios, retorna 1
@@ -826,46 +826,10 @@ int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, 
 	}
 }
 
-int testar_byteOffset(long int byteoffset, FILE *arq, char **nomes, 
-					char **vals_str, int *vals_int, int qtd_crit){
-	
-	//funcao que testa se o registro do byteOffset informado satisfaz os criterios de busca. Retorna 1 se sim, 0 se nao
-	fseek(arq,byteoffset,SEEK_SET);
-
-	dados_t *registro = alocar_dados();
-	ler_bin_registro(registro,arq);
-
-	if(testar_criterios(registro,nomes,vals_str,vals_int,qtd_crit)){
-		desalocar_registro(registro);
-		return 1;
-	}
-
-	desalocar_registro(registro);
-	return 0;
-}
-
-void printar_busca(FILE *arq_dados, long int *vetor_byteOffset, int cont_reg_vet){
-	//funcao que printa o resultado da busca por um ou mais registros
-	if(cont_reg_vet == 0){
-		//se apos testar os outros criterios, nenhum registro satisfaz a busca, informo que o registro nao existe
-		printf("Registro inexistente.\n");
-	}else{
-		//se o numero de registros que satisfaz a busca é pelo menos 1, printo eles
-		for(int i=0; i<cont_reg_vet; i++){
-			//acesso o registro pelo byteOffset dele
-			fseek(arq_dados,vetor_byteOffset[i],SEEK_SET);
-
-			//leio ele
-			dados_t *registro = alocar_dados();
-			ler_bin_registro(registro,arq_dados);
-
-			//printo ele
-			mostrar_campos(registro);
-
-			//desaloco ele
-			desalocar_registro(registro);
-		}
-	}
+void getRegistro(long int byteOffSet, FILE *arqDados, dados_t *reg){
+	//Posiciono o cursor para ler o registro
+	fseek(arqDados,byteOffSet,SEEK_SET);
+	ler_bin_registro(reg, arqDados);
 }
 
 int testar_status_dados(cabecalho_t *cabecalho){
@@ -902,7 +866,7 @@ void marcar_removido(FILE *arqDados, long int *vet_registros, int n_registros){
     }
 }
 
-void reescrever_registro_dados(dados_t *dados, FILE *arq){
+void reescrever_registro_dados(dados_t *dados, FILE *arq){//pija
 	//função que escreve, no arquivo binário, um registro de dados inteiro
 
 	fwrite(&dados->removido,sizeof(char),1,arq);

@@ -3,20 +3,17 @@
 
 	void binarioNaTela(char *nomeArquivoBinario);
 	void readline(char *string);
+	void ignorar_resto_lina(void);
 	void ler_aspas_string(char *str);
 	void erro(void *ponteiro);
 	void mensagem_erro();
 	char **alocar_vetor_string(int n_elem, int n_chars);
 	void desalocar_vetor_string(char **vetor, int n_elem);
 	int ehInteiro(char *campo);
-<<<<<<< HEAD
 	char *truncar(char *original, int tam_truncamento);
 	int strParaInt(char *str);
-=======
-	char *truncar(char *original);
 	int comparar_strings(char *s1, char *s2);
 	int comparar_n_chars(char *s1, char *s2, int n);
->>>>>>> refs/remotes/origin/main
 
 	/* --- T0, ARRUMAR -------------------*/
 	int tamanhoStr(char *string);

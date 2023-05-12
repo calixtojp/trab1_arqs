@@ -27,6 +27,7 @@
 	void getMarcaCelular(dados_t *dado, char *marcaDestino);
 	void *getCampoInt(dados_t *dado, char *campo);
 	void *getCampoStr(dados_t *dado, char *campo);
+	void getRegistro(long int byteOffSet, FILE *arqDados, dados_t *reg);
 	int campoNulo_int(void *campo_int);
 	int campoNulo_str(void *campo_str);
 	int bytesAteCampoIndexado(dados_t *reg, char *campo);
@@ -43,6 +44,8 @@
 	void prepara_para_escrita(dados_t *reg);
 	void escrever_bin_registro_dados(dados_t *dados, FILE *arq, cabecalho_t *cabecalho);
 	void escrever_bin_campo_variavel(char *texto, FILE *arq, cabecalho_t *cabecalho);
+	void reescrever_registro_dados(dados_t *dados, FILE *arq);
+	void reescrever_campo_variavel(char *texto, FILE *arq);
 	cabecalho_t *ler_cabecalho(FILE *arq_bin);
 	void sair_fechando(FILE *arq_bin);
 	void desalocar_registro(dados_t *registro);
@@ -61,9 +64,7 @@
 	void mostrar_campo_variavel(char *palavra);
 	cabecalho_t* ler_dados_cabecalho(FILE *arq_bin);
 	void leRegStdin(dados_t *reg);
-	int testar_byteOffset(long int byteoffset, FILE *arq, char **nomes, char **vals_str, int *vals_int, int qtd_crit);
 	int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit);
-	void printar_busca(FILE *arq_dados, long int *vetor_byteOffset, int cont_reg_vet);
 	int testar_status_dados(cabecalho_t *cabecalho);
 
 #endif
