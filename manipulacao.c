@@ -63,9 +63,6 @@ void *escolhe_vet_indx(ArqIndex_t *arq_index){
             return arq_index->vet_indx_int;
         case 1:
             return arq_index->vet_indx_str;
-        default:
-            printf("arq_index->tipoDadoInt não foi configurado\n");
-            break;
     }
 }
 
@@ -75,9 +72,6 @@ void *escolhe_indx_dado(ArqIndex_t *arq_index){
             return alocDadoIndxInt();
         case 1:
             return alocDadoIndxStr();
-        default:
-            printf("arq_index->tipoDadoInt não foi configurado\n");
-            break;
     }
 }
 
@@ -96,25 +90,21 @@ void *escolhe_criterio_vet_vals(InfoBusca_t *criterios, int pos, int tipoDado){
 void ler_nome_arq_dados(ArqDados_t *arq_dados){
     int retorno_scanf = scanf(" %s", arq_dados->nomeArqDados); 
     if(retorno_scanf != 1){
-        printf("ERRO: leitura do nome do arq_dados\n");
-        exit(0);
+        mensagem_erro();
     }
 }
 
 void ler_nome_arq_index(ArqIndex_t *arq_index){
     int retorno_scanf = scanf(" %s", arq_index->nomeArqIndex); 
     if(retorno_scanf != 1){
-        printf("ERRO: leitura do nome do arq_index\n");
-        exit(0);
+        mensagem_erro();
     }
 }
 
 void ler_campoIndexado(ArqIndex_t *arq_index){
-    int retorno_scanf;
-    retorno_scanf = scanf(" %s", arq_index->campoIndexado);
+    int retorno_scanf = scanf(" %s", arq_index->campoIndexado);
     if(retorno_scanf != 1){
-        printf("ERRO: leitura do campoIndexado\n");
-        exit(0);
+        mensagem_erro();
     }
 }
 
@@ -151,16 +141,14 @@ void ler_dados_arq_index(ArqIndex_t *arq_index){
 void abrir_arq_dados(ArqDados_t *arq_dados, const char *tipo_leitura){
     arq_dados->arqDados = fopen(arq_dados->nomeArqDados, tipo_leitura);
     if(arq_dados->arqDados == NULL){
-        printf("erro na abertura do arqDados\n");
-        exit(0);
+        mensagem_erro();
     }
 }
 
 void abrir_arq_index(ArqIndex_t *arq_index, const char *tipo_leitura){
     arq_index->arqIndex = fopen(arq_index->nomeArqIndex, tipo_leitura);
     if(arq_index->arqIndex == NULL){
-        printf("erro na abertura do arqIndex\n");
-        exit(0);
+        mensagem_erro();
     }
 
     if(strcmp(tipo_leitura, "wb")==0){
@@ -211,20 +199,6 @@ int getTamCabecalhoDados(ArqDados_t *arq_dados){
 
 void mostrar_cabecalhoDados(ArqDados_t *arq_dados){
     mostrar_cabecalho_dados(arq_dados->cabecalhoDados);
-}
-
-void confere_arq_dados(ArqDados_t *arq_dados){
-    //verifica-se a disponibilidade do arquivo
-    if(status_disponivel(arq_dados->cabecalhoDados) == '0'){
-        printf("Falha no processamento do arquivo.\n");
-        exit(0);
-    }
-
-    //verifica-se a existência de registros válidos 
-    if(!existem_registros(arq_dados->cabecalhoDados)){
-        printf("Registro inexistente.\n");
-        sair_fechando(arq_dados->arqDados);
-    }
 }
 
 int get_nroRegValidos(ArqDados_t *arq_dados){
@@ -495,7 +469,7 @@ InfoBusca_t *ler_criterios_busca(){
     }
 
     //ler o buffer até a próxima linha
-    ignorar_resto_lina();
+    ignorar_resto_linha();
 
     return criterios;
 }
@@ -508,29 +482,36 @@ void desalocar_InfoBusca(InfoBusca_t *informacao){
 }
 
 void achouReg(int flag){
-    if(flag == -1){
+    if(flag == 0){
         printf("Registro inexistente.\n");
     }
 }
 
-void busca(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtd_buscas){
-    for(int i=1; i<=qtd_buscas; i++){
-        printf("Resposta para a busca %d\n",i);
-
-        InfoBusca_t *criterios = ler_criterios_busca();
-
-        processaRegistros(arq_dados,arq_index,criterios,printa_busca,achouReg);
-
-        //Desalocar tipos utilizados    	
-        desalocar_InfoBusca(criterios);
-
-        //Reiniciar o ponteiro do arquivo de dados para o primeiro registro de dados (pulando o cabecalho)
-        //para fazer um novo processamento
-        fseek(arq_dados->arqDados,len_cabecalho_dados(),SEEK_SET);
-    }   
+void nada(int flag){
+    //função que não faz nada. Existe para manter a constância da função 'processaRegistros()', 
+    //dado que nem sempre o parâmetro 'FncFinaliza final' é usado
 }
 
-void printa_busca(void *dadoIndx, dados_t *registro){
+int testarStatusDados(ArqDados_t *arq_dados){
+	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
+	if(getStatusDados(arq_dados->cabecalhoDados) == '1'){
+		return 1;
+	}
+	return 0;
+}
+
+int testarStatusIndex(ArqIndex_t *arq_index){
+	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
+	if(getStatusIndex(arq_index->cabecalhoIndex) == '1'){
+		return 1;
+	}
+	return 0;
+}
+void printa_busca(void *dadoDados, void *dadoIndex, dados_t *registro){
+    //funcao que ignora os campos do tipo void para que toda as funções de 
+    //'acao' em 'processaRegistros()' sejam do mesmo tipo, no caso o 'FncAcao'
+
+    //Em seguida, printa os campos de um registro
     mostrar_campos(registro);
 }
 
@@ -548,17 +529,23 @@ void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t
         busca_bin_index(arq_index,arq_dados,existe,criterios,acao,final);
     }else{
         //se não, faz-se busca sequencial no arquivo de dados
-        busca_seq_dados(arq_dados,criterios,acao,final);
+    
+        //Para isso, deve-se reiniciar o ponteiro do arquivo de dados para o primeiro registro de dados (pulando o cabecalho) 
+        //para fazer um novo processamento, pois não há garantia de que o ponteiro esteja corretamente posicionado
+        fseek(arq_dados->arqDados,len_cabecalho_dados(),SEEK_SET);
+
+        //em seguida, chama-se a função que realiza a busca sequencial
+        busca_seq_dados(arq_dados, arq_index, criterios,acao,final);
     }
 
 }
 
 void percorrer_index(FncGetByteOffSet get_byteOffset, int pos_prim, int qtd_reg_val, void *vetor, 
-                    ArqDados_t *arq_dados, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
+                    ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
     
-    int achei_reg_val = -1;
-    //Flag que indica se algum registro satisafaz todos os critérios de busca.
-    //Recebe -1 se nenhum satisfaz ou 1 se pelo menos 1 satisfaz
+    int achei_reg_val = 0;
+    //Flag que indica se algum registro satisfaz todos os critérios de busca.
+    //Recebe 0 se nenhum satisfaz ou 1 se pelo menos um satisfaz
 
     if(pos_prim != -1){
         /*Como existe pelo menos 1 registro que satisfaz a busca, percorro o vet_indx_int para todos os 
@@ -576,8 +563,7 @@ void percorrer_index(FncGetByteOffSet get_byteOffset, int pos_prim, int qtd_reg_
 
             if(satisfaz){
                 //se o reg satisfaz todos os criterios, realizo a ação
-                void *ignorar;
-                acao(ignorar, reg);
+                //acao(arq_dados, arq_index, reg, FODSE);
                 achei_reg_val = 1;
             }
 
@@ -597,11 +583,9 @@ void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave
 
     FncGetByteOffSet fncsGetByteOffSet[] = {get_byteOffset_int, get_byteOffset_str};
 
-    printf("antes malocVoid\n");
     int qtd_reg_val=0;//guarda o numero de registros que satisfazem o criterio de busca do arquivo de indice
     void *vetorIndex = escolhe_vet_indx(arq_index);
     void *chave = escolhe_criterio_vet_vals(criterios, pos_chave, tipoDado);
-    printf("depois malocVoid\n");
 
     int pos_prim = fncsBuscaBin[tipoDado](vetorIndex, arq_index->cabecalhoIndex, chave, &qtd_reg_val);
     //fncsBuscaBin retorna o primeiro registro que satisfaz o critério de busca binária no vetorIndex.
@@ -612,16 +596,18 @@ void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave
 
     //Com as informações sobre o intervalo (no vetIndex) que satisfaz os critérios de busca,
     //percorro o vetIndex.
-    printf("antes percorre\n");
-    percorrer_index(fncsGetByteOffSet[tipoDado], pos_prim, qtd_reg_val, vetorIndex, arq_dados, criterios, acao, final);
-    printf("depois percorre\n");
+    percorrer_index(fncsGetByteOffSet[tipoDado], pos_prim, qtd_reg_val, vetorIndex, arq_dados, arq_index, criterios, acao, final);
 }
 
-void busca_seq_dados(ArqDados_t *arq_dados, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
+void busca_seq_dados(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
     
-    int achei_reg_val = -1;
-    //Flag que indica se algum registro satisafaz todos os critérios de busca.
-    //Recebe -1 se nenhum satisfaz ou 1 se pelo menos 1 satisfaz
+    //Reiniciar o ponteiro do arquivo de dados para o primeiro registro de dados (pulando o cabecalho)
+    //para fazer um novo processamento, pois o ponteiro do arquivo pode estar em qualquer lugar
+    fseek(arq_dados->arqDados,len_cabecalho_dados(),SEEK_SET);
+
+    int achei_reg_val = 0;
+    //Flag que indica se algum registro satisfaz todos os critérios de busca.
+    //Recebe 0 se nenhum satisfaz ou 1 se pelo menos um satisfaz
 
     dados_t *registro = alocar_dados();//aloco um memoria para leitura de um registro de dados
         
@@ -632,7 +618,10 @@ void busca_seq_dados(ArqDados_t *arq_dados, InfoBusca_t *criterios, FncAcao acao
             //se o registro satisfaz todos os criterios, realizo a ação 
             void *ignorar;
             achei_reg_val = 1;//achei pelo menos 1 registro que satisfaz os critérios
-            acao(ignorar, registro);
+            //acao(arq_dados, arq_index, registro); 
+                                                //mando flag que diz se vim de busca binaria ou seq
+                                                //se seq: passo o byteOffset do registro no arquivo de dados
+                                                //se bin: passo a pos_prim+1, que me diz a posição no vetor, daí pego o byteOffset
         }
 
         //sempre desaloco o registro, pois preciso desalocar os campos de tamanho variavel do registro
@@ -750,23 +739,63 @@ int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos){
     return 0;
 }
 
-int testar_status(ArqIndex_t *arq_index, ArqDados_t *arq_dados){
-    //funcao que confere o status do arquivo de indice e de dados
-    //se os dois estao consistentes, retorna 2
-    //se um está inconsistente, retorna 1
-    //se os dois estao inconsistentes, retorna 0
-
-    int retorno = 0;
-
-    retorno += testar_status_dados(arq_dados->cabecalhoDados);
-    retorno += testar_status_indx(arq_index->cabecalhoIndex);
-
-    return retorno;
-}
-
 void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int *qtdRegDados,int *qtdRegInx){
     InfoBusca_t *criterios = ler_criterios_busca();
 
     int cont_reg_vet = 0; //quantidade de registros que satisfazem os criterios de busca
 
+}
+
+void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, long int byteOffset){
+
+    //faço a remoção lógica do registro
+    remocaoLogica(registro,arq_dados->cabecalhoDados);
+
+    //Agora devo reescrever o campo que foi atualizado no arquivo de dados. Para isso preciso:
+
+    //-retornar à posição inicial do registro no arquivo de dados;
+    fseek(arq_dados->arqDados,byteOffset,SEEK_SET);
+
+    //-e escrever efetivamente
+    escrever_campo_removido(arq_dados->arqDados ,registro);
+
+    /* Como essa função recebe apenas o byteOffset do registro e, para removê-lo do indice preciso da posição, 
+    devo buscá-la*/
+
+    //pos  = INSERIR BUSCA
+
+   /*  if(pos != -1){
+        //Se a posição é válida, significa que o registro está indexado. 
+        //Assim, removo o registro do arquivo de índice a partir de sua posição no vetor de dados
+        desindexaRegistro(arq_index,pos);
+    }*/
+    //se é inválida, o registro não está indexado, então nao preciso fazer nada
+}
+
+void desindexaRegistro(ArqIndex_t *arq_index, int pos){
+    //função que remove um registro do arquivo de índice
+    
+    //decremento a quantidade de registros indexados no cabeçalho do arquivo de indice
+    int qtd_reg = get_qtdReg(arq_index->cabecalhoIndex);
+    set_qtdReg(arq_index->cabecalhoIndex,qtd_reg-1);
+
+    //Agora quero fazer o shift das posições do vetor de dados, a partir da pos que se deseja remover
+    //Para isso:
+
+    //-descubro qual dos vetores de dados devo usar;
+    void *vet_dado_indx = escolhe_vet_indx(arq_index);
+
+    //-defino um vetor de funções que fazem o shift para tipos específicos
+    typedef void (*FncShiftar)(void *,int, int);
+    FncShiftar fncsShiftar[] = {shiftarVetIndxInt,shiftarVetIndxStr};
+
+    //-descubro qual é o tipo do vetor de dados que vou usar (0 é inteiro e 1 é string)
+    int tipo_dado = arq_index->tipoDadoInt;
+
+    //-por fim, chamo a função que faz o shift 
+    fncsShiftar[tipo_dado](vet_dado_indx,pos,qtd_reg-1);
+
+    //Em seguida, realoco o tamanho do vetor
+    int decremento = -1;
+    realocar_vet_index(arq_index, qtd_reg, decremento);
 }

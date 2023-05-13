@@ -228,6 +228,10 @@ int get_qtdReg(cabecalho_indx_t *cabecalho){
     return cabecalho->qtdReg;
 }
 
+void set_qtdReg(cabecalho_indx_t *cabecalho, int qtd_reg){
+    cabecalho->qtdReg = qtd_reg;
+}
+
 void mostraRegIndx_int(dados_indx_int_t *dado){
     printf("campoIndexado:%d|byte:%ld\n", dado->chaveBusca, dado->byteOffset);
 }
@@ -443,7 +447,7 @@ int busca_bin_rec(void *vetor, int ini, int fim, void *chave, int(*comparacao)(v
     if(comparacao(vetor,meio,chave)==0){
         //se o vetor[meio] == chave, retorno o meio
         return meio;
-    }else if(comparacao(vetor,meio,chave)==1){
+    }else if(comparacao(vetor,meio,chave)>0){
         //se o vetor[meio] > chave, busco de novo até o meio-1
         fim = meio-1;
 
@@ -495,10 +499,29 @@ long int get_byteOffset_str(void *ponteiro, int pos){
     return registro[pos]->byteOffset;
 }
 
-int testar_status_indx(cabecalho_indx_t *cabecalho){
-	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
-	if(cabecalho->status == '1'){
-		return 1;
-	}
-	return 0;
+char getStatusIndex(cabecalho_indx_t *cabecalho){
+	//funcao que retorna o status do arquivo de indx
+    return cabecalho->status;
+}
+
+void shiftarVetIndxInt(void *vet_dado_indx, int pos, int qtd_reg){
+    /*função que faz o shift das posições de um vetor do tipo dados_indx_int_t, 
+    sobreescrevendo uma posição passada por parametro*/
+
+    dados_indx_int_t **vet_dado_indx_int = (dados_indx_int_t **) vet_dado_indx;
+
+    for(int i=pos; i<qtd_reg; i++){
+        vet_dado_indx_int[i] = vet_dado_indx_int[i+1];
+    }
+}
+
+void shiftarVetIndxStr(void *vet_dado_indx, int pos, int qtd_reg){
+    /*função que faz o shift das posições de um vetor do tipo dados_indx_str_t, 
+    sobreescrevendo uma posição passada como parâmetro (int 'pos')*/
+
+    dados_indx_str_t **vet_dado_indx_str = (dados_indx_str_t **) vet_dado_indx;
+
+    for(int i=pos; i<qtd_reg; i++){
+        vet_dado_indx_str[i] = vet_dado_indx_str[i+1];
+    }
 }

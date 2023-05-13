@@ -11,6 +11,8 @@
 -colocar apenas as mensagens de erro que a Cristina manda
 -tem dois campos 'tipo de dado' na struct arq_index
 -adicionar as mensagens de erro certinho
+-atualizar status qnd for usar as coisa
+-len_reg_dados é um nome em ingles, trocar para tamRegDados
 */
 
 int main(){

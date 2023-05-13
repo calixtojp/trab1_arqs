@@ -49,7 +49,6 @@
 	cabecalho_t *ler_cabecalho(FILE *arq_bin);
 	void sair_fechando(FILE *arq_bin);
 	void desalocar_registro(dados_t *registro);
-	char status_disponivel(cabecalho_t *cabecalho);
 	int existem_registros(cabecalho_t *cabecalho);
 	void copia_registro(dados_t *destino, dados_t *origem);
 	void mostrar_registros(FILE *arq_bin);
@@ -65,6 +64,8 @@
 	cabecalho_t* ler_dados_cabecalho(FILE *arq_bin);
 	void leRegStdin(dados_t *reg);
 	int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit);
-	int testar_status_dados(cabecalho_t *cabecalho);
+	char getStatusDados(cabecalho_t *cabecalho);
+	void escrever_campo_removido(FILE *arq, dados_t *dados);
+	void remocaoLogica(dados_t *registro, cabecalho_t *cabecalho);
 
 #endif

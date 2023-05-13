@@ -3,7 +3,7 @@
 
 	void binarioNaTela(char *nomeArquivoBinario);
 	void readline(char *string);
-	void ignorar_resto_lina(void);
+	void ignorar_resto_linha(void);
 	void ler_aspas_string(char *str);
 	void erro(void *ponteiro);
 	void mensagem_erro();

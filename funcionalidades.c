@@ -55,7 +55,9 @@ void create_index(){
     byteOffSetAtual = getTamCabecalhoDados(arq_dados);
 
     //Verificar consistência dos dados do arquivo
-    confere_arq_dados(arq_dados);
+    if(testarStatusDados(arq_dados)==0){
+        mensagem_erro();
+    }
 
     //Aloco espaço para o vetor que armazenará o arquivo de index
     unsigned int nroRegValidos = get_nroRegValidos(arq_dados);
@@ -94,8 +96,6 @@ void create_index(){
     //Desalocar tipos utilizados
     desalocar_ArqDados(arq_dados);
     desalocar_ArqIndex(arq_index);
-
-    // printf("fechamento dos arquivos concluído\n");
 }
 
 //Funcionalidade [4]
@@ -125,13 +125,28 @@ void where(void){
     //Ler o cabeçalho do arquivo de dados
     ler_cabecalho_dados(arq_dados);
 
-    //Testo se os dois arquivos estao consistentes
-    if(testar_status(arq_index,arq_dados) != 2){
+    //Testo se os dois arquivos estao consistentes. Se não estão, encerro o programa com uma mensagem de erro.
+    if(testarStatusIndex(arq_index)==0){
+        mensagem_erro();
+    }else if(testarStatusDados(arq_dados)==0){
         mensagem_erro();
     }
 
-    //Chamo a funcao que busca e printa os registros desejados
-    busca(arq_dados,arq_index,n);
+    //Loop que faz n buscas
+    for(int i=1; i<=n; i++){
+        printf("Resposta para a busca %d\n",i);
+
+        //Ler os critérios de busca
+        InfoBusca_t *criterios = ler_criterios_busca();
+
+        /*Processar o registro usando a ação 'printa_busca'
+        e o final 'achouReg', que diz se o registro é inexistente, 
+        caso nenhum satisfaça os critérios de busca*/
+        processaRegistros(arq_dados,arq_index,criterios,printa_busca,achouReg);
+
+        //Desalocar crtérios de busca    	
+        desalocar_InfoBusca(criterios);
+    }
 
     //Fechar arquivos
     fechar_arq_index(arq_index);
@@ -166,9 +181,26 @@ void delete_from(){
     ler_cabecalho_arq_index(arq_index);
     ler_dados_arq_index(arq_index);
 
-    // deletar(arq_dados,arq_index,n);
-}
+    //Loop que faz 'n' deleções
+    for(int i=1; i<=n; i++){
 
+        //Ler os critérios de busca para os registros que se deseja remover
+        InfoBusca_t *criterios = ler_criterios_busca();
+
+        //Processar o registro usando a ação 'deletar_registros' e o final 'nada'
+        processaRegistros(arq_dados,arq_index,criterios,deletarRegistro, nada);
+
+        //Desalocar tipos utilizados    	
+        desalocar_InfoBusca(criterios);
+    }
+
+    //reescrevo o arquivo de index
+    /*INSIRA AQUIKKKKKKKKKK*/
+
+    //Chama a funcao binarioNaTela() para gerar uma saída com base nas mudanças nos arquivos
+    binarioNaTela(getNomeArqDados(arq_dados)); 
+    binarioNaTela(getNomeArqIndex(arq_index));
+}
 //Funcionalidade [6]
 void insert_into(){
     //Alocar tipos utilizados
@@ -271,11 +303,6 @@ void update(){
     //Ler o cabeçalho do arquivo de dados.
     ler_cabecalho_dados(arq_dados);
 
-    //Testo se os dois arquivos estao consistentes.
-    if(testar_status(arq_index,arq_dados) != 2){
-        mensagem_erro();
-    }
-
     //Total de registros antes das modificações.
     int qtdRegIndexAntes = get_nroRegIndex(arq_index);
     int qtdRegDadosAntes = get_nroRegValidos(arq_dados);
@@ -290,5 +317,4 @@ void update(){
         );
     }
 
-    
 }

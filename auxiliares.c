@@ -62,7 +62,7 @@ void readline(char *string) {
     string[i] = '\0';
 }
 
-void ignorar_resto_lina(void){
+void ignorar_resto_linha(void){
     char c;
     do{
         scanf("%c", &c);
@@ -264,5 +264,5 @@ void pular_cabecalho_csv(FILE *arq){
 }
 
 void mensagem_NULO(void){
-    printf("NULO, ");
+    printf("NULO");
 }

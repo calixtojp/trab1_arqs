@@ -429,6 +429,10 @@ void escrever_bin_campo_variavel(char *texto, FILE *arq, cabecalho_t *cabecalho)
 	//como as strings de tamanho variável são alocadas dinamicamente a cada leitura, devem ser liberadas a cada escrita.
 }
 
+void escrever_campo_removido(FILE *arq, dados_t *dados){
+	fwrite(&(dados->removido),1,sizeof(char),arq);
+}
+
 void sair_fechando(FILE *arq_bin){
 	//se um erro for encontrado é preciso finalizar do programa
 	//fechando o arquivo binário, uso essa função.
@@ -440,10 +444,6 @@ void desalocar_registro(dados_t *registro){
 	free(registro->descricaoCrime);
 	free(registro->lugarCrime);
 	free(registro);
-}
-
-char status_disponivel(cabecalho_t *cabecalho){
-	return cabecalho->status;
 }
 
 int existem_registros(cabecalho_t *cabecalho){
@@ -463,9 +463,6 @@ int existem_registros(cabecalho_t *cabecalho){
 
 void copia_registro(dados_t *destino, dados_t *origem){
 
-	// printf("vou mostrar a origem\n");
-	// mostrar_campos(origem);
-
 	destino->removido = origem->removido;
 	destino->numeroArtigo = origem->numeroArtigo;
 	destino->idCrime = origem->idCrime;
@@ -484,10 +481,6 @@ void copia_registro(dados_t *destino, dados_t *origem){
 	n = strlen(origem->descricaoCrime);
 	destino->descricaoCrime = alocar_nome(n+1);
 	strcpy(destino->descricaoCrime, origem->descricaoCrime);
-
-
-	// printf("vou mostrar o destino\n");
-	// mostrar_campos(destino);
 }
 
 int ler_bin_registro(dados_t *registro, FILE *arq_bin){
@@ -645,7 +638,7 @@ char *ler_bin_char_variavel(FILE *arq_bin){
 }
 
 void mostrar_campos(dados_t *registro){
-	//Método que mostra um registroa
+	//Método que mostra um registro
 
 	if(registro->idCrime != -1){
 		printf("%d", registro->idCrime);
@@ -730,40 +723,32 @@ cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 
 void leRegStdin(dados_t *reg){
     /*
-            Lê um buffer da entrada padrão stdin e insere o
+		Lê um buffer da entrada padrão stdin e insere o
         os dados do registro.
     */
    	const int max_tam_str = 200;
 
    	scanf("%d", &(reg)->idCrime);
-	// printf("id(%d)", reg->idCrime);
 
 	ler_aspas_string(reg->dataCrime);
-	// printf(",data(%s)", reg->dataCrime);
 	
 	char artigo_char[13];
 	ler_aspas_string(artigo_char);
 	reg->numeroArtigo = strParaInt(artigo_char);
-	// printf(",artigo(%d)", reg->numeroArtigo);
 
 	int tam_real;
 	reg->lugarCrime = malloc(sizeof(char)*max_tam_str);
 	ler_aspas_string(reg->lugarCrime);
 	tam_real = strlen(reg->lugarCrime);
 	reg->lugarCrime = realloc(reg->lugarCrime, (sizeof(char))*(tam_real+1));
-	// printf(",lugar(%s)", reg->lugarCrime);
 
 	reg->descricaoCrime = malloc(sizeof(char)*max_tam_str);
 	ler_aspas_string(reg->descricaoCrime);
 	tam_real = strlen(reg->descricaoCrime);
 	reg->descricaoCrime = realloc(reg->descricaoCrime, (sizeof(char))*(tam_real+1));
-	// printf(",descricao(%s)", reg->descricaoCrime);
 
 	ler_aspas_string(reg->marcaCelular);
-	// printf(",marca(%s)", reg->marcaCelular);
 
-	// printf("\nacabei de ler o registro:\n");
-	// mostrar_campos(reg);
 }
 
 
@@ -832,40 +817,6 @@ void getRegistro(long int byteOffSet, FILE *arqDados, dados_t *reg){
 	ler_bin_registro(reg, arqDados);
 }
 
-int testar_status_dados(cabecalho_t *cabecalho){
-	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
-	if(cabecalho->status == '1'){
-		return 1;
-	}
-	return 0;
-}
-
-void marcar_removido(FILE *arqDados, long int *vet_registros, int n_registros){
-    for(int i=0; i<n_registros; i++){
-		//acesso o registro pelo byteOffset dele
-		fseek(arqDados,vet_registros[i],SEEK_SET);
-
-		//leio ele
-		dados_t *registro = alocar_dados();
-		ler_bin_registro(registro,arqDados);
-
-		//altero o campo
-		registro->removido = '1';
-
-		//retorno o cursor do arquivo para o comeco do registro
-		fseek(arqDados,vet_registros[i],SEEK_SET);
-
-		//reescrevo ele no arquivo de dados
-		reescrever_registro_dados(registro, arqDados);
-
-		//apago ele do arquivo de indice, se necessario
-		//apagar_registro_index();
-		
-		//desaloco ele
-		desalocar_registro(registro);
-    }
-}
-
 void reescrever_registro_dados(dados_t *dados, FILE *arq){//pija
 	//função que escreve, no arquivo binário, um registro de dados inteiro
 
@@ -892,4 +843,16 @@ void reescrever_campo_variavel(char *texto, FILE *arq){
 	//ao final, ao inves de escrever o '\0',escrevo o '|'
 	texto[i] = '|';
 	fwrite(&texto[i],sizeof(char),1,arq);
+}
+
+char getStatusDados(cabecalho_t *cabecalho){
+	return cabecalho->status;
+}
+
+void remocaoLogica(dados_t *registro, cabecalho_t *cabecalho){
+	//altero o campo 'removido' para '1'
+	registro->removido = '1';
+	
+	//incremento o nro de registros removidos
+	cabecalho->nroRegRem++;
 }

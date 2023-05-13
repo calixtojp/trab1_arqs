@@ -27,6 +27,7 @@
     int getTamDadoIndx_int(void);
     int getTamDadoIndx_str(void);
     int get_qtdReg(cabecalho_indx_t *cabecalho);
+    void set_qtdReg(cabecalho_indx_t *cabecalho, int qtd_reg);
     void ler_index_cabecalho(FILE *arq, cabecalho_indx_t* cabecalho);
     dados_indx_int_t **ler_index_dado_int(FILE *arq, cabecalho_indx_t *cabecalho);
     dados_indx_str_t **ler_index_dado_str(FILE *arq, cabecalho_indx_t *cabecalho);
@@ -47,6 +48,8 @@
     int busca_bin_str(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val);
     long int get_byteOffset_int(void *ponteiro, int pos);
     long int get_byteOffset_str(void *ponteiro, int pos);
-    int testar_status_indx(cabecalho_indx_t *cabecalho);
+    char getStatusIndex(cabecalho_indx_t *cabecalho);
+    void shiftarVetIndxInt(void *vet_dado_indx, int pos, int qtd_reg);
+    void shiftarVetIndxStr(void *vet_dado_indx, int pos, int qtd_reg);
  
 #endif
