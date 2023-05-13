@@ -8,4 +8,5 @@
 /arquivos
 arq
 funcoesFornecidas.c
-testes.*
+testes
+testes2.c

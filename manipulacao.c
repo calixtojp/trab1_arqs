@@ -349,22 +349,22 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     // fncs_MostraVet[arq_index->tipoDadoInt](vet_indx, qntd_reg);
 }
 
+void escreveArqIndex(ArqIndex_t *arq_index){
+
+    escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
+
+    escreveVetIndex(arq_index, 0, get_nroRegIndex(arq_index));
+}
+
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     //Posiciono no local de escrita correto
     typedef int (*FncGetTamDadoIndx) (void);
-    FncGetTamDadoIndx fncsGetTamDadoIndx[] = {
-        getTamDadoIndx_int,
-        getTamDadoIndx_str
-    };
+    FncGetTamDadoIndx fncsGetTamDadoIndx[] = {getTamDadoIndx_int, getTamDadoIndx_str};
 
     int tamCabecalho = getTamCabecalhoIndx();
     int tamDado = fncsGetTamDadoIndx[arq_index->tipoDadoInt]();
 
-    fseek(
-        arq_index->arqIndex,
-        tamCabecalho + (inicio*tamDado),
-        SEEK_SET
-    );
+    fseek(arq_index->arqIndex,tamCabecalho + (inicio*tamDado),SEEK_SET);
 
     //escolho que tipo de dado será escrito
     void *vet_indx = malloc(sizeof(void));
@@ -716,10 +716,6 @@ int modificaCampoIndexado(ArqIndex_t *arq_index, InfoBusca_t *altera){
     return 0;
 }
 
-void desindexaReg(int pos, cabecalho_indx_t *cabecalho, void *vetIndx){
-    //pija
-}
-
 int obterPosicaoRegVetIndx(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atual, long int byteOffSet){
     //Obter a posição do registro dentro do vetIndex a partir do byteOffSet e do campo indexado.
 
@@ -771,7 +767,7 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
             if(pos != -1){
                 //Se o registro tinha campo indexado
                 //Removo do vetIndex
-                desindexaReg(pos, arq_index->cabecalhoIndex, vetIndx);
+                desindexaRegistro(arq_index,pos);
             }
             //Reescrevo o indexamento no vetIndex
             realocar_vet_index(arq_index, qtd_reg, qtd_reg+1);
@@ -792,7 +788,7 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
         if(pos != -1){
             //Se o registro tinha campo indexado
             //Removo do vetIndex
-            desindexaReg(pos, arq_index->cabecalhoIndex, vetIndx);
+            desindexaRegistro(arq_index,pos);
         }
         //Escrevo no final
         realocar_vet_index(arq_index, qtd_reg, qtd_reg+1);
@@ -806,6 +802,8 @@ void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int *qtdRegDad
     InfoBusca_t *criterios = ler_criterios_busca();
 
     processaRegistros(arq_dados,arq_index,criterios,modificaReg,ordenaEscreveIndxFinal);
+
+    desalocar_InfoBusca(criterios);
 }
 
 void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, long int byteOffset){
@@ -821,17 +819,17 @@ void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *regi
     //-e escrever efetivamente
     escrever_campo_removido(arq_dados->arqDados ,registro);
 
-    /* Como essa função recebe apenas o byteOffset do registro e, para removê-lo do indice preciso da posição, 
-    devo buscá-la*/
+    /*Agora, devo remover o registro do arquivo de índice, se necessário. Para removê-lo de lá,
+    preciso de sua posição no vetor de dados. Como o 'deletarRegistro()' recebe apenas o byteOffset
+    desse registro no arquivo de dados, devo buscar a posição dele no vetor de dados do arquivo de índice.*/
+    int pos = obterPosicaoRegVetIndx(arq_dados, arq_index, registro, byteOffset);
 
-    //pos  = INSERIR BUSCA
-
-   /*  if(pos != -1){
+    if(pos != -1){
         //Se a posição é válida, significa que o registro está indexado. 
         //Assim, removo o registro do arquivo de índice a partir de sua posição no vetor de dados
         desindexaRegistro(arq_index,pos);
-    }*/
-    //se é inválida, o registro não está indexado, então nao preciso fazer nada
+    }
+    //se é inválida, o registro não está indexado, então não preciso fazer nada
 }
 
 void desindexaRegistro(ArqIndex_t *arq_index, int pos){
@@ -860,4 +858,36 @@ void desindexaRegistro(ArqIndex_t *arq_index, int pos){
     //Em seguida, realoco o tamanho do vetor
     int decremento = -1;
     realocar_vet_index(arq_index, qtd_reg, decremento);
+}
+
+void reiniciarCursorIndex(ArqIndex_t *arq_index){
+    fseek(arq_index->arqIndex,0,SEEK_SET);
+}
+
+void reiniciarCursorDados(ArqDados_t *arq_dados){
+    fseek(arq_dados->arqDados,0,SEEK_SET);
+}
+
+void alterarStatusIndex(ArqIndex_t *arq_index, int status){
+    if(status == 1){
+        setStatusIndex(arq_index->cabecalhoIndex,'1');
+    }else if(status == 0){
+        setStatusIndex(arq_index->cabecalhoIndex,'0');
+    }
+}
+
+void alterarStatusDados(ArqDados_t *arq_dados, int status){
+    if(status == 1){
+        setStatusDados(arq_dados->cabecalhoDados,'1');
+    }else if(status == 0){
+        setStatusDados(arq_dados->cabecalhoDados,'0');
+    }
+}
+
+void escreverStatusDados(ArqDados_t *arq_dados){
+    fwriteStatusDados(arq_dados->arqDados, arq_dados->cabecalhoDados);
+}
+
+void escreverStatusIndex(ArqIndex_t *arq_index){
+    fwriteStatusIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
 }

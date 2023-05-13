@@ -145,6 +145,14 @@ void setCabecalhoIndex(cabecalho_indx_t *cabecalho, const char status, int qtdRe
     cabecalho->qtdReg = qtdReg;
 }
 
+void setStatusIndex(cabecalho_indx_t *cabecalho, char status){
+    cabecalho->status = status;
+}
+
+void fwriteStatusIndex(FILE *arq, cabecalho_indx_t *cabecalho){
+	fwrite(&cabecalho->status,sizeof(char),1,arq);
+}
+
 cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
     cabecalho_indx_t *cabecalho = alocar_cbl_indx();
 	if(fread(&(cabecalho->status), sizeof(char), 1, arqIndex)!=1){
@@ -157,6 +165,7 @@ cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
 		return NULL;
 	}
 }
+
 
 void setDadoIndxInt(void *dado, long int byteOffSet, void *valor){
     dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;

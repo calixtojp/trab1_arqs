@@ -57,5 +57,7 @@
     char getStatusIndex(cabecalho_indx_t *cabecalho);
     void shiftarVetIndxInt(void *vet_dado_indx, int pos, int qtd_reg);
     void shiftarVetIndxStr(void *vet_dado_indx, int pos, int qtd_reg);
+    void setStatusIndex(cabecalho_indx_t *cabecalho, char status);
+    void fwriteStatusIndex(FILE *arq, cabecalho_indx_t *cabecalho);
  
 #endif

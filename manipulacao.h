@@ -51,7 +51,7 @@ char *getNomeArqDados(ArqDados_t *arq_dados);
 void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos);
 void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo);
 int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos_reg, long int *byteOffSetAnt);
-void desindexaReg(int pos, cabecalho_indx_t *cabecalho, void *vetIndx);
+void desindexaRegistro(ArqIndex_t *arq_index, int pos);
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg);
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim);
 void terminaEscritaIndex(ArqIndex_t *arq_index, int qntdReg);
@@ -77,5 +77,12 @@ void nada(void *ponteiro, int flag);
 int testarStatusIndex(ArqIndex_t *arq_index);
 int testarStatusDados(ArqDados_t *arq_dados);
 void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, long int byteOffset);
+void reiniciarCursorIndex(ArqIndex_t *arq_index);
+void reiniciarCursorDados(ArqDados_t *arq_dados);
+void alterarStatusIndex(ArqIndex_t *arq_index, int status);
+void alterarStatusDados(ArqDados_t *arq_dados, int status);
+void escreverStatusDados(ArqDados_t *arq_dados);
+void escreverStatusIndex(ArqIndex_t *arq_index);
+void escreveArqIndex(ArqIndex_t *arq_index);
 
 #endif
