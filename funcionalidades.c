@@ -181,6 +181,16 @@ void delete_from(){
     ler_cabecalho_arq_index(arq_index);
     ler_dados_arq_index(arq_index);
 
+    //Ler o cabeçalho do arquivo de dados
+    ler_cabecalho_dados(arq_dados);
+
+    //Testo se os dois arquivos estao consistentes. Se não estão, encerro o programa com uma mensagem de erro.
+    if(testarStatusIndex(arq_index)==0){
+        mensagem_erro();
+    }else if(testarStatusDados(arq_dados)==0){
+        mensagem_erro();
+    }
+
     //Loop que faz 'n' deleções
     for(int i=1; i<=n; i++){
 
@@ -216,13 +226,15 @@ void insert_into(){
     ler_nome_arq_index(arq_index);
 
     //abrir arquivos
-    abrir_arq_index(arq_index, "rb");
-    abrir_arq_dados(arq_dados, "a+b");
+    abrir_arq_index(arq_index, "r+b");
+    abrir_arq_dados(arq_dados, "r+b");
 
     //Ler os cabeçalhos
     ler_cabecalho_arq_index(arq_index);
     ler_dados_arq_index(arq_index);
     ler_cabecalho_dados(arq_dados);
+
+    levaFinalCursorDados(arq_dados);
 
     int qtdInserir;
     int qtdRegEscritosIndex;
@@ -234,17 +246,20 @@ void insert_into(){
 
     qtdRegIndexAntes = get_nroRegIndex(arq_index);
     qtdRegDadosAntes = get_nroRegValidos(arq_dados);
+    qtdRegEscritosDados = qtdRegDadosAntes + qtdInserir;
 
     realocar_vet_index(arq_index, qtdRegIndexAntes, qtdInserir);
 
     int regNaoInseridos = 0;
+    int pos = qtdRegDadosAntes;
     for(int cont = 0; cont < qtdInserir; ++cont){
         // printf("cont:%d\n", cont);
         inserirRegStdin(
             arq_dados,
             arq_index,
-            cont+qtdRegIndexAntes-regNaoInseridos
+            pos
         );
+        pos = get_nroRegIndex(arq_index);
     }
 
     qtdRegEscritosIndex = get_nroRegIndex(arq_index);
@@ -256,10 +271,6 @@ void insert_into(){
 
     escreveVetIndex(arq_index, 0, qtdRegEscritosIndex-1);
     terminaEscritaIndex(arq_index, qtdRegEscritosIndex);
-
-    fechar_arq_dados(arq_dados);
-    abrir_arq_dados(arq_dados, "r+b");
-
     terminaEscritaDados(arq_dados, qtdRegEscritosDados);
 
     //Fechar os arquivos utilizados
@@ -301,17 +312,26 @@ void update(){
     //Ler o cabeçalho do arquivo de dados.
     ler_cabecalho_dados(arq_dados);
 
-    //Total de registros antes das modificações.
-    int qtdRegIndexAntes = get_nroRegIndex(arq_index);
-    int qtdRegDadosAntes = get_nroRegValidos(arq_dados);
-
     int cont_n;
     for(cont_n = 0; cont_n < n; cont_n++){
-        editarRegStdin(
-            arq_index,
-            arq_dados,
-            &qtdRegDadosAntes,
-            &qtdRegIndexAntes
-        );
+        editarRegStdin(arq_index,arq_dados);
     }
+
+    //Total de registros depois das modificações.
+    int qtdRegIndexDepois = get_nroRegIndex(arq_index);
+    int qtdRegDadosDepois = get_nroRegValidos(arq_dados);
+
+    escreveVetIndex(arq_index, 0, qtdRegDadosDepois-1);
+
+    terminaEscritaDados(arq_dados, qtdRegDadosDepois);
+    terminaEscritaIndex(arq_index, qtdRegIndexDepois);
+
+    binarioNaTela(getNomeArqDados(arq_dados));
+    binarioNaTela(getNomeArqIndex(arq_index));
+
+    fechar_arq_dados(arq_dados);
+    fechar_arq_index(arq_index);
+
+    desalocar_ArqDados(arq_dados);
+    desalocar_ArqIndex(arq_index);
 }
