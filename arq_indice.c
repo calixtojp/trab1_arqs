@@ -396,6 +396,16 @@ int tratamento(int pos, int *qtd_reg_val, void *vetor, int (*comparacao)(void*,i
     return pos; 
 }
 
+int comparacao_vet_dados_indx_int_RegIndx(void *vetor, int pos, void *dado){
+    dados_indx_int_t **vet_real = (dados_indx_int_t**)vetor;
+    compara_dado_int(&(vet_real[pos]), &dado);
+}
+
+int comparacao_vet_dados_indx_str_RegIndx(void *vetor, int pos, void *dado){
+    dados_indx_str_t **vet_real = (dados_indx_str_t**)vetor;
+    compara_dado_str(&(vet_real[pos]), &dado);
+}
+
 int comparacao_vet_dados_indx_str_const(void *vetor, int pos, void *ponteiro){
     //funcao que dado um vetor de dados_indx_str_t, compara uma posição com uma string 
     dados_indx_str_t **vetor_casting = (dados_indx_str_t **) vetor;
@@ -432,18 +442,18 @@ int comparacao_vet_dados_indx_int_const(void *vetor, int pos, void *ponteiro){
     }
 }
 
-int busca_bin_rec(void *vetor, int ini, int fim, void *chave, int(*comparacao)(void*,int,void*)){
+int busca_bin_rec(void *vetor, int ini, int fim, void *chave, FncComparacao comparacao){
     //busca binaria recursiva
     if(ini > fim){//criterio de parada
         return -1;
-    } 
+    }
 
     int meio = (ini+fim)/2;
 
     if(comparacao(vetor,meio,chave)==0){
         //se o vetor[meio] == chave, retorno o meio
         return meio;
-    }else if(comparacao(vetor,meio,chave)==1){
+    }else if(comparacao(vetor,meio,chave)>1){
         //se o vetor[meio] > chave, busco de novo até o meio-1
         fim = meio-1;
 

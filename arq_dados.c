@@ -826,6 +826,64 @@ int testar_criterios(dados_t *reg_dados, char **vet_nomes, char **vet_vals_str, 
 	}
 }
 
+void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit){
+	char nomes[6][50] = {
+		"idCrime",
+		"dataCrime",
+		"numeroArtigo",
+		"marcaCelular",
+		"lugarCrime",
+		"descricaoCrime"
+	};
+
+	for(int i = 0; i < qtd_crit; ++i){
+		int novo_tam;
+		for(int j = 0; j < 6; ++j){
+			if(strcmp(nomes[j], vet_nomes[j])==0){
+				switch (j){
+					case 0://idCrime
+						reg->idCrime = vet_vals_int[i];
+						break;
+					case 1://dataCrime
+						strcpy(reg->dataCrime, vet_vals_str[i]);
+						break;
+					case 2://numeroArtigo
+						reg->numeroArtigo = vet_vals_int[i];
+						break;
+					case 3://marcaCelular
+						strcpy(reg->marcaCelular, vet_vals_str[i]);
+						break;
+					case 4://lugarCrime
+						novo_tam = strlen(vet_vals_str[i]);
+						reg->lugarCrime = realloc(reg->lugarCrime, sizeof(char)*novo_tam);
+						strcpy(reg->lugarCrime, vet_vals_str[i]);
+						break;
+					case 5://descricaoCrime
+						novo_tam = strlen(vet_vals_str[i]);
+						reg->lugarCrime = realloc(reg->lugarCrime, sizeof(char)*novo_tam);
+						strcpy(reg->lugarCrime, vet_vals_str[i]);
+						break;
+					default:
+						printf("Não existe esse campo\n");
+						exit(0);
+				}
+			}
+		}
+	}
+}
+
+void escreverCampoRemovido(FILE *arqDados){
+	char removido = '1';
+	fwrite(&removido, sizeof(char), 1, arqDados);
+}
+
+void completaRegistroComDollar(FILE *arqDados, int qts_dolar){
+	for(int i = 0; i < qts_dolar; ++i){
+		char dolar = '$';
+		fwrite(&(dolar), sizeof(char), 1, arqDados);
+	}
+}
+
 void getRegistro(long int byteOffSet, FILE *arqDados, dados_t *reg){
 	//Posiciono o cursor para ler o registro
 	fseek(arqDados,byteOffSet,SEEK_SET);

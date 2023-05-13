@@ -9,6 +9,9 @@
     typedef struct Cabecalho_indx cabecalho_indx_t;
     typedef struct Dados_indx_int dados_indx_int_t;
     typedef struct Dados_indx_str dados_indx_str_t;
+
+    typedef  int(*FncComparacao)(void*,int,void*);
+
     cabecalho_indx_t *alocar_cbl_indx(void);
     dados_indx_int_t *alocDadoIndxInt(void);
     dados_indx_str_t *alocDadoIndxStr(void);
@@ -38,6 +41,8 @@
     void mostraVetStr(void *vet_generico, int qntd_reg);
     int compara_dado_int(const void *a, const void *b);
     int compara_dado_str(const void *a, const void *b);
+    int comparacao_vet_dados_indx_int_RegIndx(void *vetor, int pos, void *dado);
+    int comparacao_vet_dados_indx_str_RegIndx(void *vetor, int pos, void *dado);
     void ordenaVetIndex_int(void *vetor_generico, int qntd_reg);
     void ordenaVetIndex_str(void *vetor_generico, int qntd_reg);
     void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho);
@@ -45,6 +50,7 @@
     void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos);
     int busca_bin_int(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val);
     int busca_bin_str(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val);
+    int busca_bin_rec(void *vetor, int ini, int fim, void *chave, FncComparacao comparacao);
     long int get_byteOffset_int(void *ponteiro, int pos);
     long int get_byteOffset_str(void *ponteiro, int pos);
     int testar_status_indx(cabecalho_indx_t *cabecalho);

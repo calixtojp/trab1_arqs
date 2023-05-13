@@ -203,21 +203,19 @@ void insert_into(){
     qtdRegIndexAntes = get_nroRegIndex(arq_index);
     qtdRegDadosAntes = get_nroRegValidos(arq_dados);
 
-    qtdRegEscritosDados = qtdRegDadosAntes + qtdInserir;
-
     realocar_vet_index(arq_index, qtdRegIndexAntes, qtdInserir);
 
     int regNaoInseridos = 0;
     for(int cont = 0; cont < qtdInserir; ++cont){
         // printf("cont:%d\n", cont);
-        regNaoInseridos += inserirRegStdin(
+        inserirRegStdin(
             arq_dados,
             arq_index,
             cont+qtdRegIndexAntes-regNaoInseridos
         );
     }
 
-    qtdRegEscritosIndex = qtdInserir + qtdRegIndexAntes - regNaoInseridos;
+    qtdRegEscritosIndex = get_nroRegIndex(arq_index);
 
     ordenaVetIndex(arq_index, qtdRegEscritosIndex);
 
@@ -289,6 +287,4 @@ void update(){
             &qtdRegIndexAntes
         );
     }
-
-    
 }
