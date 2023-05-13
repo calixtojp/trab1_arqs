@@ -278,16 +278,8 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
         //indexável - isto é, não removido e com campo válido.
 
         int eh_removido = get_registro_removido(atual_reg); 
-        typedef int (*FncCampoNulo) (void*);
-        FncCampoNulo fncsCampoNulo[] = {
-            campoNulo_int,
-            campoNulo_str
-        };
-        typedef void* (*FncGetCampoIndexIndexado) (dados_t*, char*);
-        FncGetCampoIndexIndexado fncsGetCampo[] = {
-            getCampoInt,
-            getCampoStr
-        };
+        FncCampoNulo fncsCampoNulo[] = {campoNulo_int,campoNulo_str};
+        FncGetCampoIndexIndexado fncsGetCampo[] = {getCampoInt,getCampoStr};
 
         void *campoIndexado = malloc(sizeof(void));
         int eh_campo_nulo;
@@ -310,16 +302,8 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
             void *dadoIndexado = malloc(sizeof(void));
             void *vetIndx = malloc(sizeof(void));
 
-            typedef void (*FncSetDadoIndx) (void*, long int, void*);
-            FncSetDadoIndx fncsSetDadoIndx[] = {
-                setDadoIndxInt,
-                setDadoIndxStr
-            };
-            typedef void (*FncSetVetIndx) (void*, int, void*);
-            FncSetVetIndx fncsSetVetIndx[] = {
-                setVetIndx_int,
-                setVetIndx_str
-            };
+            FncSetDadoIndx fncsSetDadoIndx[] = {setDadoIndxInt,setDadoIndxStr};
+            FncSetVetIndx fncsSetVetIndx[] = {setVetIndx_int,setVetIndx_str};
 
             //escolho entre dado e o vetor para int ou str
             dadoIndexado = escolhe_indx_dado(arq_index);
@@ -345,11 +329,7 @@ int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, lon
 
 void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
     //Ordena o vetor de index carregado em RAM
-    typedef void (*FncOrdemTipo) (void*, int);
-    FncOrdemTipo fncs_ordena_vet_indx[] = {
-        ordenaVetIndex_int,
-        ordenaVetIndex_str
-    };
+    FncOrdemTipo fncs_ordena_vet_indx[] = {ordenaVetIndex_int,ordenaVetIndex_str};
 
     typedef void (*FncMostraTipo) (void*, int);
     FncMostraTipo fncs_MostraVet[] = {
@@ -481,13 +461,13 @@ void desalocar_InfoBusca(InfoBusca_t *informacao){
     free(informacao);
 }
 
-void achouReg(int flag){
+void achouReg(void *arq_index, int flag){
     if(flag == 0){
         printf("Registro inexistente.\n");
     }
 }
 
-void nada(int flag){
+void nada(void *ponteiro, int flag){
     //função que não faz nada. Existe para manter a constância da função 'processaRegistros()', 
     //dado que nem sempre o parâmetro 'FncFinaliza final' é usado
 }
@@ -507,7 +487,8 @@ int testarStatusIndex(ArqIndex_t *arq_index){
 	}
 	return 0;
 }
-void printa_busca(void *dadoDados, void *dadoIndex, dados_t *registro){
+
+void printa_busca(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, long int byteOffSet){
     //funcao que ignora os campos do tipo void para que toda as funções de 
     //'acao' em 'processaRegistros()' sejam do mesmo tipo, no caso o 'FncAcao'
 
@@ -540,40 +521,6 @@ void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t
 
 }
 
-void percorrer_index(FncGetByteOffSet get_byteOffset, int pos_prim, int qtd_reg_val, void *vetor, 
-                    ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
-    
-    int achei_reg_val = 0;
-    //Flag que indica se algum registro satisfaz todos os critérios de busca.
-    //Recebe 0 se nenhum satisfaz ou 1 se pelo menos um satisfaz
-
-    if(pos_prim != -1){
-        /*Como existe pelo menos 1 registro que satisfaz a busca, percorro o vet_indx_int para todos os 
-        registros que satisfazem o criterio de busca do campo indexado e testo os outros criterios de busca*/
-
-        for(int i=0; i<qtd_reg_val; i++){
-            //com a pos do primeiro e a qtd de registros, eu pego o byteoffset de todos eles
-            long int byteOffset = get_byteOffset(vetor,pos_prim+i);
-            
-            //pra cada byteoffset, eu checo todos os criterios
-            dados_t *reg = alocar_dados();
-            getRegistro(byteOffset, arq_dados->arqDados, reg);
-            
-            int satisfaz = testar_criterios(reg, criterios->nomes, criterios->vals_str, criterios->vals_int, criterios->qtd_crit);
-
-            if(satisfaz){
-                //se o reg satisfaz todos os criterios, realizo a ação
-                //acao(arq_dados, arq_index, reg, FODSE);
-                achei_reg_val = 1;
-            }
-
-            desalocar_registro(reg);
-        }
-    }
-
-    final(achei_reg_val);
-}
-
 void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
 
     int tipoDado = arq_index->tipoDadoInt;
@@ -599,31 +546,63 @@ void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave
     percorrer_index(fncsGetByteOffSet[tipoDado], pos_prim, qtd_reg_val, vetorIndex, arq_dados, arq_index, criterios, acao, final);
 }
 
-void busca_seq_dados(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
+void percorrer_index(FncGetByteOffSet get_byteOffset, int pos_prim, int qtd_reg_val, void *vetor, 
+                    ArqDados_t *arq_dados, ArqIndex_t *arq_index,InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
     
-    //Reiniciar o ponteiro do arquivo de dados para o primeiro registro de dados (pulando o cabecalho)
-    //para fazer um novo processamento, pois o ponteiro do arquivo pode estar em qualquer lugar
-    fseek(arq_dados->arqDados,len_cabecalho_dados(),SEEK_SET);
-
     int achei_reg_val = 0;
-    //Flag que indica se algum registro satisfaz todos os critérios de busca.
-    //Recebe 0 se nenhum satisfaz ou 1 se pelo menos um satisfaz
+    //Flag que indica se algum registro satisafaz todos os critérios de busca.
+    //Recebe -1 se nenhum satisfaz ou 1 se pelo menos 1 satisfaz
+
+    if(pos_prim != -1){
+        /*Como existe pelo menos 1 registro que satisfaz a busca, percorro o vet_indx_int para todos os 
+        registros que satisfazem o criterio de busca do campo indexado e testo os outros criterios de busca*/
+
+        for(int i=0; i<qtd_reg_val; i++){
+            //com a pos do primeiro e a qtd de registros, eu pego o byteoffset de todos eles
+            long int byteOffset = get_byteOffset(vetor,pos_prim+i);
+            
+            //pra cada byteoffset, eu checo todos os criterios
+            dados_t *reg = alocar_dados();
+            getRegistro(byteOffset, arq_dados->arqDados, reg);
+            
+            int satisfaz = testar_criterios(reg, criterios->nomes, criterios->vals_str, criterios->vals_int, criterios->qtd_crit);
+
+            if(satisfaz){
+                //se o reg satisfaz todos os criterios, realizo a ação
+                acao(arq_dados, arq_index, reg, byteOffset);
+                achei_reg_val = 1;
+            }
+
+            desalocar_registro(reg);
+        }
+    }
+
+    if(achei_reg_val != 0){
+        achei_reg_val = get_nroRegIndex(arq_index);
+    }
+
+    final(arq_index, achei_reg_val);
+}
+
+void busca_seq_dados(ArqDados_t *arq_dados, ArqIndex_t *arq_index,InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
+    
+    int achei_reg_val = 0;
+    //Flag que indica se algum registro satisafaz todos os critérios de busca.
+    //Recebe -1 se nenhum satisfaz ou 1 se pelo menos 1 satisfaz
 
     dados_t *registro = alocar_dados();//aloco um memoria para leitura de um registro de dados
         
+    long int byteOffSet_atual = len_cabecalho_dados();
     int consegui_ler = ler_bin_registro(registro, arq_dados->arqDados);
     while(consegui_ler){
         //Se consegui ler, avalio os criterios de busca
         if(testar_criterios(registro,criterios->nomes,criterios->vals_str,criterios->vals_int,criterios->qtd_crit)){
             //se o registro satisfaz todos os criterios, realizo a ação 
-            void *ignorar;
             achei_reg_val = 1;//achei pelo menos 1 registro que satisfaz os critérios
-            //acao(arq_dados, arq_index, registro); 
-                                                //mando flag que diz se vim de busca binaria ou seq
-                                                //se seq: passo o byteOffset do registro no arquivo de dados
-                                                //se bin: passo a pos_prim+1, que me diz a posição no vetor, daí pego o byteOffset
+            acao(arq_dados, arq_index, registro, byteOffSet_atual);
         }
 
+        byteOffSet_atual += len_reg_dados(registro);
         //sempre desaloco o registro, pois preciso desalocar os campos de tamanho variavel do registro
         desalocar_registro(registro);
         //Em seguida aloco outro registro, para fazer a leitura
@@ -633,7 +612,10 @@ void busca_seq_dados(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *
     //se não conseguiu ler, os campos de tamanho variavel nao foram alocados. Assim, desaloco apenas o ponteiro para o tipo dados_t
     free(registro);
     
-    final(achei_reg_val);
+    if(achei_reg_val != 0){
+        achei_reg_val = get_nroRegIndex(arq_index);
+    }
+    final(arq_index, achei_reg_val);
 }
 
 int get_nroRegIndex(ArqIndex_t *arq_index){
@@ -653,97 +635,177 @@ void mostrar_arq_index(ArqIndex_t *arq_index){
     fncs_MostraVet[arq_index->tipoDadoInt](vet_gen, get_qtdReg(arq_index->cabecalhoIndex));
 }
 
+void ordenaEscreveIndxFinal(void *arq_index, int qtdReg){
+    ordenaVetIndex((ArqIndex_t*)arq_index, qtdReg);
+    escreveVetIndex(arq_index, 0, get_nroRegIndex(arq_index));
+}
+
 int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos){
     /*
             Lê um buffer da entrada padrão stdin e insere o
         Respectivo registro no arquivo de dados e de index.
     */
 
-    int tipDado = arq_index->tipoDadoInt;
     dados_t *reg_inserir = alocar_dados();
 
     leRegStdin(reg_inserir);
 
-    typedef int (*FncCampoNulo) (void*);
-    FncCampoNulo fncsCampoNulo[] = {
-        campoNulo_int,
-        campoNulo_str
-    };
-    typedef void* (*FncGetCampoIndexIndexado) (dados_t*, char*);
-    FncGetCampoIndexIndexado fncsGetCampo[] = {
-        getCampoInt,
-        getCampoStr
-    };
+    inserirReg(arq_dados, arq_index, reg_inserir, pos);
+}
+
+void inserirReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg, int pos){
+    int tipDado = arq_index->tipoDadoInt;
+
+    FncCampoNulo fncsCampoNulo[] = {campoNulo_int,campoNulo_str};
+    FncGetCampoIndexIndexado fncsGetCampo[] = {getCampoInt,getCampoStr};
 
     void *campoIndexado = malloc(sizeof(void));
     int eh_campo_nulo;
     
     //obtenho o campo indexado (int ou str)
-    campoIndexado = fncsGetCampo[tipDado](reg_inserir, arq_index->campoIndexado);
+    campoIndexado = fncsGetCampo[tipDado](reg, arq_index->campoIndexado);
 
     //Vejo se o campo é nulo ou não (para poder indexá-lo)
     eh_campo_nulo = fncsCampoNulo[tipDado](campoIndexado);
     //depois dar append no arq
 
-    if(eh_campo_nulo){
-        prepara_para_escrita(reg_inserir);
-        escrever_bin_registro_dados(
-            reg_inserir,
-            arq_dados->arqDados,
-            arq_dados->cabecalhoDados
-        );
-        return 1;//Se o campo indexado for nulo, cancelo a inserção
+    if(eh_campo_nulo == 0){//Se não é campo nulo
+        int antigoQtdReg = get_nroRegIndex(arq_index);
+        setCabecalhoIndex(arq_index->cabecalhoIndex, '0', ++antigoQtdReg);
+
+        long int byte_reg_inserir;
+        byte_reg_inserir = get_proxByteOffset(arq_dados->cabecalhoDados);
+
+        //Com o campo indexado e com o byteOffSet, consigo criar dado
+        //de index do registro a ser inserido
+
+        void *dadoInserir = malloc(sizeof(void));
+        void *vetIndex = malloc(sizeof(void));
+
+        FncSetDadoIndx fncsSetDadoIndx[] = {setDadoIndxInt,setDadoIndxStr};
+        FncSetVetIndx fncsSetVetIndx[] = {setVetIndx_int,setVetIndx_str};
+
+        dadoInserir = escolhe_indx_dado(arq_index);
+        vetIndex = escolhe_vet_indx(arq_index);
+
+        // printf("antes\n");
+        fncsSetDadoIndx[tipDado](dadoInserir, byte_reg_inserir, campoIndexado);
+        // printf("depois\n");
+        fncsSetVetIndx[tipDado](vetIndex, pos, dadoInserir);
+
+        // printf("vou inserir o registro: no byte %ld\n", byte_reg_inserir);
+        // mostrar_campos(reg_inserir);
     }
 
-    //A partir de agora, se não cancelou a inserção no if acima,
-    //considera-se que o campo indexado é válido.
-
-    long int byte_reg_inserir;
-    byte_reg_inserir = get_proxByteOffset(arq_dados->cabecalhoDados);
-
-    //Com o campo indexado e com o byteOffSet, consigo criar dado
-    //de index do registro a ser inserido
-
-    void *dadoInserir = malloc(sizeof(void));
-    void *vetIndex = malloc(sizeof(void));
-
-    typedef void (*FncSetDadoIndx) (void*, long int, void*);
-    FncSetDadoIndx fncsSetDadoIndx[] = {
-        setDadoIndxInt,
-        setDadoIndxStr
-    };
-    typedef void (*FncSetVetIndx) (void*, int, void*);
-    FncSetVetIndx fncsSetVetIndx[] = {
-        setVetIndx_int,
-        setVetIndx_str
-    };
-
-    dadoInserir = escolhe_indx_dado(arq_index);
-    vetIndex = escolhe_vet_indx(arq_index);
-
-    // printf("antes\n");
-    fncsSetDadoIndx[tipDado](dadoInserir, byte_reg_inserir, campoIndexado);
-    // printf("depois\n");
-    fncsSetVetIndx[tipDado](vetIndex, pos, dadoInserir);
-
-    // printf("vou inserir o registro: no byte %ld\n", byte_reg_inserir);
-    // mostrar_campos(reg_inserir);
-    prepara_para_escrita(reg_inserir);
+    //Escrevo no registro de dados
+    prepara_para_escrita(reg);
     escrever_bin_registro_dados(
-        reg_inserir,
+        reg,
         arq_dados->arqDados,
         arq_dados->cabecalhoDados
     );
+}
 
-    // setCabecalhoDados_proxByteOffSet(arq_dados->cabecalhoDados, byte_reg_inserir);
+int modificaCampoIndexado(ArqIndex_t *arq_index, InfoBusca_t *altera){
+    //Retorna 1 se o campoIndexado é alterado, 0 caso contrário
+    for(int i = 0; i < altera->qtd_crit; ++i){
+        if(strcmp(arq_index->tipoDado, altera->nomes[i])==0){
+            return 1;
+        }
+    }
     return 0;
 }
 
+void desindexaReg(int pos, cabecalho_indx_t *cabecalho, void *vetIndx){
+    //pija
+}
+
+int obterPosicaoRegVetIndx(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atual, long int byteOffSet){
+    //Obter a posição do registro dentro do vetIndex a partir do byteOffSet e do campo indexado.
+
+    int tipoDado = arq_index->tipoDadoInt;
+
+    void *vetIndex = escolhe_vet_indx(arq_index);
+    int qtdReg = get_qtdReg(arq_index->cabecalhoIndex);
+    void *dadoIndex = escolhe_indx_dado(arq_index);
+    
+    FncGetCampoIndexIndexado fncsGetCampoIndexado[] = {getCampoInt, getCampoStr};
+    void *chave = fncsGetCampoIndexado[tipoDado](reg_atual, arq_index->campoIndexado);
+
+    FncSetDadoIndx fncsSetDadoIndx[] = {setDadoIndxInt, setDadoIndxStr};
+    fncsSetDadoIndx[tipoDado](dadoIndex, byteOffSet, chave);
+
+    int pos = busca_bin_rec(vetIndex, 0, qtdReg, chave, comparacao_vet_dados_indx_int_RegIndx);
+
+    return pos;
+}
+
+void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atual, long int byteOffSet){
+    dados_t *reg_modificado = alocar_dados();
+    copia_registro(reg_modificado, reg_atual);
+
+    InfoBusca_t *altera = ler_criterios_busca();
+    fazAlteracoes(reg_modificado, altera->nomes, altera->vals_str, altera->vals_int, altera->qtd_crit);//abobra
+
+    int qtd_reg = get_qtdReg(arq_index->cabecalhoIndex);
+    int tipoDado = arq_index->tipoDadoInt;
+    int tam_reg_atual = len_reg_dados(reg_atual);
+    int tam_reg_modificado = len_reg_dados(reg_modificado);
+    int pos = obterPosicaoRegVetIndx(arq_dados, arq_index, reg_atual, byteOffSet);
+    void *vetIndx = escolhe_vet_indx(arq_index);
+
+    //flag que avisa se modificou o campo indexado
+    int modifica_campo_indexado = modificaCampoIndexado(arq_index, altera);
+    
+    //Devo voltar o cursor do arqDados para o começo do 
+    //registro que acabei de ler.
+    fseek(arq_dados->arqDados, (-1)*tam_reg_atual, SEEK_CUR);
+
+    if(tam_reg_atual < tam_reg_modificado){
+        //Se cabe
+        //Escrevo na posição atual
+        reescrever_registro_dados(reg_modificado, arq_dados->arqDados);
+        completaRegistroComDollar(arq_dados->arqDados, tam_reg_atual - tam_reg_modificado);
+        if(modifica_campo_indexado){
+            //Se modifica o campo indexado
+            if(pos != -1){
+                //Se o registro tinha campo indexado
+                //Removo do vetIndex
+                desindexaReg(pos, arq_index->cabecalhoIndex, vetIndx);
+            }
+            //Reescrevo o indexamento no vetIndex
+            realocar_vet_index(arq_index, qtd_reg, qtd_reg+1);
+            void *campoIndexado;
+            void *dadoIndx = escolhe_indx_dado(arq_index);
+            FncSetVetIndx fncsSetVetIndx[] = {setVetIndx_int,setVetIndx_str};
+            FncSetDadoIndx fncsSetDadoIndx[] = {setDadoIndxInt,setDadoIndxStr};
+            FncGetCampoIndexIndexado fncsGetCampoIndexado[] = {getCampoInt,getCampoStr};
+
+            //pego o novo campoIndexado (que foi modificado)
+            campoIndexado = fncsGetCampoIndexado[tipoDado](reg_modificado, arq_index->campoIndexado);
+
+            fncsSetDadoIndx[tipoDado](dadoIndx, byteOffSet, campoIndexado);//configuro o novo dado
+            fncsSetVetIndx[tipoDado](vetIndx, qtd_reg, dadoIndx);//coloco na última posição
+        }
+    }else{
+        //Se não cabe
+        if(pos != -1){
+            //Se o registro tinha campo indexado
+            //Removo do vetIndex
+            desindexaReg(pos, arq_index->cabecalhoIndex, vetIndx);
+        }
+        //Escrevo no final
+        realocar_vet_index(arq_index, qtd_reg, qtd_reg+1);
+        inserirReg(arq_dados, arq_index, reg_modificado, qtd_reg);
+    }
+}
+
 void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int *qtdRegDados,int *qtdRegInx){
+
+    //ler o critérios de busca
     InfoBusca_t *criterios = ler_criterios_busca();
 
-    int cont_reg_vet = 0; //quantidade de registros que satisfazem os criterios de busca
-
+    processaRegistros(arq_dados,arq_index,criterios,modificaReg,ordenaEscreveIndxFinal);
 }
 
 void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, long int byteOffset){

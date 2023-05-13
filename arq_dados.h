@@ -37,6 +37,7 @@
 	void setCabecalhoDados_nroRegArq(cabecalho_t *cabecalho, int nroRegArq);
 	void setCabecalhoDados_proxByteOffSet(cabecalho_t *cabecalho, int byteOffSet);
 	void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq);
+	void escreverCampoRemovido(FILE *arqDados);
 	void ler_csv_registro(FILE *arq, dados_t *dados, char *c, int *registro_nulo);
 	int ler_csv_campo_int(FILE *arq, char *c, int *registro_nulo);
 	void ler_csv_campo_str_fixo(FILE *arq, char *c, char *str_fixo, int tam);
@@ -67,5 +68,7 @@
 	char getStatusDados(cabecalho_t *cabecalho);
 	void escrever_campo_removido(FILE *arq, dados_t *dados);
 	void remocaoLogica(dados_t *registro, cabecalho_t *cabecalho);
+	void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit);
+	void completaRegistroComDollar(FILE *arqDados, int qtdDolars);
 
 #endif
