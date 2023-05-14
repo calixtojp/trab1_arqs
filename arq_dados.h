@@ -71,5 +71,7 @@
 	void remocaoLogica(dados_t *registro, cabecalho_t *cabecalho);
 	void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet_vals_int, int qtd_crit);
 	void completaRegistroComDollar(FILE *arqDados, int qtdDolars);
+	void fwriteStatusDados(FILE *arq, cabecalho_t *cabecalho);
+	void setStatusDados(cabecalho_t *cabecalho, char status);
 
 #endif

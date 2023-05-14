@@ -175,8 +175,8 @@ void delete_from(){
     scanf("%d",&n);
 
     //Com os inputs armazenados, faço a abertura dos arquivos.
-    abrir_arq_dados(arq_dados, "rb");
-    abrir_arq_index(arq_index, "rb");
+    abrir_arq_dados(arq_dados, "r+b");
+    abrir_arq_index(arq_index, "r+b");
 
     //Carrego o arquivo de indice na memoria primaria
     ler_cabecalho_arq_index(arq_index);
@@ -186,11 +186,22 @@ void delete_from(){
     ler_cabecalho_dados(arq_dados);
 
     //Testo se os dois arquivos estao consistentes. Se não estão, encerro o programa com uma mensagem de erro.
-    if(testarStatusIndex(arq_index)==0){
+    /* if(testarStatusIndex(arq_index)==0){
         mensagem_erro();
     }else if(testarStatusDados(arq_dados)==0){
         mensagem_erro();
-    }
+    } */
+
+    //indico que os arquivos estão inconsistentes, pois vou escrever em ambos
+    //como li todo o arquivo de index, o cursor está no final
+    reiniciarCursorIndex(arq_index);
+    alterarStatusIndex(arq_index,0);
+    escreverStatusIndex(arq_index);
+
+    //como li o cabecalho do arquivo de dados, o cursor está logo após o cabecalho
+    reiniciarCursorDados(arq_dados);
+    alterarStatusDados(arq_dados,0);
+    escreverStatusDados(arq_dados);
 
     //Loop que faz 'n' deleções
     for(int i=1; i<=n; i++){
@@ -206,13 +217,26 @@ void delete_from(){
         desalocar_InfoBusca(criterios);
     }
 
-    //reescrevo o arquivo de index
-    /*INSIRA AQUIKKKKKKKKKK*/
+    //REESCREVO TODO O ARQUIVO DE INDEX
+    reiniciarCursorIndex(arq_index);
+    escreveArqIndex(arq_index);
+
+    //Indico que os arquivos estão consistentes, pois já usei ambos
+    //como escrevi todo o arquivo de index, o cursor está no final
+    reiniciarCursorIndex(arq_index);
+    alterarStatusIndex(arq_index,1);
+    escreverStatusIndex(arq_index);
+
+    //Como o 'processaRegistros()' pode alterar o cursor do arquivo de dados, reinicio ele
+    reiniciarCursorDados(arq_dados);
+    alterarStatusDados(arq_dados,1);
+    escreverStatusDados(arq_dados);
 
     //Chama a funcao binarioNaTela() para gerar uma saída com base nas mudanças nos arquivos
     binarioNaTela(getNomeArqDados(arq_dados)); 
     binarioNaTela(getNomeArqIndex(arq_index));
 }
+
 //Funcionalidade [6]
 void insert_into(){
     //Alocar tipos utilizados

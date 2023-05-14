@@ -77,6 +77,14 @@ void achouReg(void *arq_index, int flag);
 void nada(void *ponteiro, int flag);
 int testarStatusIndex(ArqIndex_t *arq_index);
 int testarStatusDados(ArqDados_t *arq_dados);
-void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, InfoBusca_t *alteracoes,long int byteOffset);
+void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, InfoBusca_t *ignorar, long int byteOffset);
+void reiniciarCursorIndex(ArqIndex_t *arq_index);
+void reiniciarCursorDados(ArqDados_t *arq_dados);
+void alterarStatusIndex(ArqIndex_t *arq_index, int status);
+void alterarStatusDados(ArqDados_t *arq_dados, int status);
+void escreverStatusDados(ArqDados_t *arq_dados);
+void escreverStatusIndex(ArqIndex_t *arq_index);
+void escreveArqIndex(ArqIndex_t *arq_index);
+void escreveVetIndex2(ArqIndex_t *arq_index, int inicio, int fim);
 
 #endif

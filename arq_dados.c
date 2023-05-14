@@ -134,7 +134,6 @@ void *getCampoStr(dados_t *dado, char *campo){
 	}else{
 		printf("ERRO: campo str não encontrado\n");
 	}
-
 }
 
 int campoNulo_int(void *campo_int){
@@ -927,6 +926,15 @@ void reescrever_campo_variavel(char *texto, FILE *arq){
 char getStatusDados(cabecalho_t *cabecalho){
 	return cabecalho->status;
 }
+
+void setStatusDados(cabecalho_t *cabecalho, char status){
+    cabecalho->status = status;
+}
+
+void fwriteStatusDados(FILE *arq, cabecalho_t *cabecalho){
+	fwrite(&cabecalho->status,sizeof(char),1,arq);
+}
+
 
 void remocaoLogica(dados_t *registro, cabecalho_t *cabecalho){
 	//altero o campo 'removido' para '1'
