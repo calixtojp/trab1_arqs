@@ -228,6 +228,10 @@ void setCabecalhoDados_proxByteOffSet(cabecalho_t *cabecalho, int byteOffSet){
 	cabecalho->proxByteOffset = byteOffSet;
 }
 
+void setCabecalhoDados_nroRegRem(cabecalho_t *cabecalho, int nroRegrem){
+	cabecalho->nroRegRem = nroRegrem;
+}
+
 void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq){
 	//escreve o cabeçalho no arquivo binário
 	fwrite(&cabecalho->status,sizeof(char),1,arq);

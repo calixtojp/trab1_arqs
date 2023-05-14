@@ -36,6 +36,7 @@
 	void cabecalho_nroRegArq_incrementar(cabecalho_t *cabecalho, int qtd);
 	void setCabecalhoDados_nroRegArq(cabecalho_t *cabecalho, int nroRegArq);
 	void setCabecalhoDados_proxByteOffSet(cabecalho_t *cabecalho, int byteOffSet);
+	void setCabecalhoDados_nroRegRem(cabecalho_t *cabecalho, int nroRegrem);
 	void escrever_bin_registro_cabecalho(cabecalho_t *cabecalho, FILE *arq);
 	void escreverCampoRemovido(FILE *arqDados);
 	void ler_csv_registro(FILE *arq, dados_t *dados, char *c, int *registro_nulo);
