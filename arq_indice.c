@@ -283,7 +283,7 @@ int compara_dado_str(const void *a, const void *b){
         str_b[i] = (*((dados_indx_str_t**)b))->chaveBusca[i];
     }
 
-    // printf("bt_a:%lf|bt_b:%lf\n", byte_a, byte_b);
+    // printf("bt_a:%ld|bt_b:%ld\n", byte_a, byte_b);
 
     // printf("str_a:");
     // for(int i = 0; i < TAM_CAMP_STR; ++i){
