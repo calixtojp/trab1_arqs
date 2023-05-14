@@ -20,13 +20,18 @@ struct ArqIndex{
     char campoIndexado[MAX_NOME_ARQ];
     char tipoDado[MAX_NOME_ARQ];
     char nomeArqIndex[MAX_NOME_ARQ];
-    int tipoDadoInt;/*tu ja tem o campo tipo de dado mano*/
+    int tipoDadoInt;
     FILE *arqIndex;
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
     dados_indx_int_t **vet_indx_int;
+    
     void *vetTemp;
     int qtdReg_vetTemp;
+    /*Os dois últimos campos são usados para fazer alterações no vetor de dados_indx (int ou str)
+    Essa lógica foi adotada pois não é interessante mudar as informações do arquivo de índice 
+    enquanto ele está sendo processado, dado que isso pode gerar diversos erros. Assim, depois de
+    fazer todas as alterações, esses campos são copiados de volta para os originais*/
 };
 
 struct InfoBusca{
@@ -903,17 +908,14 @@ void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *regi
 }
 
 void desindexaRegistro(ArqIndex_t *arq_index, int pos){
-    //função que remove um registro do arquivo de índice
+    //função que remove um registro do arquivo de índice por meio de informações temporárias.
     
-    //decremento a quantidade de registros indexados no cabeçalho do arquivo de indice
-    int qtd_reg = get_qtdReg(arq_index->cabecalhoIndex);
-    set_qtdReg(arq_index->cabecalhoIndex,qtd_reg-1);
+    //decremento a quantidade de registros indexados no vetor temporário;
+    int qtdReg_ant = arq_index->qtdReg_vetTemp;//quantidade de registros antes de remover 1
+    arq_index->qtdReg_vetTemp = qtdReg_ant-1;//quantidade agora que removi 1
 
     //Agora quero fazer o shift das posições do vetor de dados, a partir da pos que se deseja remover
     //Para isso:
-
-    //-descubro qual dos vetores de dados devo usar;
-    void *vet_dado_indx = escolhe_vet_indx(arq_index);
 
     //-defino um vetor de funções que fazem o shift para tipos específicos
     typedef void (*FncShiftar)(void *,int, int);
@@ -923,11 +925,10 @@ void desindexaRegistro(ArqIndex_t *arq_index, int pos){
     int tipo_dado = arq_index->tipoDadoInt;
 
     //-por fim, chamo a função que faz o shift 
-    fncsShiftar[tipo_dado](vet_dado_indx,pos,qtd_reg-1);
+    fncsShiftar[tipo_dado](arq_index->vetTemp,pos,qtdReg_ant-1);
 
-    //Em seguida, realoco o tamanho do vetor
-    int decremento = -1;
-    realocar_vet_index(arq_index, qtd_reg, decremento);
+    //-em seguida, realoco o tamanho do vetor
+    realocar_vet_index(arq_index, qtdReg_ant, (-1));
 }
 
 void reiniciarCursorIndex(ArqIndex_t *arq_index){
