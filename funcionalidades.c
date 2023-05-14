@@ -185,7 +185,7 @@ void delete_from(){
     ler_cabecalho_dados(arq_dados);
 
     //Testo se os dois arquivos estao consistentes. Se não estão, encerro o programa com uma mensagem de erro.
-/*     if(testarStatusIndex(arq_index)==0){
+    /* if(testarStatusIndex(arq_index)==0){
         mensagem_erro();
     }else if(testarStatusDados(arq_dados)==0){
         mensagem_erro();

@@ -134,7 +134,6 @@ void *getCampoStr(dados_t *dado, char *campo){
 	}else{
 		printf("ERRO: campo str não encontrado\n");
 	}
-
 }
 
 int campoNulo_int(void *campo_int){

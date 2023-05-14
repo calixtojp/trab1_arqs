@@ -84,5 +84,6 @@ void alterarStatusDados(ArqDados_t *arq_dados, int status);
 void escreverStatusDados(ArqDados_t *arq_dados);
 void escreverStatusIndex(ArqIndex_t *arq_index);
 void escreveArqIndex(ArqIndex_t *arq_index);
+void escreveVetIndex2(ArqIndex_t *arq_index, int inicio, int fim);
 
 #endif

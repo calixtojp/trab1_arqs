@@ -149,6 +149,12 @@ int ehInteiro(char *campo){
     }
 }
 
+void copia_n_chars(char *str1, char *str2, int n){
+    for(int i=0; i<n; i++){
+        str1[i] = str2[i];
+    }
+}
+
 char *truncar(char *original, int tam_truncamento){
     //funcao que faz um string ter exatos 12 caracteres
     char *truncado = malloc(sizeof(char)*tam_truncamento);

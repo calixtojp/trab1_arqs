@@ -352,8 +352,9 @@ void ordenaVetIndex(ArqIndex_t *arq_index, int qntd_reg){
 void escreveArqIndex(ArqIndex_t *arq_index){
 
     escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
+    printf("cabecalho qtdReg=%d\n",get_qtdReg(arq_index->cabecalhoIndex));
 
-    escreveVetIndex(arq_index, 0, get_nroRegIndex(arq_index));
+    escreveVetIndex2(arq_index, 0, get_qtdReg(arq_index->cabecalhoIndex)-1);
 }
 
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
@@ -377,6 +378,23 @@ void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
         fncsEscreveIndx[arq_index->tipoDadoInt](arq_index->arqIndex, vet_indx, cont);    
     }
 }
+
+void escreveVetIndex2(ArqIndex_t *arq_index, int inicio, int fim){
+    //escolho que tipo de dado será escrito
+    void *vet_indx = escolhe_vet_indx(arq_index);
+
+    typedef void (*FncEscreveIndx) (FILE*, void*, int);
+    FncEscreveIndx fncsEscreveIndx[] = {escreveVetIndx_int,escreveVetIndx_str};
+
+    int tipo_dado = arq_index->tipoDadoInt;//0 para int, 1 para string
+
+    //escrevo efetivamente o dado
+    for(int cont = inicio; cont <= fim; ++cont){
+
+        fncsEscreveIndx[tipo_dado](arq_index->arqIndex, vet_indx, cont);    
+    }
+}
+
 
 void terminaEscritaIndex(ArqIndex_t *arq_index, int qtndReg){
     //volto pára o início do arquivo e escrevo o cabeçalho final
@@ -530,10 +548,10 @@ void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave
 
     FncGetByteOffSet fncsGetByteOffSet[] = {get_byteOffset_int, get_byteOffset_str};
 
-    int qtd_reg_val=0;//guarda o numero de registros que satisfazem o criterio de busca do arquivo de indice
     void *vetorIndex = escolhe_vet_indx(arq_index);
     void *chave = escolhe_criterio_vet_vals(criterios, pos_chave, tipoDado);
 
+    int qtd_reg_val=0;//guarda o numero de registros que satisfazem o criterio de busca do arquivo de indice
     int pos_prim = fncsBuscaBin[tipoDado](vetorIndex, arq_index->cabecalhoIndex, chave, &qtd_reg_val);
     //fncsBuscaBin retorna o primeiro registro que satisfaz o critério de busca binária no vetorIndex.
     //Caso nenhum satisfaça, retorna -1. Além disso, motifica a variável "qtd_reg_val", por
@@ -547,7 +565,7 @@ void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave
 }
 
 void percorrer_index(FncGetByteOffSet get_byteOffset, int pos_prim, int qtd_reg_val, void *vetor, 
-                    ArqDados_t *arq_dados, ArqIndex_t *arq_index,InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
+                    ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, FncAcao acao, FncFinaliza final){
     
     int achei_reg_val = 0;
     //Flag que indica se algum registro satisafaz todos os critérios de busca.
@@ -731,7 +749,9 @@ int obterPosicaoRegVetIndx(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t
     FncSetDadoIndx fncsSetDadoIndx[] = {setDadoIndxInt, setDadoIndxStr};
     fncsSetDadoIndx[tipoDado](dadoIndex, byteOffSet, chave);
 
-    int pos = busca_bin_rec(vetIndex, 0, qtdReg, chave, comparacao_vet_dados_indx_int_RegIndx);
+    FncComparacao fncsComparacao[] = {comparacao_vet_dados_indx_int_RegIndx,comparacao_vet_dados_indx_str_RegIndx};
+
+    int pos = busca_bin_rec(vetIndex, 0, qtdReg, chave, fncsComparacao[tipoDado]);
 
     return pos;
 }
@@ -820,8 +840,9 @@ void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *regi
     escrever_campo_removido(arq_dados->arqDados ,registro);
 
     /*Agora, devo remover o registro do arquivo de índice, se necessário. Para removê-lo de lá,
-    preciso de sua posição no vetor de dados. Como o 'deletarRegistro()' recebe apenas o byteOffset
-    desse registro no arquivo de dados, devo buscar a posição dele no vetor de dados do arquivo de índice.*/
+    preciso de sua posição no vetor de dados do arquivo de índice. Como o 'deletarRegistro()' 
+    recebe apenas o byteOffset desse registro no arquivo de dados, devo buscar a posição dele 
+    no vetor de dados do arquivo de índice.*/
     int pos = obterPosicaoRegVetIndx(arq_dados, arq_index, registro, byteOffset);
 
     if(pos != -1){

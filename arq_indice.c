@@ -175,7 +175,7 @@ void setDadoIndxInt(void *dado, long int byteOffSet, void *valor){
 }
 
 void setDadoIndxStr(void *dado, long int byteOffSet, void *valor){
-    dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
+    dados_indx_str_t *dado_real = (dados_indx_str_t*) dado;
     char *valor_real = (char*)valor;
     dado_real->byteOffset = byteOffSet;
     strcpy(dado_real->chaveBusca, valor_real);
@@ -282,8 +282,8 @@ int compara_dado_str(const void *a, const void *b){
     char str_a[TAM_CAMP_STR];
     char str_b[TAM_CAMP_STR];
     long int byte_a, byte_b;
-    byte_a = (*((dados_indx_int_t**)a))->byteOffset;
-    byte_b = (*((dados_indx_int_t**)b))->byteOffset;
+    byte_a = (*((dados_indx_str_t**)a))->byteOffset;
+    byte_b = (*((dados_indx_str_t**)b))->byteOffset;
     strcpy(str_a, (*((dados_indx_str_t**)a))->chaveBusca);
     strcpy(str_b, (*((dados_indx_str_t**)b))->chaveBusca);
 
@@ -316,11 +316,7 @@ void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
 }
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
-    // printf("escrever o cabecalho:status(%c)|qtdReg(%d)|ftel(%ld)\n",
-    //     cabecalho->status,
-    //     cabecalho->qtdReg,
-    //     ftell(arqIndex)
-    // );
+    printf("escrever o cabecalho:status(%c)|qtdReg(%d)|ftel(%ld)\n",cabecalho->status,cabecalho->qtdReg,ftell(arqIndex));
 
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
     fwrite(&cabecalho->qtdReg,sizeof(int), 1, arqIndex);
@@ -328,29 +324,29 @@ void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
 
 void escreveDadoIndx_int(FILE *arqIndex, void *dado){
     dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;
-    // printf("vou escrever o dado:");
-    // mostraRegIndx_int(dado_real);
+    printf("vou escrever o dado:");
+    mostraRegIndx_int(dado_real);
     fwrite(&(dado_real->chaveBusca), sizeof(int), 1, arqIndex);
     fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
+    printf("escrevi\n");
 }
 
 void escreveDadoIndx_str(FILE *arqIndex, void *dado){
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
-    // printf("vou escrever o dado:");
-    // mostraRegIndx_str(dado_real);
+    printf("vou escrever o dado:");
+    mostraRegIndx_str(dado_real);
     fwrite((dado_real->chaveBusca), sizeof(char), TAM_CAMP_STR, arqIndex);
     fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
+    printf("escrevi\n");
 }
 
 void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos){
-    dados_indx_int_t **vet_real;
-    vet_real = (dados_indx_int_t**)vet_indx_int;
+    dados_indx_int_t **vet_real = (dados_indx_int_t**)vet_indx_int;
     escreveDadoIndx_int(arqIndex, vet_real[pos]);
 }
 
 void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos){
-    dados_indx_str_t **vet_real;
-    vet_real = (dados_indx_str_t**)vet_indx_str;
+    dados_indx_str_t **vet_real = (dados_indx_str_t**)vet_indx_str;
     escreveDadoIndx_str(arqIndex, vet_real[pos]);
 
 }
