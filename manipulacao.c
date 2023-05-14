@@ -291,7 +291,7 @@ void realocar_vetIndxTemp(ArqIndex_t *arq_index, int original, int acrescimo){
 
         dados_indx_str_t **vet_real = (dados_indx_str_t**)arq_index->vetTemp;
         for(int i = original; i < tam_tot; ++i){
-            vet_real[i] = alocDadoIndxInt();
+            vet_real[i] = alocDadoIndxStr();
         }
     }
 }
