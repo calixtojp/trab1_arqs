@@ -529,13 +529,7 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 	do{
 		cont_lixo++;
 		fread(&temp, sizeof(char), 1, arq_bin);
-		printf("li:%c,", temp);
 	}while(temp == '$');
-	printf("\n");
-	if(cont_lixo > 0){
-		printf("lixo:%d|", cont_lixo);
-	}
-
 	int menosUm = -1;
 	fseek(arq_bin, menosUm, SEEK_CUR);
 

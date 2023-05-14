@@ -333,20 +333,14 @@ void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
 
 void escreveDadoIndx_int(FILE *arqIndex, void *dado){
     dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;
-    printf("vou escrever o dado:");
-    mostraRegIndx_int(dado_real);
     fwrite(&(dado_real->chaveBusca), sizeof(int), 1, arqIndex);
     fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
-    printf("escrevi\n");
 }
 
 void escreveDadoIndx_str(FILE *arqIndex, void *dado){
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
-    printf("vou escrever o dado:");
-    mostraRegIndx_str(dado_real);
     fwrite((dado_real->chaveBusca), sizeof(char), TAM_CAMP_STR, arqIndex);
     fwrite(&(dado_real->byteOffset), sizeof(long int), 1, arqIndex);
-    printf("escrevi\n");
 }
 
 void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos){
@@ -362,6 +356,7 @@ void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos){
 
 int comparacao_vet_dados_indx_int(void *ponteiro, int pos1, int pos2){
     //funcao que dado um vetor de dados_indx_int_t, compara duas posições
+    //opa
 
     dados_indx_int_t **vetor_casting = (dados_indx_int_t **) ponteiro;
     if(vetor_casting[pos1]->chaveBusca != vetor_casting[pos2]->chaveBusca){
@@ -374,6 +369,7 @@ int comparacao_vet_dados_indx_int(void *ponteiro, int pos1, int pos2){
 
 int comparacao_vet_dados_indx_str(void *ponteiro, int pos1, int pos2){
     //funcao que dado um vetor de dados_indx_str_t, compara duas posições
+    //opa
 
     dados_indx_str_t **vetor_casting = (dados_indx_str_t **) ponteiro;
 
@@ -439,10 +435,10 @@ int comparacao_vet_dados_indx_str_RegIndx(void *vetor, int pos, void *dado){
     dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor;
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
 
-    printf("dadoVetReal:\n");
-    mostraRegIndx_str(vetor_real[pos]);
-    printf("dadoReal:\n");
-    mostraRegIndx_str(dado_real);
+    // printf("dadoVetReal:\n");
+    // mostraRegIndx_str(vetor_real[pos]);
+    // printf("dadoReal:\n");
+    // mostraRegIndx_str(dado_real);
 
     byte_a = vetor_real[pos]->byteOffset;
     byte_b = dado_real->byteOffset;

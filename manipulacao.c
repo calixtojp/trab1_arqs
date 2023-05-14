@@ -674,10 +674,8 @@ void busca_seq_dados(ArqDados_t *arq_dados, ArqIndex_t *arq_index,InfoBusca_t *c
     //Consegui_ler armazena -1 se não conseguiu ler e armazena o tamanho do registro caso consiga ler
     int consegui_ler = ler_bin_registro(registro, arq_dados->arqDados);
 
-    printf("byteOffSetatual: ");
     while(consegui_ler>0){
         //Se consegui ler, avalio os criterios de busca
-        printf("%ld, ", byteOffSet_atual);
 
         if(testar_criterios(registro,criterios->nomes,criterios->vals_str,criterios->vals_int,criterios->qtd_crit)){
             printf("satisfaz ");
