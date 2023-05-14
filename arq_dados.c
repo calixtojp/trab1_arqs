@@ -942,4 +942,5 @@ void remocaoLogica(dados_t *registro, cabecalho_t *cabecalho){
 	
 	//incremento o nro de registros removidos
 	cabecalho->nroRegRem++;
+
 }
