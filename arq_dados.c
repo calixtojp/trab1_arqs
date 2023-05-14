@@ -497,7 +497,7 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 	if(fread(&(registro->removido), sizeof(char), 1, arq_bin)!=1){
 		//Não consegui ler o campo 'removido'
 		registro = NULL;
-		return 0;
+		return -1;
 	}
 
 	chegou_fim = 0;
@@ -505,24 +505,44 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 	if(chegou_fim != 0){
 		//Não conseguiu ler algum dos campos fixos
 		registro = NULL;
-		return 0;
+		return -1;
 	}
 
 	ler_bin_campos_variaveis(arq_bin, registro, &chegou_fim);
 	if(chegou_fim != 0){
 		//Não conseguiu ler algum dos campos variáveis
 		registro = NULL;
-		return 0;
+		return -1;
 	}
 
 	//ler # no final
 	if(fread(&(registro->hashtag), sizeof(char), 1, arq_bin)!=1){
 		registro = NULL;
-		return 0;
+		return -1;
 	}
 
+	int tam = len_reg_dados(registro);
+
+	//ler o lixo no final de um arquivo
+	int cont_lixo = -1;
+	char temp;
+	do{
+		cont_lixo++;
+		fread(&temp, sizeof(char), 1, arq_bin);
+		printf("li:%c,", temp);
+	}while(temp == '$');
+	printf("\n");
+	if(cont_lixo > 0){
+		printf("lixo:%d|", cont_lixo);
+	}
+
+	int menosUm = -1;
+	fseek(arq_bin, menosUm, SEEK_CUR);
+
+	tam += cont_lixo;
+
 	//Se leu tudo certo, retorno 1
-	return 1;
+	return tam;
 }
 
 void mostrar_registros(FILE *arq_bin){

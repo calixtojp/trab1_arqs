@@ -188,11 +188,7 @@ void setVetIndx_int(void *vet, int pos, void *dado){
     dados_indx_int_t *dado_real;
     vet_real = (dados_indx_int_t**)vet;
     dado_real = (dados_indx_int_t*)dado;
-    setDadoIndxInt(
-        vet_real[pos],
-        dado_real->byteOffset,
-        &(dado_real->chaveBusca)
-    );
+    setDadoIndxInt(vet_real[pos], dado_real->byteOffset, &(dado_real->chaveBusca));
 }
 
 void setVetIndx_str(void *vet, int pos, void *dado){
@@ -200,11 +196,7 @@ void setVetIndx_str(void *vet, int pos, void *dado){
     dados_indx_str_t *dado_real;
     vet_real = (dados_indx_str_t**)vet;
     dado_real = (dados_indx_str_t*)dado;
-    setDadoIndxStr(
-        vet_real[pos],
-        dado_real->byteOffset,
-        (dado_real->chaveBusca)
-    );
+    setDadoIndxStr(vet_real[pos], dado_real->byteOffset, (dado_real->chaveBusca));
 }
 
 void copiaDadoIndex_int(void *destino, void *origem){
@@ -248,7 +240,7 @@ void mostraRegIndx_int(dados_indx_int_t *dado){
 }
 
 void  mostraRegIndx_str(dados_indx_str_t *dado){
-    printf("campoIndexado:%s|byte:%ld\n", dado->chaveBusca, dado->byteOffset);
+    printf("campoIndexado:(%s)|byte:(%ld)\n", dado->chaveBusca, dado->byteOffset);
 }
 
 void mostraVetInt(void *vet_generico, int qntd_reg){
@@ -447,6 +439,11 @@ int comparacao_vet_dados_indx_str_RegIndx(void *vetor, int pos, void *dado){
     dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor;
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
 
+    printf("dadoVetReal:\n");
+    mostraRegIndx_str(vetor_real[pos]);
+    printf("dadoReal:\n");
+    mostraRegIndx_str(dado_real);
+
     byte_a = vetor_real[pos]->byteOffset;
     byte_b = dado_real->byteOffset;
 
@@ -514,6 +511,8 @@ int busca_bin_rec(void *vetor, int ini, int fim, void *chave, FncComparacao comp
     }
 
     int meio = (ini+fim)/2;
+
+    printf("ini%d|meio:%d|final:%d\n", ini, meio, fim);
 
     if(comparacao(vetor,meio,chave)==0){
         //se o vetor[meio] == chave, retorno o meio
