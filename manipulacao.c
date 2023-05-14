@@ -25,6 +25,8 @@ struct ArqIndex{
     cabecalho_indx_t *cabecalhoIndex;
     dados_indx_str_t **vet_indx_str;
     dados_indx_int_t **vet_indx_int;
+    void *vetTemp;
+    int qtdReg_vetTemp;
 };
 
 struct InfoBusca{
