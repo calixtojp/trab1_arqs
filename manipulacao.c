@@ -767,7 +767,7 @@ void inserirReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg, int 
     prepara_para_escrita(reg);
     escrever_bin_registro_dados(reg,arq_dados->arqDados,arq_dados->cabecalhoDados); 
     //incremento o nroRegArq
-    cabecalho_nroRegArq_incrementar(arq_dados->arqDados, 1);
+    cabecalho_nroRegArq_incrementar(arq_dados->cabecalhoDados, 1);
 }
 
 int modificaCampoIndexado(ArqIndex_t *arq_index, InfoBusca_t *altera){
@@ -845,7 +845,7 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
             if(pos != -1){
                 //Se o registro tinha campo indexado
                 //Removo do vetIndex
-                desindexaRegistro(arq_index, pos, arq_index->vetTemp);
+                desindexaRegistro(arq_index, pos);
             }
 
             if(campo_modificado_eh_nulo == 0){
@@ -872,7 +872,7 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
         if(pos != -1){
             //Se o registro tinha campo indexado
             //Removo do vetIndex
-            desindexaRegistro(arq_index, pos, arq_index->vetTemp);
+            desindexaRegistro(arq_index, pos);
         }
 
         //marco como removido
@@ -903,9 +903,12 @@ void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados){
     InfoBusca_t *alteracoes = ler_criterios_busca();
 
     //Alocar um vetor temporário, o qual irei editar ao longo do processo
-    typedef void* (*FncAlocaVetTemp) (int);
-    FncAlocaVetTemp fncsAlocaVetTemp[] = {aloc_vet_indx_DadoInt, aloc_vet_indx_DadoStr};
-    arq_index->vetTemp = fncsAlocaVetTemp[arq_index->tipoDadoInt](get_qtdReg(arq_index->cabecalhoIndex));
+
+    if(strcmp(arq_index->tipoDado, "inteiro")==0){
+        arq_index->vetTemp = (void*)aloc_vet_indx_DadoInt(get_qtdReg(arq_index->cabecalhoIndex));
+    }else if(strcmp(arq_index->tipoDado, "string")==0){
+        arq_index->vetTemp = (void*)aloc_vet_indx_DadoStr(get_qtdReg(arq_index->cabecalhoIndex));
+    }
 
     processaRegistros(arq_dados,arq_index,criterios,alteracoes,modificaReg,ordenaVetIndexFinal);
 
