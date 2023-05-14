@@ -270,6 +270,32 @@ void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo){
     }
 }
 
+void realocar_vetIndxTemp(ArqIndex_t *arq_index, int original, int acrescimo){
+    int tam_tot = original + acrescimo;
+    if(strcmp(arq_index->tipoDado, "inteiro")==0){
+        arq_index->vetTemp = (dados_indx_int_t**)realloc(
+            arq_index->vetTemp,
+            (sizeof(dados_indx_int_t*))*(tam_tot)
+        );
+
+        dados_indx_int_t **vet_real = (dados_indx_int_t**)arq_index->vetTemp;
+        for(int i = original; i < tam_tot; ++i){
+            vet_real[i] = alocDadoIndxInt();
+        }
+
+    }else if(strcmp(arq_index->tipoDado, "string")==0){
+        arq_index->vet_indx_str = (dados_indx_str_t**)realloc(
+            arq_index->vet_indx_str,
+            (sizeof(dados_indx_str_t*))*(tam_tot)
+        );
+
+        dados_indx_str_t **vet_real = (dados_indx_str_t**)arq_index->vetTemp;
+        for(int i = original; i < tam_tot; ++i){
+            vet_real[i] = alocDadoIndxInt();
+        }
+    }
+}
+
 int indexaRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int posReg, long int *byteOffSetAnt){
     dados_t *atual_reg = alocar_dados();
     int liRegValido=0;//0 até que se prove o contrário
@@ -650,7 +676,17 @@ void mostrar_arq_index(ArqIndex_t *arq_index){
 void ordenaVetIndexFinal(void *arq_index, int qtdReg_ordenar){
     printf("cheguei no final. Campo qtdReg_ordenar:%d\n", qtdReg_ordenar);
     if(qtdReg_ordenar > 0){
+        //Tenho que passar o vetor temporário para o original, para isso:
+        //1-faço o casting do arq_index
         ArqIndex_t *arq_index_real = (ArqIndex_t*)arq_index;
+        //2-realoco o vetor original
+        int qtdReg_antes = get_qtdReg(arq_index_real->cabecalhoIndex);
+        int qtdReg_depois = arq_index_real->qtdReg_vetTemp;
+        int acrescimo = qtdReg_depois - qtdReg_antes;
+        realocar_vet_index(arq_index_real, qtdReg_antes, acrescimo);
+        //3-modifico a qtdReg original
+        set_qtdReg(arq_index_real->cabecalhoIndex, qtdReg_depois);
+        //Agora, ordeno o novo
         ordenaVetIndex(arq_index_real, qtdReg_ordenar);
         printf("terminei a ordenação\n");
     }
@@ -703,21 +739,17 @@ void inserirReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg, int 
         dadoInserir = escolhe_indx_dado(arq_index);
         vetIndex = escolhe_vet_indx(arq_index);
 
-        // printf("antes\n");
         fncsSetDadoIndx[tipDado](dadoInserir, byte_reg_inserir, campoIndexado);
-        // printf("depois\n");
         fncsSetVetIndx[tipDado](vetIndex, pos, dadoInserir);
 
-        // printf("vou inserir o registro: no byte %ld\n", byte_reg_inserir);
-        // mostrar_campos(reg);
         setCabecalhoIndex(arq_index->cabecalhoIndex, '0', pos+1);
     }
 
     //Escrevo no registro de dados
     prepara_para_escrita(reg);
-    // printf("vou escrever o registro:\n");
-    // mostrar_campos(reg);
-    escrever_bin_registro_dados(reg,arq_dados->arqDados,arq_dados->cabecalhoDados);
+    escrever_bin_registro_dados(reg,arq_dados->arqDados,arq_dados->cabecalhoDados); 
+    //incremento o nroRegArq
+    cabecalho_nroRegArq_incrementar(arq_dados->arqDados, 1);
 }
 
 int modificaCampoIndexado(ArqIndex_t *arq_index, InfoBusca_t *altera){
@@ -735,7 +767,6 @@ int obterPosicaoRegVetIndx(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t
 
     int tipoDado = arq_index->tipoDadoInt;
 
-    void *vetIndex = escolhe_vet_indx(arq_index);
     int qtdReg = get_qtdReg(arq_index->cabecalhoIndex);
     void *dadoIndex = escolhe_indx_dado(arq_index);
     
@@ -749,7 +780,7 @@ int obterPosicaoRegVetIndx(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t
     mostraRegIndx_str(dadoIndex);
 
     FncComparacao fncsComparacao[] = {comparacao_vet_dados_indx_int_RegIndx, comparacao_vet_dados_indx_str_RegIndx};
-    int pos = busca_bin_rec(vetIndex, 0, qtdReg, dadoIndex, fncsComparacao[tipoDado]);
+    int pos = busca_bin_rec(arq_index->vetTemp, 0, qtdReg, dadoIndex, fncsComparacao[tipoDado]);
 
     return pos;
 }
@@ -761,12 +792,12 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
     fazAlteracoes(reg_modificado, alteracoes->nomes, alteracoes->vals_str, alteracoes->vals_int, alteracoes->qtd_crit);//abobra
 
     int campo_modificado_eh_nulo;
-    int qtd_reg = get_qtdReg(arq_index->cabecalhoIndex);
+    int qtd_reg = arq_index->qtdReg_vetTemp;
     int tipoDado = arq_index->tipoDadoInt;
     int tam_reg_atual = len_reg_dados(reg_atual);
     int tam_reg_modificado = len_reg_dados(reg_modificado);
     int pos = obterPosicaoRegVetIndx(arq_dados, arq_index, reg_atual, byteOffSet);
-    void *vetIndx = escolhe_vet_indx(arq_index);
+    // void *vetIndx = escolhe_vet_indx(arq_index);
 
     //Devo ver se o campo indexado é nulo. Para isso:
     void *campoIndexado;
@@ -796,14 +827,14 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
             if(pos != -1){
                 //Se o registro tinha campo indexado
                 //Removo do vetIndex
-                desindexaRegistro(arq_index, pos);
+                desindexaRegistro(arq_index, pos, arq_index->vetTemp);
             }
 
             if(campo_modificado_eh_nulo == 0){
                 //Reescrevo o indexamento no vetIndex
 
                 //a qtd_reg pode ter mudado, pois posso ter desidexado o registro, então
-                qtd_reg = get_qtdReg(arq_index->cabecalhoIndex);
+                qtd_reg = arq_index->qtdReg_vetTemp;
                 
                 realocar_vet_index(arq_index, qtd_reg, qtd_reg+1);
                 set_qtdReg(arq_index->cabecalhoIndex, qtd_reg + 1);
@@ -814,7 +845,7 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
 
                 printf("na ação (quando cabe), vou inserir o que chegou na pos=%d na pos=%d\n", pos, qtd_reg);
                 fncsSetDadoIndx[tipoDado](dadoIndx, byteOffSet, campoIndexado);//configuro o novo dado
-                fncsSetVetIndx[tipoDado](vetIndx, qtd_reg, dadoIndx);//coloco na última posição
+                fncsSetVetIndx[tipoDado](arq_index->vetTemp, qtd_reg, dadoIndx);//coloco na última posição
             }
         }
 
@@ -823,18 +854,20 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_atua
         if(pos != -1){
             //Se o registro tinha campo indexado
             //Removo do vetIndex
-            desindexaRegistro(arq_index, pos);
+            desindexaRegistro(arq_index, pos, arq_index->vetTemp);
         }
 
         //marco como removido
         escreverCampoRemovido(arq_dados->arqDados);
+        //incremento o qtdRegrem
+        setCabecalhoDados_nroRegRem(arq_dados->cabecalhoDados, get_nroRegRem(arq_dados->cabecalhoDados)+1);
         
         //Escrevo no final. Para isso:
         //1- realoco se o campoIndexado não for nulo
         if(campo_modificado_eh_nulo == 0){
             //incremento o número de registros
 
-            qtd_reg = get_qtdReg(arq_index->cabecalhoIndex);
+            qtd_reg = arq_index->qtdReg_vetTemp;
             set_qtdReg(arq_index->cabecalhoIndex, qtd_reg+1);
             realocar_vet_index(arq_index, qtd_reg, qtd_reg+1);
         }
@@ -850,6 +883,11 @@ void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados){
     //ler o critérios de busca
     InfoBusca_t *criterios = ler_criterios_busca();
     InfoBusca_t *alteracoes = ler_criterios_busca();
+
+    //Alocar um vetor temporário, o qual irei editar ao longo do processo
+    typedef void* (*FncAlocaVetTemp) (int);
+    FncAlocaVetTemp fncsAlocaVetTemp[] = {aloc_vet_indx_DadoInt, aloc_vet_indx_DadoStr};
+    arq_index->vetTemp = fncsAlocaVetTemp[arq_index->tipoDadoInt](get_qtdReg(arq_index->cabecalhoIndex));
 
     processaRegistros(arq_dados,arq_index,criterios,alteracoes,modificaReg,ordenaVetIndexFinal);
 
