@@ -180,6 +180,26 @@ char *truncar(char *original, int tam_truncamento){
     return truncado;
 }
 
+char *truncar_dataCrime(char *original){
+    char *truncado = malloc(sizeof(char)*12);
+    for(int i = 0; i < 10; ++i){
+        truncado[i] = original[i];
+    }
+
+    truncado[10] = '$';
+    truncado[11] = '$';
+    return truncado;
+}
+
+char *truncar_marcaCelular(char *original){
+    char *truncado = malloc(sizeof(char)*12);
+    for(int i = 0; i < 12; ++i){
+        truncado[i] = original[i];
+    }
+    return truncado;
+}
+
+
 int strParaInt(char *str){
     if(str[0] == '\0'){
         //Se a estring está vazia (valor nulo)

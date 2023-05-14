@@ -11,6 +11,8 @@
 	void desalocar_vetor_string(char **vetor, int n_elem);
 	int ehInteiro(char *campo);
 	char *truncar(char *original, int tam_truncamento);
+	char *truncar_dataCrime(char *original);
+	char *truncar_marcaCelular(char *original);
 	int strParaInt(char *str);
 	int comparar_strings(char *s1, char *s2);
 	int comparar_n_chars(char *s1, char *s2, int n);
