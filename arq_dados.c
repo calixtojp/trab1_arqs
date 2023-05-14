@@ -124,9 +124,9 @@ void *getCampoInt(dados_t *dado, char *campo){
 void *getCampoStr(dados_t *dado, char *campo){
 
 	if(strcmp(campo, "dataCrime")==0){
-		return truncar(dado->dataCrime, 12);
+		return truncar_dataCrime(dado->dataCrime);
 	}else if(strcmp(campo, "marcaCelular")==0){
-		return truncar(dado->marcaCelular, 12);
+		return truncar_marcaCelular(dado->marcaCelular);
 	}else if(strcmp(campo, "lugarCrime")==0){
 		return truncar(dado->lugarCrime, 12);
 	}else if(strcmp(campo, "descricaoCrime")==0){
@@ -467,8 +467,13 @@ void copia_registro(dados_t *destino, dados_t *origem){
 	destino->numeroArtigo = origem->numeroArtigo;
 	destino->idCrime = origem->idCrime;
 	destino->hashtag = '#';
-	strcpy(destino->marcaCelular, origem->marcaCelular);
-	strcpy(destino->dataCrime, origem->dataCrime);
+	
+	for(int i = 0; i < 12; ++i){
+		destino->marcaCelular[i] = origem->marcaCelular[i];
+	}
+	for(int i = 0; i < 10; ++i){
+		destino->dataCrime[i] = origem->dataCrime[i];
+	}
 
 	int n;
 	//variável que será usada para armazenar o tamanho
@@ -824,19 +829,31 @@ void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet
 	for(int i = 0; i < qtd_crit; ++i){
 		int novo_tam;
 		for(int j = 0; j < 6; ++j){
-			if(strcmp(nomes[j], vet_nomes[j])==0){
+			if(strcmp(nomes[j], vet_nomes[i])==0){
 				switch (j){
 					case 0://idCrime
 						reg->idCrime = vet_vals_int[i];
 						break;
 					case 1://dataCrime
-						strcpy(reg->dataCrime, vet_vals_str[i]);
+						int tam = strlen(vet_vals_str[i]);
+						for(int k = 0; k < tam; ++k){
+							reg->dataCrime[k] = vet_vals_str[i][k];
+						}
+						for(int k = tam; k < 10; ++k){
+							reg->dataCrime[k] = '$';
+						}
 						break;
 					case 2://numeroArtigo
 						reg->numeroArtigo = vet_vals_int[i];
 						break;
 					case 3://marcaCelular
-						strcpy(reg->marcaCelular, vet_vals_str[i]);
+						tam = strlen(vet_vals_str[i]);
+						for(int k = 0; k < tam; ++k){
+							reg->marcaCelular[k] = vet_vals_str[i][k];
+						}
+						for(int k = tam; k < 12; ++k){
+							reg->marcaCelular[k] = '$';
+						}
 						break;
 					case 4://lugarCrime
 						novo_tam = strlen(vet_vals_str[i]);

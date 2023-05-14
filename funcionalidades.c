@@ -138,11 +138,12 @@ void where(void){
 
         //Ler os critérios de busca
         InfoBusca_t *criterios = ler_criterios_busca();
-
+        InfoBusca_t *alteracoes;
         /*Processar o registro usando a ação 'printa_busca'
         e o final 'achouReg', que diz se o registro é inexistente, 
         caso nenhum satisfaça os critérios de busca*/
-        processaRegistros(arq_dados,arq_index,criterios,printa_busca,achouReg);
+        
+        processaRegistros(arq_dados,arq_index,criterios,alteracoes,printa_busca,achouReg);
 
         //Desalocar crtérios de busca    	
         desalocar_InfoBusca(criterios);
@@ -196,9 +197,10 @@ void delete_from(){
 
         //Ler os critérios de busca para os registros que se deseja remover
         InfoBusca_t *criterios = ler_criterios_busca();
+        InfoBusca_t *alteracoes;
 
         //Processar o registro usando a ação 'deletar_registros' e o final 'nada'
-        processaRegistros(arq_dados,arq_index,criterios,deletarRegistro, nada);
+        processaRegistros(arq_dados,arq_index,criterios,alteracoes,deletarRegistro, nada);
 
         //Desalocar tipos utilizados    	
         desalocar_InfoBusca(criterios);
@@ -254,11 +256,7 @@ void insert_into(){
     int pos = qtdRegDadosAntes;
     for(int cont = 0; cont < qtdInserir; ++cont){
         // printf("cont:%d\n", cont);
-        inserirRegStdin(
-            arq_dados,
-            arq_index,
-            pos
-        );
+        inserirRegStdin(arq_dados,arq_index,pos);
         pos = get_nroRegIndex(arq_index);
     }
 
@@ -299,7 +297,7 @@ void update(){
     ler_campoIndexado(arq_index);
     ler_tipoDado(arq_index);
     ler_nome_arq_index(arq_index);
-    scanf("%d\n\n",&n);
+    scanf("%d\n",&n);
 
     //Com os inputs armazenados, faço a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "r+b");
@@ -314,6 +312,7 @@ void update(){
 
     int cont_n;
     for(cont_n = 0; cont_n < n; cont_n++){
+        printf("busca %d\n", cont_n);
         editarRegStdin(arq_index,arq_dados);
     }
 

@@ -169,7 +169,9 @@ void setDadoIndxStr(void *dado, long int byteOffSet, void *valor){
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
     char *valor_real = (char*)valor;
     dado_real->byteOffset = byteOffSet;
-    strcpy(dado_real->chaveBusca, valor_real);
+    for(int i = 0; i < 12; ++i){
+        dado_real->chaveBusca[i] = valor_real[i];
+    }
 }
 
 void setVetIndx_int(void *vet, int pos, void *dado){
@@ -236,7 +238,7 @@ void mostraRegIndx_int(dados_indx_int_t *dado){
     printf("campoIndexado:%d|byte:%ld\n", dado->chaveBusca, dado->byteOffset);
 }
 
-void mostraRegIndx_str(dados_indx_str_t *dado){
+void  mostraRegIndx_str(dados_indx_str_t *dado){
     printf("campoIndexado:%s|byte:%ld\n", dado->chaveBusca, dado->byteOffset);
 }
 
@@ -273,10 +275,27 @@ int compara_dado_str(const void *a, const void *b){
     char str_a[TAM_CAMP_STR];
     char str_b[TAM_CAMP_STR];
     long int byte_a, byte_b;
-    byte_a = (*((dados_indx_int_t**)a))->byteOffset;
-    byte_b = (*((dados_indx_int_t**)b))->byteOffset;
-    strcpy(str_a, (*((dados_indx_str_t**)a))->chaveBusca);
-    strcpy(str_b, (*((dados_indx_str_t**)b))->chaveBusca);
+    byte_a = (*((dados_indx_str_t**)a))->byteOffset;
+    byte_b = (*((dados_indx_str_t**)b))->byteOffset;
+
+    for(int i = 0; i < 12; ++i){
+        str_a[i] = (*((dados_indx_str_t**)a))->chaveBusca[i];
+        str_b[i] = (*((dados_indx_str_t**)b))->chaveBusca[i];
+    }
+
+    // printf("bt_a:%lf|bt_b:%lf\n", byte_a, byte_b);
+
+    // printf("str_a:");
+    // for(int i = 0; i < TAM_CAMP_STR; ++i){
+    //     printf("%c", str_a[i]);
+    // }
+    // printf("\n");
+
+    // printf("str_b:");
+    // for(int i = 0; i < TAM_CAMP_STR; ++i){
+    //     printf("%c", str_b[i]);
+    // }
+    // printf("\n");
 
     int cont=0;
     char curs_a, curs_b;
@@ -291,9 +310,7 @@ int compara_dado_str(const void *a, const void *b){
         }
     }while(curs_a!='$' && curs_b!='$' && cont<12);
 
-    if(cont==0){
-        return byte_a - byte_b;
-    }
+    return byte_a - byte_b;
 }
 
 void ordenaVetIndex_int(void *vetor_generico, int qntd_reg){
@@ -402,12 +419,51 @@ int tratamento(int pos, int *qtd_reg_val, void *vetor, int (*comparacao)(void*,i
 
 int comparacao_vet_dados_indx_int_RegIndx(void *vetor, int pos, void *dado){
     dados_indx_int_t **vet_real = (dados_indx_int_t**)vetor;
-    compara_dado_int(&(vet_real[pos]), &dado);
+    dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;
+    int valor_a, valor_b;
+    long int byte_a, byte_b;
+
+    valor_a = vet_real[pos]->chaveBusca;
+    valor_b = dado_real->chaveBusca;
+    byte_a = vet_real[pos]->byteOffset;
+    byte_b = dado_real->chaveBusca;
+    
+    if(valor_a == valor_b){
+        return byte_a - byte_b;
+    }else{
+        return valor_a - valor_b;
+    }
 }
 
 int comparacao_vet_dados_indx_str_RegIndx(void *vetor, int pos, void *dado){
-    dados_indx_str_t **vet_real = (dados_indx_str_t**)vetor;
-    compara_dado_str(&(vet_real[pos]), &dado);
+    char str_a[TAM_CAMP_STR];
+    char str_b[TAM_CAMP_STR];
+    long int byte_a, byte_b;
+    dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor;
+    dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
+
+    byte_a = vetor_real[pos]->byteOffset;
+    byte_b = dado_real->byteOffset;
+
+    for(int i = 0; i < 12; ++i){
+        str_a[i] = (vetor_real[pos]->chaveBusca)[i];
+        str_b[i] = (dado_real->chaveBusca)[i];
+    }
+
+    int cont=0;
+    char curs_a, curs_b;
+    do{
+        curs_a = str_a[cont];
+        curs_b = str_b[cont];
+        int result = curs_a - curs_b;
+        if(result != 0){
+            return result;
+        }else{
+            cont++;
+        }
+    }while(curs_a!='$' && curs_b!='$' && cont<12);
+
+    return byte_a - byte_b;
 }
 
 int comparacao_vet_dados_indx_str_const(void *vetor, int pos, void *ponteiro){
@@ -497,16 +553,18 @@ int busca_bin_str(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qt
     return tratamento(pos,qtd_reg_val,vetor_real,comparacao_vet_dados_indx_str);
 }
 
-long int get_byteOffset_int(void *ponteiro, int pos){
+long int get_byteOffset_int(void *vetor, int pos){
     //funcao que retorna o byteoffset de um registro dentro de um vetor de registros de dados de um arquivo de indice tipo int
-    dados_indx_int_t **registro = (dados_indx_int_t **)ponteiro;
-    return registro[pos]->byteOffset;
+    dados_indx_int_t **vetor_real = (dados_indx_int_t **)vetor;
+    long int retorno = (vetor_real[pos])->byteOffset;
+    return retorno;
 }
 
-long int get_byteOffset_str(void *ponteiro, int pos){
+long int get_byteOffset_str(void *vetor, int pos){
     //funcao que retorna o byteoffset de um registro dentro de um vetor de registros de dados de um arquivo de indice tipo string
-    dados_indx_str_t **registro = (dados_indx_str_t **)ponteiro;
-    return registro[pos]->byteOffset;
+    dados_indx_str_t **vetor_real = (dados_indx_str_t **)vetor;
+    long int retorno = (vetor_real[pos])->byteOffset;
+    return retorno;
 }
 
 char getStatusIndex(cabecalho_indx_t *cabecalho){
