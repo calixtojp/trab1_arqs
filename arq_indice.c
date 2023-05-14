@@ -598,3 +598,21 @@ void shiftarVetIndxStr(void *vet_dado_indx, int pos, int qtd_reg){
         vet_dado_indx_str[i] = vet_dado_indx_str[i+1];
     }
 }
+
+void copiaVetIntparaVetTemp(void *vetIndxInt_destino, void *vetIndxInt_origem, int qtdVetTemp){
+    //Faz a copia de um vetor de dados int para outro vetor de dados int
+    dados_indx_int_t **vetOrigem_real = (dados_indx_int_t**)vetIndxInt_origem;
+    dados_indx_int_t **vetDestino_real = (dados_indx_int_t**)vetIndxInt_destino;
+    for(int i = 0; i < qtdVetTemp; ++i){
+        copiaDadoIndex_int(vetDestino_real[i], vetOrigem_real[i]);
+    }
+}
+
+void copiaVetStrparaVetTemp(void *vetIndxStr_destino, void *vetIndxStr_origem, int qtdVetTemp){
+    //Faz a copia de um vetor de dados int para outro vetor de dados int
+    dados_indx_str_t **vetOrigem_real = (dados_indx_str_t**)vetIndxStr_origem;
+    dados_indx_str_t **vetDestino_real = (dados_indx_str_t**)vetIndxStr_destino;
+    for(int i = 0; i < qtdVetTemp; ++i){
+        copiaDadoIndex_str(vetDestino_real[i], vetOrigem_real[i]);
+    }
+}
