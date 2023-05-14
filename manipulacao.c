@@ -254,20 +254,14 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
 void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo){
     int tam_tot = original + acrescimo;
     if(strcmp(arq_index->tipoDado, "inteiro")==0){
-        arq_index->vet_indx_int = (dados_indx_int_t**)realloc(
-            arq_index->vet_indx_int,
-            (sizeof(dados_indx_int_t*))*(tam_tot)
-        );
+        arq_index->vet_indx_int = (dados_indx_int_t**)realloc(arq_index->vet_indx_int,(sizeof(dados_indx_int_t*))*(tam_tot));
 
         for(int i = original; i < tam_tot; ++i){
             arq_index->vet_indx_int[i] = alocDadoIndxInt();
         }
 
     }else if(strcmp(arq_index->tipoDado, "string")==0){
-        arq_index->vet_indx_str = (dados_indx_str_t**)realloc(
-            arq_index->vet_indx_str,
-            (sizeof(dados_indx_str_t*))*(tam_tot)
-        );
+        arq_index->vet_indx_str = realloc(arq_index->vet_indx_str,(sizeof(dados_indx_str_t*))*(tam_tot));
 
         for(int i = original; i < tam_tot; ++i){
             arq_index->vet_indx_str[i] = alocDadoIndxStr();
@@ -278,10 +272,7 @@ void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo){
 void realocar_vetIndxTemp(ArqIndex_t *arq_index, int original, int acrescimo){
     int tam_tot = original + acrescimo;
     if(strcmp(arq_index->tipoDado, "inteiro")==0){
-        arq_index->vetTemp = (dados_indx_int_t**)realloc(
-            arq_index->vetTemp,
-            (sizeof(dados_indx_int_t*))*(tam_tot)
-        );
+        arq_index->vetTemp = realloc(arq_index->vetTemp,(sizeof(dados_indx_int_t*))*(tam_tot));
 
         dados_indx_int_t **vet_real = (dados_indx_int_t**)arq_index->vetTemp;
         for(int i = original; i < tam_tot; ++i){
@@ -289,10 +280,7 @@ void realocar_vetIndxTemp(ArqIndex_t *arq_index, int original, int acrescimo){
         }
 
     }else if(strcmp(arq_index->tipoDado, "string")==0){
-        arq_index->vet_indx_str = (dados_indx_str_t**)realloc(
-            arq_index->vet_indx_str,
-            (sizeof(dados_indx_str_t*))*(tam_tot)
-        );
+        arq_index->vetTemp = realloc(arq_index->vet_indx_str,(sizeof(dados_indx_str_t*))*(tam_tot));
 
         dados_indx_str_t **vet_real = (dados_indx_str_t**)arq_index->vetTemp;
         for(int i = original; i < tam_tot; ++i){
@@ -966,7 +954,7 @@ void desindexaRegistro(ArqIndex_t *arq_index, int pos){
     fncsShiftar[tipo_dado](arq_index->vetTemp,pos,qtdReg_ant-1);
 
     //-em seguida, realoco o tamanho do vetor
-    realocar_vet_index(arq_index, qtdReg_ant, (-1));
+    realocar_vetIndxTemp(arq_index, qtdReg_ant, (-1));
 }
 
 void reiniciarCursorIndex(ArqIndex_t *arq_index){
