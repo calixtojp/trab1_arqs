@@ -166,6 +166,13 @@ void desalocar_ArqDados(ArqDados_t *arq_dados){
 }
 
 void desalocar_ArqIndex(ArqIndex_t *arq_index){
+    int qtd_reg = get_qtdReg(arq_index->cabecalhoIndex);
+
+    if(strcmp(arq_index->tipoDado, "inteiro")==0){
+        desalocarVetIndxDadoInt(arq_index->vet_indx_int, qtd_reg);
+    }else if(strcmp(arq_index->tipoDado, "string")==0){
+        desalocarVetIndxDadoStr(arq_index->vet_indx_str, qtd_reg);
+    }
     free(arq_index->cabecalhoIndex);
     free(arq_index);
 }
@@ -484,11 +491,6 @@ void achouReg(void *arq_index, int flag){
     }
 }
 
-void nada(void *ponteiro, int flag){
-    //função que não faz nada. Existe para manter a constância da função 'processaRegistros()', 
-    //dado que nem sempre o parâmetro 'FncFinaliza final' é usado
-}
-
 int testarStatusDados(ArqDados_t *arq_dados){
 	//funcao que retorna 1 caso o arquivo esteja consistente e 0 caso esteja inconsistente
 	if(getStatusDados(arq_dados->cabecalhoDados) == '1'){
@@ -513,22 +515,47 @@ void printa_busca(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registr
     mostrar_campos(registro);
 }
 
-void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, InfoBusca_t *alteracoes, FncAcao acao, FncFinaliza final){
-    //funcao que define se a busca sera binaria no arquivo de indice ou sequencial no arquivo de dados
-    //Alocar um vetor temporário, o qual irei editar ao longo do processo
+void criarVetTemp(ArqIndex_t *arq_index){
+    //Funcao que aloca um vetor temporário, o qual recebe as modificações da funcionalidades 
+    //Esse vetor é uma cópia do vetor de dados do arquivo de índice
 
+    //descubro qual é o vetor de dados do arquivo de índice original
     void *vetOrigem = escolhe_vet_indx(arq_index);
+
+    //pego a quantidade de registros indexados
     int qtdRegOrigem = get_qtdReg(arq_index->cabecalhoIndex);
+
+    //copio a quantidade de registros indexados
     arq_index->qtdReg_vetTemp = qtdRegOrigem;
+
+    //seto o número de registros adicionados no vetor temporário para zero
     arq_index->nro_addVetTemp = 0;
 
+    //Faço a cópia do vetor dependendo do seu tipo
     if(strcmp(arq_index->tipoDado, "inteiro")==0){
         arq_index->vetTemp = aloc_vet_indx_DadoInt(qtdRegOrigem);
-        copiaVetIntparaVetTemp(arq_index->vetTemp,vetOrigem, qtdRegOrigem);
+        copiaVetInt(arq_index->vetTemp,vetOrigem, 0, qtdRegOrigem-1, 0, qtdRegOrigem-1);
     }else if(strcmp(arq_index->tipoDado, "string")==0){
         arq_index->vetTemp = aloc_vet_indx_DadoStr(qtdRegOrigem);
-        copiaVetStrparaVetTemp(arq_index->vetTemp,vetOrigem, qtdRegOrigem);
+        copiaVetStr(arq_index->vetTemp,vetOrigem, 0, qtdRegOrigem-1, 0, qtdRegOrigem-1);
     }
+}
+
+void apagarVetTemp(ArqIndex_t *arq_index){
+    if(strcmp(arq_index->tipoDado, "inteiro")==0){
+        desalocarVetIndxDadoInt(arq_index->vetTemp, arq_index->qtdReg_vetTemp);
+    }else if(strcmp(arq_index->tipoDado, "string")==0){
+        desalocarVetIndxDadoStr(arq_index->vetTemp, arq_index->qtdReg_vetTemp);
+    }
+}
+
+void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, InfoBusca_t *alteracoes, 
+                        FncAcao acao, FncFinaliza final){
+    /*Funcao que define se a busca sera binaria no arquivo de indice ou sequencial no arquivo de dados e encontra os registros. 
+    Depois, usa a FncAcao acao, e a FncFinaliza final para processá-los.*/
+
+    //Alocar um vetor temporário, o qual irei editar ao longo do processo
+    criarVetTemp(arq_index);
 
     int existe = existe_index(criterios,arq_index);
     /*Se existe arquivo de indice para um dos campos a serem buscados,
@@ -551,7 +578,8 @@ void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t
         busca_seq_dados(arq_dados, arq_index, criterios,alteracoes,acao,final);
     }
 
-    //INSERIR DESALOCARMENTO pija
+    //desalocar o vetor temporário
+    apagarVetTemp(arq_index);
 }
 
 void busca_bin_index(ArqIndex_t *arq_index, ArqDados_t *arq_dados, int pos_chave, InfoBusca_t *criterios, InfoBusca_t *alteracoes,FncAcao acao, FncFinaliza final){
@@ -695,7 +723,7 @@ void ordenaVetIndexFinal(void *arq_index, int qtdReg_ordenar){ //FINAL
 
         //copio o vetor temporário para o original
         void *vetorDestino = escolhe_vet_indx(arq_index);
-        copiaVetIntparaVetTemp(vetorDestino, arq_index_real->vetTemp, qtdReg_depois);
+        copiaVetInt(vetorDestino, arq_index_real->vetTemp, 0, qtdReg_depois-1, 0, qtdReg_depois-1);
 
         //Agora, ordeno o novo
         ordenaVetIndex(arq_index_real, qtdReg_depois);
@@ -1077,8 +1105,8 @@ void copiaVetTemp(void *ponteiro, int ignorar){
     //Agora, devo copiar os valores do vetor, seja qual tipo ele for. Para isso:
 
     //-Defino um vetor de funções que fazem a copia para um tipo específico
-    typedef void (*FncCopiaValores) (void*, void*, int);
-    FncCopiaValores fncsCopiaValores[] = {copiaVetIntparaVetTemp, copiaVetStrparaVetTemp};
+    typedef void (*FncCopiaValores) (void*, void*,int,int,int,int);
+    FncCopiaValores fncsCopiaValores[] = {copiaVetInt, copiaVetStr};
 
 
     //-descubro o tipo do vetor (0 int, 1 string)
@@ -1088,7 +1116,7 @@ void copiaVetTemp(void *ponteiro, int ignorar){
     void *vetor_original = escolhe_vet_indx(arq_index);
 
     //-Por fim, faço a cópia dos valores, independente do tipo dos vetores
-    fncsCopiaValores[tipo_dado](vetor_original,arq_index->vetTemp, qtdReg_agr);
+    fncsCopiaValores[tipo_dado](vetor_original,arq_index->vetTemp, 0, qtdReg_agr-1, 0, qtdReg_agr-1);
 }
 
 void reiniciarCursorIndex(ArqIndex_t *arq_index){

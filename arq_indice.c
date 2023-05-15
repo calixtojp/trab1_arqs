@@ -64,6 +64,22 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
     return vet_retorno;
 }
 
+void desalocarVetIndxDadoStr(void *vetor, int nroRegValidos){
+    dados_indx_str_t **vet_real = (dados_indx_str_t **)vetor;
+    for(int i = 0; i < nroRegValidos; ++i){
+        free(vet_real[i]);
+    }
+    free(vet_real);
+}
+
+void desalocarVetIndxDadoInt(void *vetor, int nroRegValidos){
+    dados_indx_int_t **vet_real = (dados_indx_int_t **)vetor;
+    for(int i = 0; i < nroRegValidos; ++i){
+        free(vet_real[i]);
+    }
+    free(vet_real);
+}
+
 void ler_index_cabecalho(FILE *arq, cabecalho_indx_t* cabecalho){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
@@ -613,9 +629,10 @@ void copiaVetInt(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest
     int cont_ori = ini_ori;
     int cont_dest = ini_dest;
 
-    while((cont_ori<=fim_ori)&&(cont_dest<=fim_ori)){
-        copiaDadoIndex_int(vetOrigem_real[cont_ori], vetDestino_real[cont_dest]);
-        cont_ori++;cont_dest++;
+    while((cont_ori<=fim_ori)&&(cont_dest<=fim_dest)){
+        copiaDadoIndex_int(vetDestino_real[cont_dest],vetOrigem_real[cont_ori]);
+        cont_ori++;
+        cont_dest++;
     }
 }
 
@@ -628,7 +645,8 @@ void copiaVetStr(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest
     int cont_dest = ini_dest;
 
     while((cont_ori<=fim_ori)&&(cont_dest<=fim_ori)){
-        copiaDadoIndex_str(vetOrigem_real[cont_ori], vetDestino_real[cont_dest]);
-        cont_ori++;cont_dest++;
+        copiaDadoIndex_str(vetDestino_real[cont_dest], vetOrigem_real[cont_ori]);
+        cont_ori++;
+        cont_dest++;
     }
 }

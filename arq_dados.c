@@ -248,22 +248,19 @@ cabecalho_t *ler_cabecalho(FILE *arq_bin){
 	cabecalho_t *cabecalho_return = alocar_cabecalho_dados();
 
 	if(fread(&(cabecalho_return->status), sizeof(char), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
-		return NULL;
+		mensagem_erro();
 	}
 
 	if(fread(&(cabecalho_return->proxByteOffset), sizeof(long int), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
-		return NULL;
+		mensagem_erro();
 	}
 
 	if(fread(&(cabecalho_return->nroRegArq), sizeof(int), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
-		return NULL;
+		mensagem_erro();
 	}
 
 	if(fread(&(cabecalho_return->nroRegRem), sizeof(int), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
+		mensagem_erro();
 	}
 
 	return cabecalho_return;

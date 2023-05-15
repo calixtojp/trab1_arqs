@@ -77,7 +77,6 @@ void desalocar_InfoBusca(InfoBusca_t *informacao);
 void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, InfoBusca_t *alteracoes, FncAcao acao, FncFinaliza final);
 void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados);
 void achouReg(void *arq_index, int flag);
-void nada(void *ponteiro, int flag);
 int testarStatusIndex(ArqIndex_t *arq_index);
 int testarStatusDados(ArqDados_t *arq_dados);
 void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, InfoBusca_t *ignorar, long int byteOffset);
