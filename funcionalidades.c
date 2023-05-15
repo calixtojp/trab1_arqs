@@ -334,6 +334,17 @@ void update(){
     //Ler o cabeçalho do arquivo de dados.
     ler_cabecalho_dados(arq_dados);
 
+    int status_ok = 1;
+    status_ok *= testarStatusDados(arq_dados);
+    status_ok *= testarStatusIndex(arq_index);
+    if(status_ok == 0){
+        mensagem_erro();
+    }else{
+        //Se o status está ok, modifico para fazer alterações
+        alterarStatusDados(arq_dados, '0');
+        alterarStatusIndex(arq_index, '0');
+    }
+
     int cont_n;
     for(cont_n = 0; cont_n < n; cont_n++){
         printf("busca %d\n", cont_n);

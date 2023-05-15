@@ -843,6 +843,7 @@ void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet
 		"descricaoCrime"
 	};
 
+	int tam;
 	for(int i = 0; i < qtd_crit; ++i){
 		int novo_tam;
 		for(int j = 0; j < 6; ++j){
@@ -852,7 +853,7 @@ void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet
 						reg->idCrime = vet_vals_int[i];
 						break;
 					case 1://dataCrime
-						int tam = strlen(vet_vals_str[i]);
+						tam = strlen(vet_vals_str[i]);
 						for(int k = 0; k < tam; ++k){
 							reg->dataCrime[k] = vet_vals_str[i][k];
 						}
@@ -897,6 +898,7 @@ void escreverCampoRemovido(FILE *arqDados){
 }
 
 void completaRegistroComDollar(FILE *arqDados, int qts_dolar){
+	fseek(arqDados, -1,SEEK_CUR);
 	for(int i = 0; i < qts_dolar; ++i){
 		char dolar = '$';
 		fwrite(&(dolar), sizeof(char), 1, arqDados);
