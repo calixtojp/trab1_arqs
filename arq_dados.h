@@ -49,6 +49,7 @@
 	void reescrever_registro_dados(dados_t *dados, FILE *arq);
 	void reescrever_campo_variavel(char *texto, FILE *arq);
 	cabecalho_t *ler_cabecalho(FILE *arq_bin);
+	void fwriteCabecalhoDados(FILE *arq_bin, cabecalho_t *cabecalho);
 	void sair_fechando(FILE *arq_bin);
 	void desalocar_registro(dados_t *registro);
 	int existem_registros(cabecalho_t *cabecalho);

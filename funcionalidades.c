@@ -8,7 +8,7 @@
 void debug(void){
     //nomeArqIndx.bin tipoDado
 
-    ArqIndex_t *arq_index = alocar_arq_index();
+/*     ArqIndex_t *arq_index = alocar_arq_index();
     ler_nome_arq_index(arq_index);
     ler_tipoDado(arq_index);
     abrir_arq_index(arq_index, "rb");
@@ -22,7 +22,7 @@ void debug(void){
     mostrar_arq_index(arq_index);
 
     desalocar_ArqIndex(arq_index);
-    fechar_arq_index(arq_index);
+    fechar_arq_index(arq_index); */
 }
 
 //Funcionalidade [3]
@@ -186,11 +186,11 @@ void delete_from(){
     ler_cabecalho_dados(arq_dados);
 
     //Testo se os dois arquivos estao consistentes. Se não estão, encerro o programa com uma mensagem de erro.
-    /* if(testarStatusIndex(arq_index)==0){
+    if(testarStatusIndex(arq_index)==0){
         mensagem_erro();
     }else if(testarStatusDados(arq_dados)==0){
         mensagem_erro();
-    } */
+    }
 
     //indico que os arquivos estão inconsistentes, pois vou escrever em ambos
     //como li todo o arquivo de index, o cursor está no final
@@ -205,19 +205,21 @@ void delete_from(){
 
     //Loop que faz 'n' deleções
     for(int i=1; i<=n; i++){
-
+        printf("Busca %d\n",i);
         //Ler os critérios de busca para os registros que se deseja remover
         InfoBusca_t *criterios = ler_criterios_busca();
+
+        //Variável que recebe os critérios de alteração da funcionalidade 7. Na funcionalidade 5 ela é apenas ignorada
         InfoBusca_t *alteracoes;
 
-        //Processar o registro usando a ação 'deletar_registros' e o final 'nada'
-        processaRegistros(arq_dados,arq_index,criterios,alteracoes,deletarRegistro, nada);
+        //Processar o registro usando a ação 'deletar_registros' e o final 'copiaVetTemp'
+        processaRegistros(arq_dados,arq_index,criterios,alteracoes,deletarRegistro, copiaVetTemp);
 
         //Desalocar tipos utilizados    	
         desalocar_InfoBusca(criterios);
     }
-
-    //REESCREVO TODO O ARQUIVO DE INDEX
+    
+    //reescrevo todo o arquivo de index
     reiniciarCursorIndex(arq_index);
     escreveArqIndex(arq_index);
 
@@ -230,7 +232,8 @@ void delete_from(){
     //Como o 'processaRegistros()' pode alterar o cursor do arquivo de dados, reinicio ele
     reiniciarCursorDados(arq_dados);
     alterarStatusDados(arq_dados,1);
-    escreverStatusDados(arq_dados);
+    //Reescrevo o cabeçalho do arquivo de dados, pois, além do status, alterei o campo de registros removidos
+    escreverCabecalhoDados(arq_dados);
 
     //Chama a funcao binarioNaTela() para gerar uma saída com base nas mudanças nos arquivos
     binarioNaTela(getNomeArqDados(arq_dados)); 

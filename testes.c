@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(){
-    char nome[] = "indice7Depois.bin";
+    char nome[] = "indice6.bin";
     FILE *arq = fopen(nome, "rb");
 
     char status;
@@ -13,7 +13,7 @@ int main(){
 
     printf("status:%c|qtdReg%d\n", status, qtdReg);
 
-    for(int i = 0; i < qtdReg; ++i){
+    for(int i = 0; i < qtdReg+10; ++i){
         int campoIndexado;
         long int byte;
         fread(&campoIndexado, sizeof(int), 1, arq);

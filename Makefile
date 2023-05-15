@@ -1,5 +1,5 @@
 all: manipulacao.o arq_indice.o auxiliares.o main.o arq_dados.o funcionalidades.o
-	gcc manipulacao.o arq_indice.o auxiliares.o main.o arq_dados.o funcionalidades.o -o arq -Wall -std=c99;
+	gcc manipulacao.o arq_indice.o auxiliares.o main.o arq_dados.o funcionalidades.o -o arq -Wall -std=c99 -g;
 
 manipulacao.o:
 	gcc -c manipulacao.c -o manipulacao.o
