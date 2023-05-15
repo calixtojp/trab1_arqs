@@ -357,15 +357,12 @@ void escreveDadoIndx_str(FILE *arqIndex, void *dado){
 
 void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos){
     dados_indx_int_t **vet_real = (dados_indx_int_t**)vet_indx_int;
-    mostraRegIndx_int(vet_real[pos]);
     escreveDadoIndx_int(arqIndex, vet_real[pos]);
 }
 
 void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos){
     dados_indx_str_t **vet_real = (dados_indx_str_t**)vet_indx_str;
-    mostraRegIndx_str(vet_real[pos]);
     escreveDadoIndx_str(arqIndex, vet_real[pos]);
-
 }
 
 int comparacao_vet_dados_indx_int(void *ponteiro, int pos1, int pos2){
@@ -612,8 +609,8 @@ void copiaVetInt(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest
     int cont_ori = ini_ori;
     int cont_dest = ini_dest;
 
-    while((cont_ori<=fim_ori)&&(cont_dest<=fim_ori)){
-        copiaDadoIndex_int(vetOrigem_real[cont_ori], vetDestino_real[cont_dest]);
+    while((cont_ori<=fim_ori)&&(cont_dest<=fim_dest)){
+        copiaDadoIndex_int(vetDestino_real[cont_dest], vetOrigem_real[cont_ori]);
         cont_ori++;cont_dest++;
     }
 }
@@ -626,8 +623,8 @@ void copiaVetStr(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest
     int cont_ori = ini_ori;
     int cont_dest = ini_dest;
 
-    while((cont_ori<=fim_ori)&&(cont_dest<=fim_ori)){
-        copiaDadoIndex_str(vetOrigem_real[cont_ori], vetDestino_real[cont_dest]);
+    while((cont_ori<=fim_ori)&&(cont_dest<=fim_dest)){
+        copiaDadoIndex_str(vetDestino_real[cont_dest], vetOrigem_real[cont_ori]);
         cont_ori++;cont_dest++;
     }
 }

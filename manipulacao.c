@@ -244,6 +244,7 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
 }
 
 void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo){
+    printf("na func realocar_vet_index, vou realocar de %d para %d\n", original, original+acrescimo);
     int tam_tot = original + acrescimo;
 
     if(strcmp(arq_index->tipoDado, "inteiro")==0){
@@ -254,7 +255,9 @@ void realocar_vet_index(ArqIndex_t *arq_index, int original, int acrescimo){
         }
 
     }else if(strcmp(arq_index->tipoDado, "string")==0){
+        // printf("antes do realoc principal\n");
         arq_index->vet_indx_str = realloc(arq_index->vet_indx_str,(sizeof(dados_indx_str_t*))*(tam_tot));
+        // printf("depois do realoc principal\n");
 
         for(int i = original; i < tam_tot; ++i){
             arq_index->vet_indx_str[i] = alocDadoIndxStr();
@@ -525,10 +528,10 @@ void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t
 
     if(strcmp(arq_index->tipoDado, "inteiro")==0){
         arq_index->vetTemp = aloc_vet_indx_DadoInt(qtdRegOrigem);
-        copiaVetIntparaVetTemp(arq_index->vetTemp,vetOrigem, qtdRegOrigem);
+        copiaVetInt(arq_index->vetTemp,vetOrigem, 0, qtdRegOrigem-1, 0, qtdRegOrigem-1);
     }else if(strcmp(arq_index->tipoDado, "string")==0){
         arq_index->vetTemp = aloc_vet_indx_DadoStr(qtdRegOrigem);
-        copiaVetStrparaVetTemp(arq_index->vetTemp,vetOrigem, qtdRegOrigem);
+        copiaVetStr(arq_index->vetTemp,vetOrigem, 0, qtdRegOrigem-1, 0, qtdRegOrigem-1);
     }
 
     int existe = existe_index(criterios,arq_index);
@@ -696,7 +699,8 @@ void ordenaVetIndexFinal(void *arq_index, int qtdReg_ordenar){ //FINAL
 
         //copio o vetor temporário para o original
         void *vetorDestino = escolhe_vet_indx(arq_index);
-        copiaVetIntparaVetTemp(vetorDestino, arq_index_real->vetTemp, qtdReg_depois);
+        FncCopiaVet fncsCopiaVet[] = {copiaVetInt, copiaVetStr};
+        fncsCopiaVet[arq_index_real->tipoDadoInt](vetorDestino, arq_index_real->vetTemp, 0,qtdReg_depois-1,0,qtdReg_depois-1);
 
         //Agora, ordeno o novo
         ordenaVetIndex(arq_index_real, qtdReg_depois);
@@ -708,18 +712,6 @@ void ordenaVetIndexFinal(void *arq_index, int qtdReg_ordenar){ //FINAL
 }
 
 int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtdInserir){
-    /*
-        -alocar o vetTemp com novo tamanho
-        -contadorRegInseridos = 0
-        -qtdInserir vezes:
-            -le o reg do stdin
-            -insere no arq_dados
-            -se conseguiu inserir no temp:
-                -contadorRegInseridos++;
-                -insere no vetTemp
-        -realocar o vetOri contadorRegInseridos a mais
-        -passar o temp para o ori
-    */
 
     //1-escolher o tipo que será usado
     int tipo = arq_index->tipoDadoInt;
@@ -732,16 +724,23 @@ int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtdInserir
     }else if(strcmp(arq_index->tipoDado, "string")==0){
         arq_index->vetTemp = aloc_vet_indx_DadoStr(qtdInserir);
     }
+    arq_index->qtdReg_vetTemp = qtdInserir;
     
     //4-selecionar os dados usados, bem como as fuções
     dados_t *reg = alocar_dados();
     FncGetCampoIndexIndexado fncsGetCampoIndexado[] = {getCampoInt, getCampoStr};
     FncCampoNulo fncsCampoNulo[] = {campoNulo_int, campoNulo_str};
 
+    typedef void (*FncMostraTipo) (void*, int);
+    FncMostraTipo fncs_MostraVet[] = {mostraVetInt,mostraVetStr};
+
     //5-inserir os registros válidos no vetor temporário e no arquivo de dados
     int pos_inserir = 0;
-    while(qtdInserir>0){
+    int contador = qtdInserir;
+    while(contador>0){
+
         //5.1-Ver se o campo indexado é nulo
+        leRegStdin(reg);
         void *campoIndexado = fncsGetCampoIndexado[tipo](reg, arq_index->campoIndexado);
         int eh_campo_nulo = fncsCampoNulo[tipo](campoIndexado);
 
@@ -756,22 +755,32 @@ int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtdInserir
         escrever_bin_registro_dados(reg, arq_dados->arqDados, arq_dados->cabecalhoDados);
         cabecalho_nroRegArq_incrementar(arq_dados->cabecalhoDados, 1);
 
-        qtdInserir--;
+        printf("vetorTemp na inserção %d:\n", pos_inserir);
+        fncs_MostraVet[tipo](arq_index->vetTemp, qtdInserir);
+
+        contador--;
     }
 
     //6-Inserir os registros, que foram adicionados, no vetor original. Para isso:
         //6.0-devo selecionar a função de cópia, a quantidade anterior e o vetorOriginal que será usado
     FncCopiaVet fncsCopiaVet[] = {copiaVetInt, copiaVetStr};
     int qtdRegOriginal = get_qtdReg(arq_index->cabecalhoIndex);
+
+    printf("vetorTemp dps da inserção final\n");
+    fncs_MostraVet[tipo](arq_index->vetTemp, 6);
+
     void *vetOriginal = escolhe_vet_indx(arq_index);
         //6.1-devo realocar o vetor original
     realocar_vet_index(arq_index, qtdRegOriginal, qtdInserir);
         //6.2-copiar os dados que foram inseridos no temporário para o original
+    printf("copiar para: ini_dest:%d|fim_dest:%d|ini_ori:%d|fim_ori:%d",qtdRegOriginal,qtdRegOriginal+qtdInserir-1,0,qtdInserir-1);
     fncsCopiaVet[tipo](vetOriginal,arq_index->vetTemp,qtdRegOriginal,qtdRegOriginal+qtdInserir-1,0,qtdInserir-1);
+
+    printf("vetor original dps da copia\n");
+    fncs_MostraVet[tipo](vetOriginal, qtdInserir);
 }
 
 void inserirReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg, int pos){
-    printf("dentro do inserirReg. pos%d\n", pos);
     int tipDado = arq_index->tipoDadoInt;
 
     FncCampoNulo fncsCampoNulo[] = {campoNulo_int,campoNulo_str};
@@ -789,6 +798,7 @@ void inserirReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg, int 
     if(eh_campo_nulo == 0){//Se não é campo nulo
         printf("tem %d regs. Vou inserir registro cujo campo não é nulo na pos:%d\n", arq_index->qtdReg_vetTemp, pos);
         mostrar_campos(reg);
+        printf("\n");
 
 
         int antigoQtdReg = arq_index->qtdReg_vetTemp;
@@ -1078,8 +1088,7 @@ void copiaVetTemp(void *ponteiro, int ignorar){
     //Agora, devo copiar os valores do vetor, seja qual tipo ele for. Para isso:
 
     //-Defino um vetor de funções que fazem a copia para um tipo específico
-    typedef void (*FncCopiaValores) (void*, void*, int);
-    FncCopiaValores fncsCopiaValores[] = {copiaVetIntparaVetTemp, copiaVetStrparaVetTemp};
+    FncCopiaVet fncsCopiaValores[] = {copiaVetInt, copiaVetStr};
 
 
     //-descubro o tipo do vetor (0 int, 1 string)
@@ -1089,7 +1098,7 @@ void copiaVetTemp(void *ponteiro, int ignorar){
     void *vetor_original = escolhe_vet_indx(arq_index);
 
     //-Por fim, faço a cópia dos valores, independente do tipo dos vetores
-    fncsCopiaValores[tipo_dado](vetor_original,arq_index->vetTemp, qtdReg_agr);
+    fncsCopiaValores[tipo_dado](vetor_original,arq_index->vetTemp, 0, qtdReg_agr-1, 0, qtdReg_agr-1);
 }
 
 void reiniciarCursorIndex(ArqIndex_t *arq_index){
