@@ -269,6 +269,15 @@ cabecalho_t *ler_cabecalho(FILE *arq_bin){
 	return cabecalho_return;
 }
 
+void fwriteCabecalhoDados(FILE *arq_bin, cabecalho_t *cabecalho){
+	fwrite(&(cabecalho->status), sizeof(char), 1, arq_bin);
+	fwrite(&(cabecalho->proxByteOffset), sizeof(long int), 1, arq_bin);
+	fwrite(&(cabecalho->nroRegArq), sizeof(int), 1, arq_bin);
+	fwrite(&(cabecalho->nroRegRem), sizeof(int), 1, arq_bin);
+}
+
+
+
 void ler_csv_registro(FILE *arq, dados_t *dados, char *c, int *registro_nulo){
 	//função que lê uma linha completa do arquivo csv, campo a campo
 
@@ -909,7 +918,7 @@ void getRegistro(long int byteOffSet, FILE *arqDados, dados_t *reg){
 	ler_bin_registro(reg, arqDados);
 }
 
-void reescrever_registro_dados(dados_t *dados, FILE *arq){//pija
+void reescrever_registro_dados(dados_t *dados, FILE *arq){
 	//função que escreve, no arquivo binário, um registro de dados inteiro
 
 	fwrite(&dados->removido,sizeof(char),1,arq);

@@ -212,7 +212,9 @@ void copiaDadoIndex_str(void *destino, void *origem){
     destino_real = (dados_indx_str_t*)destino;
     origem_real = (dados_indx_str_t*)origem;
     destino_real->byteOffset = origem_real->byteOffset;
-    strcpy(destino_real->chaveBusca, origem_real->chaveBusca);
+    for(int i=0; i<12; i++){
+        destino_real->chaveBusca[i] = origem_real->chaveBusca[i];
+    }
 }
 
 int getTamCabecalhoIndx(void){
@@ -325,8 +327,6 @@ void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
 }
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
-    printf("escrever o cabecalho:status(%c)|qtdReg(%d)|ftel(%ld)\n",cabecalho->status,cabecalho->qtdReg,ftell(arqIndex));
-
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
     fwrite(&cabecalho->qtdReg,sizeof(int), 1, arqIndex);
 }
@@ -345,6 +345,7 @@ void escreveDadoIndx_str(FILE *arqIndex, void *dado){
 
 void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos){
     dados_indx_int_t **vet_real = (dados_indx_int_t**)vet_indx_int;
+    mostraRegIndx_int(vet_real[pos]);
     escreveDadoIndx_int(arqIndex, vet_real[pos]);
 }
 
@@ -419,7 +420,7 @@ int comparacao_vet_dados_indx_int_RegIndx(void *vetor, int pos, void *dado){
     valor_a = vet_real[pos]->chaveBusca;
     valor_b = dado_real->chaveBusca;
     byte_a = vet_real[pos]->byteOffset;
-    byte_b = dado_real->chaveBusca;
+    byte_b = dado_real->byteOffset;
     
     if(valor_a == valor_b){
         return byte_a - byte_b;
@@ -435,10 +436,10 @@ int comparacao_vet_dados_indx_str_RegIndx(void *vetor, int pos, void *dado){
     dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor;
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
 
-    // printf("dadoVetReal:\n");
-    // mostraRegIndx_str(vetor_real[pos]);
-    // printf("dadoReal:\n");
-    // mostraRegIndx_str(dado_real);
+   /*  printf("dadoVetReal: ");
+    mostraRegIndx_str(vetor_real[pos]);
+    printf("dadoReal: ");
+    mostraRegIndx_str(dado_real); */
 
     byte_a = vetor_real[pos]->byteOffset;
     byte_b = dado_real->byteOffset;
@@ -470,7 +471,6 @@ int comparacao_vet_dados_indx_str_const(void *vetor, int pos, void *ponteiro){
     char *string = (char *)ponteiro;
 
     int comparacao = comparar_n_chars(vetor_casting[pos]->chaveBusca,string,TAM_CAMP_STR);
-
     if(comparacao==0){
         //se as strings forem iguais, retorno 0
         return 0;
@@ -486,12 +486,12 @@ int comparacao_vet_dados_indx_str_const(void *vetor, int pos, void *ponteiro){
 int comparacao_vet_dados_indx_int_const(void *vetor, int pos, void *ponteiro){
     //funcao que dado um vetor de dados_indx_int_t, compara uma posição com um inteiro
     dados_indx_int_t **vetor_casting = (dados_indx_int_t **) vetor;
-    int *inteiro = (int *)ponteiro;
+    int inteiro = *((int *)ponteiro);
 
-    if(vetor_casting[pos]->chaveBusca == (*inteiro)){
+    if(vetor_casting[pos]->chaveBusca == (inteiro)){
         //se os inteiros forem iguais, retorno 0
         return 0;
-    }else if(vetor_casting[pos]->chaveBusca > (*inteiro)){
+    }else if(vetor_casting[pos]->chaveBusca > (inteiro)){
         //se o vetor_casting[pos] for maior que o inteiro, retorno 1
         return 1;
     }else{
@@ -507,8 +507,6 @@ int busca_bin_rec(void *vetor, int ini, int fim, void *chave, FncComparacao comp
     }
 
     int meio = (ini+fim)/2;
-
-    printf("ini%d|meio:%d|final:%d\n", ini, meio, fim);
 
     if(comparacao(vetor,meio,chave)==0){
         //se o vetor[meio] == chave, retorno o meio
@@ -544,7 +542,7 @@ int busca_bin_str(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qt
     //funcao que prepara para a busca binaria recursiva para tipo string e trata o retorno
     
     //como, no arquivo de index, as strings sao todas truncadas, deve-se tratar a chave de busca
-    char *chave_truncada = truncar(chave, 12);
+    char *chave_truncada = truncar(chave, 12); 
 
     int pos = busca_bin_rec(vetor_real,0,cabecalho->qtdReg,chave_truncada,comparacao_vet_dados_indx_str_const);
 
@@ -598,6 +596,7 @@ void copiaVetIntparaVetTemp(void *vetIndxInt_destino, void *vetIndxInt_origem, i
     //Faz a copia de um vetor de dados int para outro vetor de dados int
     dados_indx_int_t **vetOrigem_real = (dados_indx_int_t**)vetIndxInt_origem;
     dados_indx_int_t **vetDestino_real = (dados_indx_int_t**)vetIndxInt_destino;
+
     for(int i = 0; i < qtdVetTemp; ++i){
         copiaDadoIndex_int(vetDestino_real[i], vetOrigem_real[i]);
     }
@@ -607,6 +606,7 @@ void copiaVetStrparaVetTemp(void *vetIndxStr_destino, void *vetIndxStr_origem, i
     //Faz a copia de um vetor de dados int para outro vetor de dados int
     dados_indx_str_t **vetOrigem_real = (dados_indx_str_t**)vetIndxStr_origem;
     dados_indx_str_t **vetDestino_real = (dados_indx_str_t**)vetIndxStr_destino;
+
     for(int i = 0; i < qtdVetTemp; ++i){
         copiaDadoIndex_str(vetDestino_real[i], vetOrigem_real[i]);
     }

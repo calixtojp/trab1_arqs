@@ -25,6 +25,7 @@ typedef void* (*FncGetCampoIndexIndexado) (dados_t*, char*);
 typedef void (*FncSetDadoIndx) (void*, long int, void*);
 typedef void (*FncSetVetIndx) (void*, int, void*);
 typedef void (*FncOrdemTipo) (void*, int);
+typedef int (*FncBuscaBin) (void*, cabecalho_indx_t*, void*, int*);
 
 ArqDados_t *alocar_arq_dados(void);
 ArqIndex_t *alocar_arq_index(void);
@@ -41,6 +42,7 @@ void desalocar_ArqIndex(ArqIndex_t *arq_index);
 void fechar_arq_dados(ArqDados_t *arq_dados);
 void fechar_arq_index(ArqIndex_t *arq_index);
 void ler_cabecalho_dados(ArqDados_t *arq_dados);
+void escreverCabecalhoDados(ArqDados_t *arq_dados);
 int ler_cabecalho_index(ArqIndex_t *arq_index);
 int getTamCabecalhoDados(ArqDados_t *arq_dados);
 void mostrar_cabecalhoDados(ArqDados_t *arq_dados);
@@ -85,6 +87,7 @@ void alterarStatusDados(ArqDados_t *arq_dados, int status);
 void escreverStatusDados(ArqDados_t *arq_dados);
 void escreverStatusIndex(ArqIndex_t *arq_index);
 void escreveArqIndex(ArqIndex_t *arq_index);
-void escreveVetIndex2(ArqIndex_t *arq_index, int inicio, int fim);
+void reescreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim);
+void copiaVetTemp(void *ponteiro, int ignorar);
 
 #endif
