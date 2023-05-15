@@ -64,6 +64,22 @@ dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos){
     return vet_retorno;
 }
 
+void desalocarVetIndxDadoStr(void *vetor, int nroRegValidos){
+    dados_indx_str_t **vet_real = (dados_indx_str_t **)vetor;
+    for(int i = 0; i < nroRegValidos; ++i){
+        free(vet_real[i]);
+    }
+    free(vet_real);
+}
+
+void desalocarVetIndxDadoInt(void *vetor, int nroRegValidos){
+    dados_indx_int_t **vet_real = (dados_indx_int_t **)vetor;
+    for(int i = 0; i < nroRegValidos; ++i){
+        free(vet_real[i]);
+    }
+    free(vet_real);
+}
+
 void ler_index_cabecalho(FILE *arq, cabecalho_indx_t* cabecalho){ 
 	//Lê e retorna um ponteiro para o cabeçalho do arquivo 
 	erro(arq);
@@ -71,11 +87,11 @@ void ler_index_cabecalho(FILE *arq, cabecalho_indx_t* cabecalho){
     char status;
     int qtdReg;
     if(fread(&status,sizeof(char),1,arq)!=1){
-        mensagem_erro();
+        //mensagem_erro();
     }
 
     if(fread(&qtdReg,sizeof(int),1,arq)!=1){
-        mensagem_erro();
+        //mensagem_erro();
     }
     
     cabecalho->status = status;
@@ -150,12 +166,16 @@ void setStatusIndex(cabecalho_indx_t *cabecalho, char status){
 }
 
 void fwriteStatusIndex(FILE *arq, cabecalho_indx_t *cabecalho){
-    printf("antes = %ld\n",ftell(arq));
-    printf("status= %c\n",cabecalho->status);
-	if(fwrite(&cabecalho->status,sizeof(char),1,arq)){
-        printf("ESCREVI\n");
-    }
-    printf("depois = %ld\n",ftell(arq));
+   // printf("ftell = %ld\n",ftell(arq));
+	fwrite(&cabecalho->status,sizeof(char),1,arq);
+    // printf("ESCREVI o status==%c\n",cabecalho->status);
+    // printf("ftell = %ld\n",ftell(arq));
+    // printf("vou ler oq escrevi\n");
+    // fseek(arq,0,SEEK_SET);
+    // printf("ftell = %ld\n",ftell(arq));
+    // fread(&cabecalho->qtdReg,sizeof(int),1,arq);
+    // printf(" li o status == %c\n", cabecalho->status);
+    // printf("ftell = %ld\n",ftell(arq));
 }
 
 cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
@@ -338,7 +358,6 @@ void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
 }
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
-    printf("status=%c, qtd=%d\n",cabecalho->status, cabecalho->qtdReg);
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
     fwrite(&cabecalho->qtdReg,sizeof(int), 1, arqIndex);
 }
@@ -610,8 +629,9 @@ void copiaVetInt(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest
     int cont_dest = ini_dest;
 
     while((cont_ori<=fim_ori)&&(cont_dest<=fim_dest)){
-        copiaDadoIndex_int(vetDestino_real[cont_dest], vetOrigem_real[cont_ori]);
-        cont_ori++;cont_dest++;
+        copiaDadoIndex_int(vetDestino_real[cont_dest],vetOrigem_real[cont_ori]);
+        cont_ori++;
+        cont_dest++;
     }
 }
 
@@ -623,8 +643,9 @@ void copiaVetStr(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest
     int cont_ori = ini_ori;
     int cont_dest = ini_dest;
 
-    while((cont_ori<=fim_ori)&&(cont_dest<=fim_dest)){
+    while((cont_ori<=fim_ori)&&(cont_dest<=fim_ori)){
         copiaDadoIndex_str(vetDestino_real[cont_dest], vetOrigem_real[cont_ori]);
-        cont_ori++;cont_dest++;
+        cont_ori++;
+        cont_dest++;
     }
 }

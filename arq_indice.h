@@ -16,7 +16,9 @@
     dados_indx_int_t *alocDadoIndxInt(void);
     dados_indx_str_t *alocDadoIndxStr(void);
     dados_indx_int_t **aloc_vet_indx_DadoInt(int nroRegValidos);
-    dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos);   
+    dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos); 
+    void desalocarVetIndxDadoInt(void *vetor, int nroRegValidos); 
+    void desalocarVetIndxDadoStr(void *vetor, int nroRegValidos); 
     void copiaVetInt(void *vet_dest, void *vet_ori, int ini_dest, int fim_dest, int ini_ori, int fim_ori);
     void copiaVetStr(void *vet_dest, void *vet_ori, int ini_dest, int fim_dest, int ini_ori, int fim_ori);
     char *alocarCampoIndexado(void);
