@@ -89,5 +89,6 @@ void escreverStatusIndex(ArqIndex_t *arq_index);
 void escreveArqIndex(ArqIndex_t *arq_index);
 void reescreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim);
 void copiaVetTemp(void *ponteiro, int ignorar);
+void escreverCabecalhoIndex(ArqIndex_t *arq_index);
 
 #endif

@@ -221,26 +221,22 @@ void delete_from(){
     escreveArqIndex(arq_index);
 
     //Agora, indico que os arquivos estão consistentes, pois já usei ambos
-    /*Para limpar os buffers e permitir que escrita do status realmente seja feita,
-    é preciso fechar o arquivo e abrir novamente para a escrita, dessa vez em modo r+b,
-    para não apagar o arquivo.*/
     reiniciarCursorIndex(arq_index);
     alterarStatusIndex(arq_index,1);
     escreverStatusIndex(arq_index);
 
-    //Como o 'processaRegistros()' pode alterar o cursor do arquivo de dados, reinicio ele
+    //Reescrevo o cabeçalho do arquivo de dados, pois, além do status, alterei o campo de registros removidos
     reiniciarCursorDados(arq_dados);
     alterarStatusDados(arq_dados,1);
-    //Reescrevo o cabeçalho do arquivo de dados, pois, além do status, alterei o campo de registros removidos
     escreverCabecalhoDados(arq_dados);
-
-    //Chama a funcao binarioNaTela() para gerar uma saída com base nas mudanças nos arquivos
-    binarioNaTela(getNomeArqDados(arq_dados)); 
-    binarioNaTela(getNomeArqIndex(arq_index));
 
     //Fechar arquivos
     fechar_arq_index(arq_index);
     fechar_arq_dados(arq_dados);
+
+    //Chama a funcao binarioNaTela() para gerar uma saída com base nas mudanças nos arquivos
+    binarioNaTela(getNomeArqDados(arq_dados)); 
+    binarioNaTela(getNomeArqIndex(arq_index));
 
     //Desalocar tipos utilizados
     desalocar_ArqDados(arq_dados);

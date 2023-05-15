@@ -396,7 +396,6 @@ void reescreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
 
     //escrevo efetivamente o dado
     for(int cont = inicio; cont <= fim; ++cont){
-        printf("pos %d\n",cont);
         fncsEscreveIndx[tipo_dado](arq_index->arqIndex, vet_indx, cont);    
     }
 }
@@ -1092,4 +1091,8 @@ void escreverStatusIndex(ArqIndex_t *arq_index){
 
 void escreverCabecalhoDados(ArqDados_t *arq_dados){
     fwriteCabecalhoDados(arq_dados->arqDados, arq_dados->cabecalhoDados);
+}
+
+void escreverCabecalhoIndex(ArqIndex_t *arq_index){
+    escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
 }

@@ -71,11 +71,11 @@ void ler_index_cabecalho(FILE *arq, cabecalho_indx_t* cabecalho){
     char status;
     int qtdReg;
     if(fread(&status,sizeof(char),1,arq)!=1){
-        mensagem_erro();
+        //mensagem_erro();
     }
 
     if(fread(&qtdReg,sizeof(int),1,arq)!=1){
-        mensagem_erro();
+        //mensagem_erro();
     }
     
     cabecalho->status = status;
@@ -150,12 +150,16 @@ void setStatusIndex(cabecalho_indx_t *cabecalho, char status){
 }
 
 void fwriteStatusIndex(FILE *arq, cabecalho_indx_t *cabecalho){
-    printf("antes = %ld\n",ftell(arq));
-    printf("status= %c\n",cabecalho->status);
-	if(fwrite(&cabecalho->status,sizeof(char),1,arq)){
-        printf("ESCREVI\n");
-    }
-    printf("depois = %ld\n",ftell(arq));
+   // printf("ftell = %ld\n",ftell(arq));
+	fwrite(&cabecalho->status,sizeof(char),1,arq);
+    // printf("ESCREVI o status==%c\n",cabecalho->status);
+    // printf("ftell = %ld\n",ftell(arq));
+    // printf("vou ler oq escrevi\n");
+    // fseek(arq,0,SEEK_SET);
+    // printf("ftell = %ld\n",ftell(arq));
+    // fread(&cabecalho->qtdReg,sizeof(int),1,arq);
+    // printf(" li o status == %c\n", cabecalho->status);
+    // printf("ftell = %ld\n",ftell(arq));
 }
 
 cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
@@ -338,7 +342,6 @@ void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
 }
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
-    printf("status=%c, qtd=%d\n",cabecalho->status, cabecalho->qtdReg);
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
     fwrite(&cabecalho->qtdReg,sizeof(int), 1, arqIndex);
 }
@@ -357,13 +360,11 @@ void escreveDadoIndx_str(FILE *arqIndex, void *dado){
 
 void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos){
     dados_indx_int_t **vet_real = (dados_indx_int_t**)vet_indx_int;
-    mostraRegIndx_int(vet_real[pos]);
     escreveDadoIndx_int(arqIndex, vet_real[pos]);
 }
 
 void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos){
     dados_indx_str_t **vet_real = (dados_indx_str_t**)vet_indx_str;
-    mostraRegIndx_str(vet_real[pos]);
     escreveDadoIndx_str(arqIndex, vet_real[pos]);
 
 }
