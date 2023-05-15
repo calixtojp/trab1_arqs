@@ -150,7 +150,12 @@ void setStatusIndex(cabecalho_indx_t *cabecalho, char status){
 }
 
 void fwriteStatusIndex(FILE *arq, cabecalho_indx_t *cabecalho){
-	fwrite(&cabecalho->status,sizeof(char),1,arq);
+    printf("antes = %ld\n",ftell(arq));
+    printf("status= %c\n",cabecalho->status);
+	if(fwrite(&cabecalho->status,sizeof(char),1,arq)){
+        printf("ESCREVI\n");
+    }
+    printf("depois = %ld\n",ftell(arq));
 }
 
 cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
@@ -333,6 +338,7 @@ void ordenaVetIndex_str(void *vetor_generico, int qntd_reg){
 }
 
 void escreveCabecalhoIndex(FILE *arqIndex, cabecalho_indx_t *cabecalho){
+    printf("status=%c, qtd=%d\n",cabecalho->status, cabecalho->qtdReg);
     fwrite(&cabecalho->status,sizeof(char),1,arqIndex);
     fwrite(&cabecalho->qtdReg,sizeof(int), 1, arqIndex);
 }
@@ -357,6 +363,7 @@ void escreveVetIndx_int(FILE *arqIndex, void *vet_indx_int, int pos){
 
 void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos){
     dados_indx_str_t **vet_real = (dados_indx_str_t**)vet_indx_str;
+    mostraRegIndx_str(vet_real[pos]);
     escreveDadoIndx_str(arqIndex, vet_real[pos]);
 
 }
