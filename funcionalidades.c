@@ -176,7 +176,7 @@ void delete_from(){
 
     //Com os inputs armazenados, faço a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "r+b");
-    abrir_arq_index(arq_index, "r+b");
+    abrir_arq_index(arq_index, "rb");
 
     //Carrego o arquivo de indice na memoria primaria
     ler_cabecalho_arq_index(arq_index);
@@ -192,12 +192,7 @@ void delete_from(){
         mensagem_erro();
     }
 
-    //indico que os arquivos estão inconsistentes, pois vou escrever em ambos
-    //como li todo o arquivo de index, o cursor está no final
-    reiniciarCursorIndex(arq_index);
-    alterarStatusIndex(arq_index,0);
-    escreverStatusIndex(arq_index);
-
+    //indico que o arquivo de dados está insconsistente, pois vou escrever apenas nele por enquanto
     //como li o cabecalho do arquivo de dados, o cursor está logo após o cabecalho
     reiniciarCursorDados(arq_dados);
     alterarStatusDados(arq_dados,0);
@@ -205,7 +200,6 @@ void delete_from(){
 
     //Loop que faz 'n' deleções
     for(int i=1; i<=n; i++){
-        printf("Busca %d\n",i);
         //Ler os critérios de busca para os registros que se deseja remover
         InfoBusca_t *criterios = ler_criterios_busca();
 
@@ -219,12 +213,17 @@ void delete_from(){
         desalocar_InfoBusca(criterios);
     }
     
-    //reescrevo todo o arquivo de index
-    reiniciarCursorIndex(arq_index);
+    //Agora devo reescrever todo o arquivo de índice. Para isso:
+    //Fecho o arquivo e abro com modo 'wb', para reescrevê-lo por completo
+    fechar_arq_index(arq_index);
+    abrir_arq_index(arq_index, "wb");
+    alterarStatusIndex(arq_index,0);
     escreveArqIndex(arq_index);
 
-    //Indico que os arquivos estão consistentes, pois já usei ambos
-    //como escrevi todo o arquivo de index, o cursor está no final
+    //Agora, indico que os arquivos estão consistentes, pois já usei ambos
+    /*Para limpar os buffers e permitir que escrita do status realmente seja feita,
+    é preciso fechar o arquivo e abrir novamente para a escrita, dessa vez em modo r+b,
+    para não apagar o arquivo.*/
     reiniciarCursorIndex(arq_index);
     alterarStatusIndex(arq_index,1);
     escreverStatusIndex(arq_index);
@@ -238,6 +237,14 @@ void delete_from(){
     //Chama a funcao binarioNaTela() para gerar uma saída com base nas mudanças nos arquivos
     binarioNaTela(getNomeArqDados(arq_dados)); 
     binarioNaTela(getNomeArqIndex(arq_index));
+
+    //Fechar arquivos
+    fechar_arq_index(arq_index);
+    fechar_arq_dados(arq_dados);
+
+    //Desalocar tipos utilizados
+    desalocar_ArqDados(arq_dados);
+    desalocar_ArqIndex(arq_index);
 }
 
 //Funcionalidade [6]
