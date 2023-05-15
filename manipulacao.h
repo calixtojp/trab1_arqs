@@ -26,6 +26,7 @@ typedef void (*FncSetDadoIndx) (void*, long int, void*);
 typedef void (*FncSetVetIndx) (void*, int, void*);
 typedef void (*FncOrdemTipo) (void*, int);
 typedef int (*FncBuscaBin) (void*, cabecalho_indx_t*, void*, int*);
+typedef void (*FncCopiaVet) (void*, void*, int, int , int, int);
 
 ArqDados_t *alocar_arq_dados(void);
 ArqIndex_t *alocar_arq_index(void);
@@ -62,7 +63,7 @@ void terminaEscritaDados(ArqDados_t *arq_dados, int qntdReg);
 int get_nroRegIndex(ArqIndex_t *arq_index);
 void mostrar_arq_index(ArqIndex_t *arq_index);
 void inserirReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg, int pos);
-int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int pos);
+int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtdInserir);
 int existe_index(InfoBusca_t *criterios, ArqIndex_t *arq_index);
 void percorrer_index(FncGetByteOffSet get_byteOffset, int pos_prim, int qtd_reg_val, 
                     ArqDados_t *arq_dados, ArqIndex_t *arq_index,InfoBusca_t *criterios, InfoBusca_t *alteracoes,FncAcao acao, FncFinaliza final);

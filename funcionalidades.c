@@ -273,37 +273,21 @@ void insert_into(){
     levaFinalCursorDados(arq_dados);
 
     int qtdInserir;
-    int qtdRegEscritosIndex;
-    int qtdRegIndexAntes;
-    int qtdRegDadosAntes;
-    int qtdRegEscritosDados;
-
     scanf(" %d", &qtdInserir);
 
-    qtdRegIndexAntes = get_nroRegIndex(arq_index);
-    qtdRegDadosAntes = get_nroRegValidos(arq_dados);
-    qtdRegEscritosDados = qtdRegDadosAntes + qtdInserir;
+    inserirRegStdin(arq_dados, arq_index, qtdInserir);
 
-    realocar_vet_index(arq_index, qtdRegIndexAntes, qtdInserir);
+    int qtdRegDados = get_nroRegValidos(arq_dados);
+    int qtdRegIndex = get_nroRegIndex(arq_index);
 
-    int regNaoInseridos = 0;
-    int pos = qtdRegDadosAntes;
-    for(int cont = 0; cont < qtdInserir; ++cont){
-        // printf("cont:%d\n", cont);
-        inserirRegStdin(arq_dados,arq_index,pos);
-        pos = get_nroRegIndex(arq_index);
-    }
-
-    qtdRegEscritosIndex = get_nroRegIndex(arq_index);
-
-    ordenaVetIndex(arq_index, qtdRegEscritosIndex);
+    ordenaVetIndex(arq_index, qtdRegIndex);
 
     fechar_arq_index(arq_index);
     abrir_arq_index(arq_index, "wb");
 
-    escreveVetIndex(arq_index, 0, qtdRegEscritosIndex-1);
-    terminaEscritaIndex(arq_index, qtdRegEscritosIndex);
-    terminaEscritaDados(arq_dados, qtdRegEscritosDados);
+    escreveVetIndex(arq_index, 0, qtdRegIndex-1);
+    terminaEscritaIndex(arq_index, qtdRegIndex);
+    terminaEscritaDados(arq_dados, qtdRegDados);
 
     //Fechar os arquivos utilizados
     fechar_arq_dados(arq_dados);

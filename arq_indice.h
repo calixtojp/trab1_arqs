@@ -17,8 +17,8 @@
     dados_indx_str_t *alocDadoIndxStr(void);
     dados_indx_int_t **aloc_vet_indx_DadoInt(int nroRegValidos);
     dados_indx_str_t **aloc_vet_indx_DadoStr(int nroRegValidos);   
-    void copiaVetIntparaVetTemp(void *vetIndxInt_destino, void *vetIndxInt_origem, int qtdVetTemp);
-    void copiaVetStrparaVetTemp(void *vetIndxStr_destino, void *vetIndxStr_origem, int qtdVetTemp);
+    void copiaVetInt(void *vet_dest, void *vet_ori, int ini_dest, int fim_dest, int ini_ori, int fim_ori);
+    void copiaVetStr(void *vet_dest, void *vet_ori, int ini_dest, int fim_dest, int ini_ori, int fim_ori);
     char *alocarCampoIndexado(void);
     void setCabecalhoIndex(cabecalho_indx_t *cabecalho, const char status, int qtdReg);
     cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex);

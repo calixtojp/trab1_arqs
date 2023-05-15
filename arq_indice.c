@@ -604,22 +604,30 @@ void shiftarVetIndxStr(void *vet_dado_indx, int pos, int qtd_reg){
     }
 }
 
-void copiaVetIntparaVetTemp(void *vetIndxInt_destino, void *vetIndxInt_origem, int qtdVetTemp){
+void copiaVetInt(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest, int ini_ori, int fim_ori){
     //Faz a copia de um vetor de dados int para outro vetor de dados int
-    dados_indx_int_t **vetOrigem_real = (dados_indx_int_t**)vetIndxInt_origem;
-    dados_indx_int_t **vetDestino_real = (dados_indx_int_t**)vetIndxInt_destino;
+    dados_indx_int_t **vetOrigem_real = (dados_indx_int_t**)vet_origem;
+    dados_indx_int_t **vetDestino_real = (dados_indx_int_t**)vet_destino;
 
-    for(int i = 0; i < qtdVetTemp; ++i){
-        copiaDadoIndex_int(vetDestino_real[i], vetOrigem_real[i]);
+    int cont_ori = ini_ori;
+    int cont_dest = ini_dest;
+
+    while((cont_ori<=fim_ori)&&(cont_dest<=fim_ori)){
+        copiaDadoIndex_int(vetOrigem_real[cont_ori], vetDestino_real[cont_dest]);
+        cont_ori++;cont_dest++;
     }
 }
 
-void copiaVetStrparaVetTemp(void *vetIndxStr_destino, void *vetIndxStr_origem, int qtdVetTemp){
+void copiaVetStr(void *vet_destino, void *vet_origem, int ini_dest, int fim_dest, int ini_ori, int fim_ori){
     //Faz a copia de um vetor de dados str para outro vetor de dados str
-    dados_indx_str_t **vetOrigem_real = (dados_indx_str_t**)vetIndxStr_origem;
-    dados_indx_str_t **vetDestino_real = (dados_indx_str_t**)vetIndxStr_destino;
+    dados_indx_str_t **vetOrigem_real = (dados_indx_str_t**)vet_origem;
+    dados_indx_str_t **vetDestino_real = (dados_indx_str_t**)vet_destino;
 
-    for(int i = 0; i < qtdVetTemp; ++i){
-        copiaDadoIndex_str(vetDestino_real[i], vetOrigem_real[i]);
+    int cont_ori = ini_ori;
+    int cont_dest = ini_dest;
+
+    while((cont_ori<=fim_ori)&&(cont_dest<=fim_ori)){
+        copiaDadoIndex_str(vetOrigem_real[cont_ori], vetDestino_real[cont_dest]);
+        cont_ori++;cont_dest++;
     }
 }
