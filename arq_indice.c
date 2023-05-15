@@ -440,14 +440,6 @@ int comparacao_vet_dados_indx_str_RegIndx(void *vetor, int pos, void *dado){
     dados_indx_str_t **vetor_real = (dados_indx_str_t**)vetor;
     dados_indx_str_t *dado_real = (dados_indx_str_t*)dado;
 
-<<<<<<< HEAD
-=======
-   /*  printf("dadoVetReal: ");
-    mostraRegIndx_str(vetor_real[pos]);
-    printf("dadoReal: ");
-    mostraRegIndx_str(dado_real); */
-
->>>>>>> refs/remotes/origin/main
     byte_a = vetor_real[pos]->byteOffset;
     byte_b = dado_real->byteOffset;
 
@@ -602,14 +594,6 @@ void shiftarVetIndxStr(void *vet_dado_indx, int pos, int qtd_reg){
             (vet_dado_indx_str[i])->chaveBusca[j] = (vet_dado_indx_str[i+1])->chaveBusca[j];
         }
         vet_dado_indx_str[i]->byteOffset = vet_dado_indx_str[i+1]->byteOffset;
-
-
-        
-        printf("pos:%d:key:",i);
-        for(int j = 0; j < 12; ++j){
-            printf("%c", vet_dado_indx_str[i]->chaveBusca[j]);
-        }
-        printf("byte:%ld\n", vet_dado_indx_str[i]->byteOffset);
     }
 }
 

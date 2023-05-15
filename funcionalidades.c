@@ -350,7 +350,7 @@ void update(){
 
     int cont_n;
     for(cont_n = 0; cont_n < n; cont_n++){
-        printf("busca %d\n", cont_n);
+        printf("busca %d\n", cont_n+1);
         editarRegStdin(arq_index,arq_dados);
     }
 
@@ -358,6 +358,9 @@ void update(){
     int qtdRegIndexDepois = get_nroRegIndex(arq_index);
     int qtdRegDadosDepois = get_nroRegValidos(arq_dados);
 
+    fechar_arq_index(arq_index);
+
+    abrir_arq_index(arq_index, "wb");
     escreveVetIndex(arq_index, 0, qtdRegDadosDepois-1);
 
     terminaEscritaDados(arq_dados, qtdRegDadosDepois);
