@@ -981,6 +981,9 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_anti
         fseek(arq_dados->arqDados, 0, SEEK_END);
 
         inserirReg(arq_dados, arq_index, reg_modificado, arq_index->qtdReg_vetTemp);
+
+        //volto o cursor para o final do registro
+        fseek(arq_dados->arqDados, tam_reg_antigo + byteOffSet, SEEK_SET);
     }
 }
 
@@ -989,6 +992,7 @@ void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados){
     //ler o critérios de busca
     InfoBusca_t *criterios = ler_criterios_busca();
     InfoBusca_t *alteracoes = ler_criterios_busca();
+
 
     processaRegistros(arq_dados,arq_index,criterios,alteracoes,modificaReg,ordenaVetIndexFinal);
 
