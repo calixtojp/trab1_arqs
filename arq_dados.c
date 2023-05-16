@@ -146,13 +146,14 @@ int campoNulo_int(void *campo_int){
 }
 
 int campoNulo_str(void *campo_str){
-	char *campo_real = malloc(sizeof(char)*12);
-	campo_real = (char*)campo_str;
-	if(strcmp(campo_real, "$$$$$$$$$$$$")==0){
-		return 1;
-	}else{
-		return 0;
+	char *campo_real = (char*)campo_str;
+	
+	for(int i = 0; i < 12; ++i){
+		if(campo_real[i] != '$'){
+			return 0;
+		}
 	}
+	return 1;
 }
 
 int bytesAteCampoIndexado(dados_t *reg, char *campo){
@@ -522,7 +523,8 @@ int ler_bin_registro(dados_t *registro, FILE *arq_bin){
 	}
 
 	//ler # no final
-	if(fread(&(registro->hashtag), sizeof(char), 1, arq_bin)!=1){
+	int retorno = fread(&(registro->hashtag), sizeof(char), 1, arq_bin);
+	if(retorno!=1){
 		registro = NULL;
 		return -1;
 	}
@@ -616,22 +618,27 @@ void ler_bin_campos_fixos(FILE *arq_bin, dados_t *registro, int *flag_chegou_fim
 	//Se ocorre qualquer erro na leitura de um dos campos - isto é, 
 	//fread não retorna a quantidade de dados que foi solicitada para leitura -
 	//então atualizo a flag_chegou_fim, pois cheguei no fim do arquivo
-	if(fread(&(registro->idCrime), sizeof(int), 1, arq_bin)!=1){
+
+	int retorno = fread(&(registro->idCrime), sizeof(int), 1, arq_bin); 
+	if(retorno!=1){
 		*flag_chegou_fim = 1;
 		return;
 	}
 
-	if(fread(&(registro->dataCrime), sizeof(char), 10,arq_bin)!=10){
+	retorno = fread(&(registro->dataCrime), sizeof(char), 10,arq_bin);
+	if(retorno!=10){
 		*flag_chegou_fim = 1;
 		return;
 	}	
 
-	if(fread(&(registro->numeroArtigo), sizeof(int), 1, arq_bin)!=1){
+	retorno = fread(&(registro->numeroArtigo), sizeof(int), 1, arq_bin);
+	if(retorno!=1){
 		*flag_chegou_fim = 1;
 		return;
 	}
 
-	if(fread(&(registro->marcaCelular), sizeof(char), 12, arq_bin)!=12){
+	retorno = fread(&(registro->marcaCelular), sizeof(char), 12, arq_bin);
+	if(retorno!=12){
 		*flag_chegou_fim = 1;
 		return;
 	}
@@ -886,8 +893,8 @@ void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet
 						break;
 					case 5://descricaoCrime
 						novo_tam = strlen(vet_vals_str[i]);
-						reg->lugarCrime = realloc(reg->lugarCrime, sizeof(char)*novo_tam);
-						strcpy(reg->lugarCrime, vet_vals_str[i]);
+						reg->descricaoCrime = realloc(reg->descricaoCrime, sizeof(char)*novo_tam);
+						strcpy(reg->descricaoCrime, vet_vals_str[i]);
 						break;
 					default:
 						printf("Não existe esse campo\n");
@@ -904,11 +911,14 @@ void escreverCampoRemovido(FILE *arqDados){
 }
 
 void completaRegistroComDollar(FILE *arqDados, int qts_dolar){
-	fseek(arqDados, -1,SEEK_CUR);
-	for(int i = 0; i < qts_dolar; ++i){
-		char dolar = '$';
-		fwrite(&(dolar), sizeof(char), 1, arqDados);
+	if(qts_dolar > 0){
+		fseek(arqDados, (-1),SEEK_CUR);
+		for(int i = 0; i < qts_dolar; ++i){
+			char dolar = '$';
+			fwrite(&(dolar), sizeof(char), 1, arqDados);
+		}
 	}
+
 }
 
 void getRegistro(long int byteOffSet, FILE *arqDados, dados_t *reg){

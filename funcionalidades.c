@@ -4,27 +4,6 @@
 #include "auxiliares.h"
 #include "manipulacao.h"
 
-//debug
-void debug(void){
-    //nomeArqIndx.bin tipoDado
-
-/*     ArqIndex_t *arq_index = alocar_arq_index();
-    ler_nome_arq_index(arq_index);
-    ler_tipoDado(arq_index);
-    abrir_arq_index(arq_index, "rb");
-    ler_cabecalho_arq_index(arq_index);
-    ler_dados_arq_index(arq_index);
-
-    int nroRegVal = get_nroRegIndex(arq_index);
-    printf("existem %d registros indexados\n", nroRegVal);
-
-    alocar_vet_index(arq_index, nroRegVal);
-    mostrar_arq_index(arq_index);
-
-    desalocar_ArqIndex(arq_index);
-    fechar_arq_index(arq_index); */
-}
-
 //Funcionalidade [3]
 void create_index(){
 
@@ -330,34 +309,39 @@ void update(){
     if(status_ok == 0){
         mensagem_erro();
     }else{
-        //Se o status está ok, modifico para fazer alterações
+        //Se o status está ok, modifico consistência dos arquivos para fazer alterações
+        reiniciarCursorIndex(arq_index);
+        reiniciarCursorDados(arq_dados);
+
         alterarStatusDados(arq_dados, '0');
         alterarStatusIndex(arq_index, '0');
+
+        escreverStatusIndex(arq_index);
+        escreverStatusDados(arq_dados);
     }
 
     int cont_n;
     for(cont_n = 0; cont_n < n; cont_n++){
-        printf("busca %d\n", cont_n+1);
         editarRegStdin(arq_index,arq_dados);
     }
 
     //Total de registros depois das modificações.
     int qtdRegIndexDepois = get_nroRegIndex(arq_index);
-    int qtdRegDadosDepois = get_nroRegValidos(arq_dados);
+    int qtdRegDadosDepois = get_nroRegTotal(arq_dados);
 
     fechar_arq_index(arq_index);
 
     abrir_arq_index(arq_index, "wb");
-    escreveVetIndex(arq_index, 0, qtdRegDadosDepois-1);
+    escreveVetIndex(arq_index, 0, qtdRegIndexDepois-1);
 
     terminaEscritaDados(arq_dados, qtdRegDadosDepois);
     terminaEscritaIndex(arq_index, qtdRegIndexDepois);
 
-    binarioNaTela(getNomeArqDados(arq_dados));
-    binarioNaTela(getNomeArqIndex(arq_index));
-
     fechar_arq_dados(arq_dados);
     fechar_arq_index(arq_index);
+
+    binarioNaTela(getNomeArqDados(arq_dados));
+    binarioNaTela(getNomeArqIndex(arq_index));
 
     desalocar_ArqDados(arq_dados);
     desalocar_ArqIndex(arq_index);

@@ -48,6 +48,7 @@ int ler_cabecalho_index(ArqIndex_t *arq_index);
 int getTamCabecalhoDados(ArqDados_t *arq_dados);
 void mostrar_cabecalhoDados(ArqDados_t *arq_dados);
 void printa_busca(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, InfoBusca_t *alteracoes,long int byteOffSet);
+int get_nroRegTotal(ArqDados_t *arq_dados);
 int get_nroRegValidos(ArqDados_t *arq_dados);
 char *getNomeArqIndex(ArqIndex_t *arq_index);
 char *getNomeArqDados(ArqDados_t *arq_dados);
