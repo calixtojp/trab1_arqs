@@ -18,25 +18,21 @@ void create_index(){
     ler_campoIndexado(arq_index);
     ler_tipoDado(arq_index);
     ler_nome_arq_index(arq_index);
-    // printf("leitura dos dados concluída\n");
-    
 
     //Com os inputs armazenados, faço 
     //a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "rb");
     abrir_arq_index(arq_index, "wb");
-    // printf("abertura dos arquivos concluída\n");
 
     //Ler o cabeçalho do arquivo de dados
     ler_cabecalho_dados(arq_dados);
-
-    long int byteOffSetAtual;
-    byteOffSetAtual = getTamCabecalhoDados(arq_dados);
 
     //Verificar consistência dos dados do arquivo
     if(testarStatusDados(arq_dados)==0){
         mensagem_erro();
     }
+
+    long int byteOffSetAtual = getTamCabecalhoDados(arq_dados);
 
     //Aloco espaço para o vetor que armazenará o arquivo de index
     unsigned int nroRegValidos = get_nroRegValidos(arq_dados);
@@ -49,12 +45,7 @@ void create_index(){
     //Guarda a posição que será escrito o registro  
 
     do{
-        foi_escrito = indexaRegistro(
-            arq_dados,
-            arq_index,
-            pos_reg,
-            &byteOffSetAtual
-        );
+        foi_escrito = indexaRegistro(arq_dados, arq_index, pos_reg, &byteOffSetAtual);
         pos_reg++;
     }while(foi_escrito==1);
 
@@ -62,9 +53,18 @@ void create_index(){
     int qntd_registros = pos_reg-1;
     ordenaVetIndex(arq_index, qntd_registros);
 
-    //Com os dados ordenados, escrevo-os no arquivo de index
-    escreveVetIndex(arq_index, 0, qntd_registros-1);
-    terminaEscritaIndex(arq_index, qntd_registros);
+    //Antes de começar a escrever o arquivo de index, 
+    //devo configurar seu status para '0'. Após isso,
+    //inicio a escrita do arquivo de index.
+    alterarStatusIndex(arq_index,0);
+    alterarQtdRegIndex(arq_index, qntd_registros);
+    escreveArqIndex(arq_index);
+
+    //Agora, indico que o arquivo está consistente, 
+    //pois as alterações já foram realizadas
+    reiniciarCursorIndex(arq_index);
+    alterarStatusIndex(arq_index,1);
+    escreverStatusIndex(arq_index);
 
     //Fechar arquivos
     fechar_arq_index(arq_index);
@@ -117,11 +117,13 @@ void where(void){
 
         //Ler os critérios de busca
         InfoBusca_t *criterios = ler_criterios_busca();
+
+        //Não carrego nenhuma alteração, pois não irei alterar o registro buscado.
         InfoBusca_t *alteracoes;
+
         /*Processar o registro usando a ação 'printa_busca'
         e o final 'achouReg', que diz se o registro é inexistente, 
         caso nenhum satisfaça os critérios de busca*/
-        
         processaRegistros(arq_dados,arq_index,criterios,alteracoes,printa_busca,achouReg);
 
         //Desalocar crtérios de busca    	
@@ -237,7 +239,7 @@ void insert_into(){
     ler_nome_arq_index(arq_index);
 
     //abrir arquivos
-    abrir_arq_index(arq_index, "r+b");
+    abrir_arq_index(arq_index, "rb");
     abrir_arq_dados(arq_dados, "r+b");
 
     //Ler os cabeçalhos
@@ -245,24 +247,49 @@ void insert_into(){
     ler_dados_arq_index(arq_index);
     ler_cabecalho_dados(arq_dados);
 
+    //Testo se os dois arquivos estao consistentes. Se não estão, encerro o programa com uma mensagem de erro.
+    if(testarStatusIndex(arq_index)==0){
+        mensagem_erro();
+    }else if(testarStatusDados(arq_dados)==0){
+        mensagem_erro();
+    }
+    
+    //indico que o arquivo de dados está insconsistente, pois vou escrever apenas nele por enquanto
+    //como li o cabecalho do arquivo de dados, o cursor está logo após o cabecalho
+    reiniciarCursorDados(arq_dados);
+    alterarStatusDados(arq_dados,0);
+    escreverStatusDados(arq_dados);
+
+    //Como vou escrever os dados no final, devo levar o cursor para o final
     levaFinalCursorDados(arq_dados);
 
     int qtdInserir;
     scanf(" %d", &qtdInserir);
 
+    //Requisito a função que irá ler da entrada padrão e,
+    //posteriormente, inserir os dados nos arquivos.
     inserirRegStdin(arq_dados, arq_index, qtdInserir);
 
-    int qtdRegDados = get_nroRegValidos(arq_dados);
+    //Após inserir os dados, obtenho a quantidade atual de registros
     int qtdRegIndex = get_nroRegIndex(arq_index);
-
     ordenaVetIndex(arq_index, qtdRegIndex);
 
+    //Agora devo reescrever todo o arquivo de índice. Para isso:
+    //Fecho o arquivo e abro com modo 'wb', para reescrevê-lo por completo
     fechar_arq_index(arq_index);
     abrir_arq_index(arq_index, "wb");
+    alterarStatusIndex(arq_index,0);
+    escreveArqIndex(arq_index);
 
-    escreveVetIndex(arq_index, 0, qtdRegIndex-1);
-    terminaEscritaIndex(arq_index, qtdRegIndex);
-    terminaEscritaDados(arq_dados, qtdRegDados);
+    //Agora, indico que os arquivos estão consistentes, pois já usei ambos
+    reiniciarCursorIndex(arq_index);
+    alterarStatusIndex(arq_index,1);
+    escreverStatusIndex(arq_index);
+
+    //Reescrevo o cabeçalho do arquivo de dados, pois, além do status, alterei o campo de registros totais
+    reiniciarCursorDados(arq_dados);
+    alterarStatusDados(arq_dados,1);
+    escreverCabecalhoDados(arq_dados);
 
     //Fechar os arquivos utilizados
     fechar_arq_dados(arq_dados);
@@ -294,7 +321,7 @@ void update(){
 
     //Com os inputs armazenados, faço a abertura dos arquivos.
     abrir_arq_dados(arq_dados, "r+b");
-    abrir_arq_index(arq_index, "r+b");
+    abrir_arq_index(arq_index, "rb");
 
     //Carrego o arquivo de indice na memoria primaria.
     ler_cabecalho_arq_index(arq_index);
@@ -303,46 +330,57 @@ void update(){
     //Ler o cabeçalho do arquivo de dados.
     ler_cabecalho_dados(arq_dados);
 
-    int status_ok = 1;
-    status_ok *= testarStatusDados(arq_dados);
-    status_ok *= testarStatusIndex(arq_index);
-    if(status_ok == 0){
+    //Testo se os dois arquivos estao consistentes. Se não estão, encerro o programa com uma mensagem de erro.
+    if(testarStatusIndex(arq_index)==0){
         mensagem_erro();
-    }else{
-        //Se o status está ok, modifico consistência dos arquivos para fazer alterações
-        reiniciarCursorIndex(arq_index);
-        reiniciarCursorDados(arq_dados);
-
-        alterarStatusDados(arq_dados, '0');
-        alterarStatusIndex(arq_index, '0');
-
-        escreverStatusIndex(arq_index);
-        escreverStatusDados(arq_dados);
+    }else if(testarStatusDados(arq_dados)==0){
+        mensagem_erro();
     }
+
+    //indico que o arquivo de dados está insconsistente, pois vou escrever apenas nele por enquanto
+    //como li o cabecalho do arquivo de dados, o cursor está logo após o cabecalho
+    reiniciarCursorDados(arq_dados);
+    alterarStatusDados(arq_dados,0);
+    escreverStatusDados(arq_dados);
 
     int cont_n;
     for(cont_n = 0; cont_n < n; cont_n++){
-        editarRegStdin(arq_index,arq_dados);
+        //ler o critérios de busca, e alterações
+        InfoBusca_t *criterios = ler_criterios_busca();
+        InfoBusca_t *alteracoes = ler_criterios_busca();
+
+        processaRegistros(arq_dados,arq_index,criterios,alteracoes,modificaReg,ordenaVetIndexFinal);
+
+        desalocar_InfoBusca(criterios);
+        desalocar_InfoBusca(alteracoes);
     }
 
-    //Total de registros depois das modificações.
-    int qtdRegIndexDepois = get_nroRegIndex(arq_index);
-    int qtdRegDadosDepois = get_nroRegTotal(arq_dados);
-
+    //Agora devo reescrever todo o arquivo de índice. Para isso:
+    //Fecho o arquivo e abro com modo 'wb', para reescrevê-lo por completo
     fechar_arq_index(arq_index);
-
     abrir_arq_index(arq_index, "wb");
-    escreveVetIndex(arq_index, 0, qtdRegIndexDepois-1);
+    alterarStatusIndex(arq_index,0);
+    escreveArqIndex(arq_index);
 
-    terminaEscritaDados(arq_dados, qtdRegDadosDepois);
-    terminaEscritaIndex(arq_index, qtdRegIndexDepois);
+    //Agora, indico que os arquivos estão consistentes, pois já usei ambos
+    reiniciarCursorIndex(arq_index);
+    alterarStatusIndex(arq_index,1);
+    escreverStatusIndex(arq_index);
 
-    fechar_arq_dados(arq_dados);
+    //Reescrevo o cabeçalho do arquivo de dados, pois, além do status, alterei o campo de registros removidos
+    reiniciarCursorDados(arq_dados);
+    alterarStatusDados(arq_dados,1);
+    escreverCabecalhoDados(arq_dados);
+
+    //Fechar arquivos
     fechar_arq_index(arq_index);
+    fechar_arq_dados(arq_dados);
 
-    binarioNaTela(getNomeArqDados(arq_dados));
+    //Chama a funcao binarioNaTela() para gerar uma saída com base nas mudanças nos arquivos
+    binarioNaTela(getNomeArqDados(arq_dados)); 
     binarioNaTela(getNomeArqIndex(arq_index));
 
+    //Desalocar tipos utilizados
     desalocar_ArqDados(arq_dados);
     desalocar_ArqIndex(arq_index);
 }

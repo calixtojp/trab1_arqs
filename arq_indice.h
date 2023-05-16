@@ -10,8 +10,6 @@
     typedef struct Dados_indx_int dados_indx_int_t;
     typedef struct Dados_indx_str dados_indx_str_t;
 
-    typedef  int(*FncComparacao)(void*,int,void*);
-
     cabecalho_indx_t *alocar_cbl_indx(void);
     dados_indx_int_t *alocDadoIndxInt(void);
     dados_indx_str_t *alocDadoIndxStr(void);
@@ -55,7 +53,6 @@
     void escreveVetIndx_str(FILE *arqIndex, void *vet_indx_str, int pos);
     int busca_bin_int(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val);
     int busca_bin_str(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val);
-    int busca_bin_rec(void *vetor, int ini, int fim, void *chave, FncComparacao comparacao);
     long int get_byteOffset_int(void *ponteiro, int pos);
     long int get_byteOffset_str(void *ponteiro, int pos);
     char getStatusIndex(cabecalho_indx_t *cabecalho);

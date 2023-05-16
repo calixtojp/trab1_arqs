@@ -1,6 +1,8 @@
 #ifndef _AUXILIARES
 #define _AUXILIARES
 
+    typedef  int(*FncComparacao)(void*,int,void*);
+
 	void binarioNaTela(char *nomeArquivoBinario);
 	void readline(char *string);
 	void ignorar_resto_linha(void);
@@ -16,8 +18,6 @@
 	int strParaInt(char *str);
 	int comparar_strings(char *s1, char *s2);
 	int comparar_n_chars(char *s1, char *s2, int n);
-
-	/* --- T0, ARRUMAR -------------------*/
 	int tamanhoStr(char *string);
 	char *alocar_nome(int tamanho_nome);
 	void pular_campos_fixos(FILE *arq_bin);
@@ -25,5 +25,6 @@
 	void pular_registro_removido(FILE *arq_bin);
 	void pular_cabecalho_csv(FILE *arq);
 	void mensagem_NULO(void);
-	
+	int busca_bin_rec(void *vetor, int ini, int fim, void *chave, FncComparacao comparacao);
+
 #endif

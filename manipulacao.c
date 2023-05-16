@@ -373,32 +373,10 @@ void escreveArqIndex(ArqIndex_t *arq_index){
 
     escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
     
-    reescreveVetIndex(arq_index, 0, get_qtdReg(arq_index->cabecalhoIndex)-1);
+    escreveVetIndex(arq_index, 0, get_qtdReg(arq_index->cabecalhoIndex)-1);
 }
 
 void escreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
-    //Posiciono no local de escrita correto
-    typedef int (*FncGetTamDadoIndx) (void);
-    FncGetTamDadoIndx fncsGetTamDadoIndx[] = {getTamDadoIndx_int, getTamDadoIndx_str};
-
-    int tamCabecalho = getTamCabecalhoIndx();
-    int tamDado = fncsGetTamDadoIndx[arq_index->tipoDadoInt]();
-
-    fseek(arq_index->arqIndex,tamCabecalho + (inicio*tamDado),SEEK_SET);
-
-    //escolho que tipo de dado será escrito
-    void *vet_indx = escolhe_vet_indx(arq_index);
-
-
-    //escrevo efetivamente o dado
-    typedef void (*FncEscreveIndx) (FILE*, void*, int);
-    FncEscreveIndx fncsEscreveIndx[] = {escreveVetIndx_int,escreveVetIndx_str};
-    for(int cont = inicio; cont <= fim; ++cont){
-        fncsEscreveIndx[arq_index->tipoDadoInt](arq_index->arqIndex, vet_indx, cont);    
-    }
-}
-
-void reescreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     //escolho que tipo de dado será escrito
     void *vet_indx = escolhe_vet_indx(arq_index);
 
@@ -413,20 +391,8 @@ void reescreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim){
     }
 }
 
-void terminaEscritaIndex(ArqIndex_t *arq_index, int qtndReg){
-    //volto pára o início do arquivo e escrevo o cabeçalho final
-
-    setCabecalhoIndex(arq_index->cabecalhoIndex,'1',qtndReg);
-
-    fseek(arq_index->arqIndex, 0, SEEK_SET);
-    escreveCabecalhoIndex(arq_index->arqIndex, arq_index->cabecalhoIndex);
-}
-
-void terminaEscritaDados(ArqDados_t *arq_dados, int qntdReg){
-    setCabecalhoDados_nroRegArq(arq_dados->cabecalhoDados, qntdReg);
-    // mostrar_cabecalho_dados(arq_dados->cabecalhoDados);
-    rewind(arq_dados->arqDados);
-    escrever_bin_registro_cabecalho(arq_dados->cabecalhoDados, arq_dados->arqDados);
+void alterarQtdRegIndex(ArqIndex_t *arq_index, int qtdRegIndex){
+    set_qtdReg(arq_index->cabecalhoIndex, qtdRegIndex);
 }
 
 int existe_index(InfoBusca_t *criterios, ArqIndex_t *arq_index){
@@ -755,7 +721,6 @@ int inserirRegStdin(ArqDados_t *arq_dados, ArqIndex_t *arq_index, int qtdInserir
             cabecalho_nroRegArq_incrementar(arq_dados->cabecalhoDados, 1);
         }
 
-
         contador--;
     }
 
@@ -985,19 +950,6 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_anti
         //volto o cursor para o final do registro
         fseek(arq_dados->arqDados, tam_reg_antigo + byteOffSet, SEEK_SET);
     }
-}
-
-void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados){
-
-    //ler o critérios de busca
-    InfoBusca_t *criterios = ler_criterios_busca();
-    InfoBusca_t *alteracoes = ler_criterios_busca();
-
-
-    processaRegistros(arq_dados,arq_index,criterios,alteracoes,modificaReg,ordenaVetIndexFinal);
-
-    desalocar_InfoBusca(criterios);
-    desalocar_InfoBusca(alteracoes);
 }
 
 void deletarRegistro(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *registro, InfoBusca_t *ignorar, long int byteOffset){  

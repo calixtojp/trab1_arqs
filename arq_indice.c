@@ -522,30 +522,6 @@ int comparacao_vet_dados_indx_int_const(void *vetor, int pos, void *ponteiro){
     }
 }
 
-int busca_bin_rec(void *vetor, int ini, int fim, void *chave, FncComparacao comparacao){
-    //busca binaria recursiva
-    if(ini > fim){//criterio de parada
-        return -1;
-    }
-
-    int meio = (ini+fim)/2;
-
-    if(comparacao(vetor,meio,chave)==0){
-        //se o vetor[meio] == chave, retorno o meio
-        return meio;
-    }else if(comparacao(vetor,meio,chave)>0){
-        //se o vetor[meio] > chave, busco de novo até o meio-1
-        fim = meio-1;
-
-        return busca_bin_rec(vetor, ini, fim, chave, comparacao);
-    }else{
-        //se o vetor[meio] < chave, busco de novo a partir do meio+1
-        ini = meio+1;
-
-        return busca_bin_rec(vetor, ini, fim, chave, comparacao);
-    }
-}
-
 int busca_bin_int(void *vetor, cabecalho_indx_t *cabecalho, void *chave, int *qtd_reg_val){
     //funcao que prepara para a busca binaria recursiva para tipo inteiro e trata o retorno
     dados_indx_int_t **vetor_real = (dados_indx_int_t**)vetor;
@@ -612,7 +588,6 @@ void shiftarVetIndxStr(void *vet_dado_indx, int pos, int qtd_reg){
     dados_indx_str_t **vet_dado_indx_str = (dados_indx_str_t **) vet_dado_indx;
 
     for(int i=pos; i<qtd_reg; i++){
-        // copiaDadoIndex_str(vet_dado_indx_str[i], vet_dado_indx_str[i+1]);
         for(int j = 0; j < 12; ++j){
             (vet_dado_indx_str[i])->chaveBusca[j] = (vet_dado_indx_str[i+1])->chaveBusca[j];
         }

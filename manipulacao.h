@@ -76,7 +76,6 @@ InfoBusca_t *ler_criterios_busca();
 InfoBusca_t *alocar_InfoBusca(int qtd_crit);
 void desalocar_InfoBusca(InfoBusca_t *informacao);
 void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t *criterios, InfoBusca_t *alteracoes, FncAcao acao, FncFinaliza final);
-void editarRegStdin(ArqIndex_t *arq_index, ArqDados_t *arq_dados);
 void achouReg(void *arq_index, int flag);
 int testarStatusIndex(ArqIndex_t *arq_index);
 int testarStatusDados(ArqDados_t *arq_dados);
@@ -91,5 +90,8 @@ void escreveArqIndex(ArqIndex_t *arq_index);
 void reescreveVetIndex(ArqIndex_t *arq_index, int inicio, int fim);
 void copiaVetTemp(void *ponteiro, int ignorar);
 void escreverCabecalhoIndex(ArqIndex_t *arq_index);
+void alterarQtdRegIndex(ArqIndex_t *arq_index, int qtdRegIndex);
+void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_antigo, InfoBusca_t *alteracoes,long int byteOffSet);
+void ordenaVetIndexFinal(void *arq_index, int qtdReg_ordenar);
 
 #endif
