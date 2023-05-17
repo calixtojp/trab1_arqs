@@ -98,7 +98,6 @@ void *escolhe_criterio_vet_vals(InfoBusca_t *criterios, int pos, int tipoDado){
         case 1:
             return criterios->vals_str[pos];
         default:
-            printf("tipoDado não configurado\n");
             break;
     }
 }
@@ -211,10 +210,6 @@ int getTamCabecalhoDados(ArqDados_t *arq_dados){
     return len_cabecalho_dados();
 }
 
-void mostrar_cabecalhoDados(ArqDados_t *arq_dados){
-    mostrar_cabecalho_dados(arq_dados->cabecalhoDados);
-}
-
 int get_nroRegTotal(ArqDados_t *arq_dados){
     return get_nroRegArq(arq_dados->cabecalhoDados);
 }
@@ -254,8 +249,6 @@ void alocar_vet_index(ArqIndex_t *arq_index, unsigned int nroRegValidos){
     }else if(strcmp(arq_index->tipoDado, "string") == 0){
         arq_index->vet_indx_str = aloc_vet_indx_DadoStr(nroRegValidos);
         arq_index->tipoDadoInt = 1;
-    }else{
-        printf("Não tem esse tipo\n");
     }
 }
 
@@ -565,7 +558,6 @@ void processaRegistros(ArqDados_t *arq_dados, ArqIndex_t *arq_index, InfoBusca_t
         //Para isso, deve-se reiniciar o ponteiro do arquivo de dados para o primeiro registro de dados (pulando o cabecalho) 
         //para fazer um novo processamento, pois não há garantia de que o ponteiro esteja corretamente posicionado
         fseek(arq_dados->arqDados,len_cabecalho_dados(),SEEK_SET);
-        //printf("Vou de busca seq\n");
         //em seguida, chama-se a função que realiza a busca sequencial
         busca_seq_dados(arq_dados, arq_index, criterios,alteracoes,acao,final);
     }
@@ -874,7 +866,7 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_anti
         Comportamento:
             A função pode modificar a variável arq_index->qtdReg_vetTemp, a variável arq_index->nro_addVetTemp,
             bem como a quantidade de registros removidos (nroRegRem) dentro do cabeçalho do arquivo de dados
-            (armazenado em memória secundária). O cursor do arquivo de dados, no começo, se encontra no final
+            (armazenado em memória primária). O cursor do arquivo de dados, no começo, se encontra no final
             registro lido (reg_antigo) e termina no mesmo lugar (final do registro) 
     */
 
@@ -905,28 +897,25 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_anti
     //flag que avisa se modificou o campo indexado
     int modifica_campo_indexado = modificaCampoIndexado(arq_index, alteracoes);
     
-    //Devo voltar o cursor do arqDados para o começo do 
-    //registro que acabei de ler.
+    //Devo voltar o cursor do arqDados para o começo do registro que acabei de ler.
     fseek(arq_dados->arqDados, byteOffSet, SEEK_SET);
 
-    if(tam_reg_antigo >= tam_reg_modificado){
-        //Se cabe
-        //Escrevo na posição atual
+    if(tam_reg_antigo >= tam_reg_modificado){//Se o registro cabe na posição atual...
+        
         reescrever_registro_dados(reg_modificado, arq_dados->arqDados);
         completaRegistroComDollar(arq_dados->arqDados, tam_reg_antigo - tam_reg_modificado);
         
-        
-        if(modifica_campo_indexado){
-            //Se modifica o campo indexado
-            if(pos != -1){
-                //Se o registro tinha campo indexado
-                //Removo do vetIndex
+        if(modifica_campo_indexado){//Se modifica o campo indexado...
+            
+            if(pos != -1){//Se o registro tinha campo indexado...
+                
+                //Removo do vetTemp
                 desindexaRegistro(arq_index, pos);
             }
 
-            if(campo_modificado_eh_nulo == 0){
-                //Reescrevo o indexamento no vetIndex
+            if(campo_modificado_eh_nulo == 0){//Se o campo modificado não é nulo
 
+                //Reescrevo o indexamento no vetTemp
                 //a qtd_reg pode ter mudado, pois posso ter desidexado o registro, então
                 qtd_reg = arq_index->qtdReg_vetTemp;
                 
@@ -943,16 +932,16 @@ void modificaReg(ArqDados_t *arq_dados, ArqIndex_t *arq_index, dados_t *reg_anti
             }
         }
 
-    }else{
-        //Se não cabe
+    }else{//Se não cabe
+        
         //marco como removido
         escreverCampoRemovido(arq_dados->arqDados);
         //incremento o nro_RegRem
         setCabecalhoDados_nroRegRem(arq_dados->cabecalhoDados, get_nroRegRem(arq_dados->cabecalhoDados)+1);
 
-        if(pos != -1){
-            //Se o registro tinha campo indexado
-            //Removo do vetIndex
+        if(pos != -1){//Se o registro tinha campo indexado...
+            
+            //Removo do vetTemp
             desindexaRegistro(arq_index, pos);
         }
         

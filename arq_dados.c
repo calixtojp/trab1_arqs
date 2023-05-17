@@ -33,13 +33,6 @@ cabecalho_t *alocar_cabecalho_dados(){
     return cabecalho;
 }
 
-void mostrar_cabecalho_dados(cabecalho_t *cabecalho){
-	printf("status:%c\n", cabecalho->status);
-	printf("proxByteOffset:%ld\n", cabecalho->proxByteOffset);
-	printf("nroRegArq:%d\n", cabecalho->nroRegArq);
-	printf("nroRegRem:%d\n", cabecalho->nroRegRem);
-}
-
 dados_t *alocar_dados(){
 	//função que aloca dinamicamente um registro de dados
 
@@ -116,8 +109,6 @@ void *getCampoInt(dados_t *dado, char *campo){
 		return &(dado->idCrime);
 	}else if(strcmp(campo, "numeroArtigo")==0){
 		return &(dado->numeroArtigo);
-	}else{
-		printf("ERRO: campo int não encontrado\n");
 	}
 }
 
@@ -131,8 +122,6 @@ void *getCampoStr(dados_t *dado, char *campo){
 		return truncar(dado->lugarCrime, 12);
 	}else if(strcmp(campo, "descricaoCrime")==0){
 		return truncar(dado->descricaoCrime, 12);
-	}else{
-		printf("ERRO: campo str não encontrado\n");
 	}
 }
 
@@ -193,9 +182,6 @@ int bytesAteCampoIndexado(dados_t *reg, char *campo){
 
 	if(strcmp(campo, "descricaoCrime")==0){
 		return retorno;
-	}else{
-		printf("Erro em bytesAteCampoIndexado\n");
-		exit(0);
 	}
 }
 
@@ -735,23 +721,19 @@ cabecalho_t *ler_dados_cabecalho(FILE *arq_bin){
 	//Se algum campo do cabeçalho não for lido, retorno uma 
 	//mensagem de erro
 	if(fread(&(cabecalho_retorno->status), sizeof(char), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
-		return NULL;
+		mensagem_erro();
 	}
 
 	if(fread(&(cabecalho_retorno->proxByteOffset), sizeof(long int), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
-		return NULL;
+		mensagem_erro();
 	}
 
 	if(fread(&(cabecalho_retorno->nroRegArq), sizeof(int), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
-		return NULL;
+		mensagem_erro();
 	}
 
 	if(fread(&(cabecalho_retorno->nroRegRem), sizeof(int), 1, arq_bin)!=1){
-		printf("Falha no processamento do arquivo.\n");
-		return NULL;
+		mensagem_erro();
 	}
 
 	return cabecalho_retorno;
@@ -898,7 +880,6 @@ void fazAlteracoes(dados_t *reg, char **vet_nomes, char **vet_vals_str, int *vet
 						strcpy(reg->descricaoCrime, vet_vals_str[i]);
 						break;
 					default:
-						printf("Não existe esse campo\n");
 						exit(0);
 				}
 			}

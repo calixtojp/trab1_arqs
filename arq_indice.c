@@ -166,16 +166,7 @@ void setStatusIndex(cabecalho_indx_t *cabecalho, char status){
 }
 
 void fwriteStatusIndex(FILE *arq, cabecalho_indx_t *cabecalho){
-   // printf("ftell = %ld\n",ftell(arq));
 	fwrite(&cabecalho->status,sizeof(char),1,arq);
-    // printf("ESCREVI o status==%c\n",cabecalho->status);
-    // printf("ftell = %ld\n",ftell(arq));
-    // printf("vou ler oq escrevi\n");
-    // fseek(arq,0,SEEK_SET);
-    // printf("ftell = %ld\n",ftell(arq));
-    // fread(&cabecalho->qtdReg,sizeof(int),1,arq);
-    // printf(" li o status == %c\n", cabecalho->status);
-    // printf("ftell = %ld\n",ftell(arq));
 }
 
 cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
@@ -262,11 +253,11 @@ void set_qtdReg(cabecalho_indx_t *cabecalho, int qtd_reg){
     cabecalho->qtdReg = qtd_reg;
 }
 
-void mostraRegIndx_int(dados_indx_int_t *dado){
+void mostraRegIndx_int(dados_indx_int_t *dado){//função de debug
     printf("campoIndexado:%d|byte:%ld\n", dado->chaveBusca, dado->byteOffset);
 }
 
-void  mostraRegIndx_str(dados_indx_str_t *dado){
+void  mostraRegIndx_str(dados_indx_str_t *dado){//função de debug
     printf("campo(");
     for(int i = 0; i < 12;++i){
         printf("%c", dado->chaveBusca[i]);
@@ -274,7 +265,7 @@ void  mostraRegIndx_str(dados_indx_str_t *dado){
     printf(")|byte:(%ld)\n", dado->byteOffset);
 }
 
-void mostraVetInt(void *vet_generico, int qntd_reg){
+void mostraVetInt(void *vet_generico, int qntd_reg){//função de debug
     dados_indx_int_t **vet = (dados_indx_int_t**)vet_generico;
     for(int i = 0; i < qntd_reg; ++i){
         printf("pos:%d  ", i);
@@ -282,7 +273,7 @@ void mostraVetInt(void *vet_generico, int qntd_reg){
     }
 }
 
-void mostraVetStr(void *vet_generico, int qntd_reg){
+void mostraVetStr(void *vet_generico, int qntd_reg){//função de debug
     dados_indx_str_t **vet = (dados_indx_str_t**)vet_generico;
     for(int i = 0; i < qntd_reg; ++i){
         printf("pos:%d  ", i);
