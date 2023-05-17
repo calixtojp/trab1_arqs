@@ -137,6 +137,7 @@ void *getCampoStr(dados_t *dado, char *campo){
 }
 
 int campoNulo_int(void *campo_int){
+	//faço o casting para o tipo
 	int campo_real = *((int*)campo_int);
 	if(campo_real == -1){
 		return 1;
@@ -146,8 +147,8 @@ int campoNulo_int(void *campo_int){
 }
 
 int campoNulo_str(void *campo_str){
+	//faço o casting para o tipo
 	char *campo_real = (char*)campo_str;
-	
 	for(int i = 0; i < 12; ++i){
 		if(campo_real[i] != '$'){
 			return 0;

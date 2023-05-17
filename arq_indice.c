@@ -193,14 +193,14 @@ cabecalho_indx_t *get_cabecalho_indx(FILE *arqIndex){
 
 
 void setDadoIndxInt(void *dado, long int byteOffSet, void *valor){
-    dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;
+    dados_indx_int_t *dado_real = (dados_indx_int_t*)dado;//casting para o tipo
     int valor_real = *((int*)valor);
     dado_real->byteOffset = byteOffSet;
     dado_real->chaveBusca = valor_real;
 }
 
 void setDadoIndxStr(void *dado, long int byteOffSet, void *valor){
-    dados_indx_str_t *dado_real = (dados_indx_str_t*) dado;
+    dados_indx_str_t *dado_real = (dados_indx_str_t*) dado;//casting para o tipo
     char *valor_real = (char*)valor;
     dado_real->byteOffset = byteOffSet;
     for(int i = 0; i < 12; ++i){
