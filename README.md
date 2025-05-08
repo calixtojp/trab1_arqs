@@ -1,4 +1,3 @@
-````markdown
 # Projeto Organização de Arquivos - SCC0215
 
 Este repositório contém a implementação de um sistema em C para gerenciar arquivos de dados binários, executando operações análogas aos comandos SQL _CREATE INDEX_, _SELECT (WHERE)_, _DELETE_, _INSERT_ e _UPDATE_. O código segue rigorosamente as especificações didáticas da disciplina de Organização de Arquivos (SCC0215), garantindo consistência, performance e manutenibilidade.
